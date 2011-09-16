@@ -50,7 +50,7 @@ Global FontID1
 FontID1 = LoadFont(1, "Tahoma", 14)
 
 Procedure Open_MainWindow()
-  If OpenWindow(#MainWindow, 479, 152, 1024, 768, "Cue - Main window",  #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_SizeGadget | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
+  If OpenWindow(#MainWindow, 479, 152, 1024, 768, "Cue",  #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_SizeGadget | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
     If CreateMenu(#MenuBar, WindowID(#MainWindow))
       MenuTitle("File")
       MenuItem(#MenuNew, "New...")
@@ -65,7 +65,7 @@ Procedure Open_MainWindow()
       MenuItem(#MenuAbout, "About")
       EndIf
 
-      If CreateGadgetList(WindowID(#MainWindow))
+      ;If CreateGadgetList(WindowID(#MainWindow))
         Frame3DGadget(#Frame3D_0, 10, 0, 280, 80, "Controls")
         ButtonGadget(#PlayButton, 20, 20, 80, 50, "Play next")
         ButtonGadget(#PauseButton, 110, 20, 80, 50, "Pause")
@@ -79,22 +79,29 @@ Procedure Open_MainWindow()
         Frame3DGadget(#Frame3D_2, 310, 0, 250, 80, "Actions")
         ButtonGadget(#EditorButton, 320, 20, 80, 50, "Editor")
         TrackBarGadget(#MasterSlider, 730, 50, 290, 30, 0, 100)
+        SetGadgetState(#MasterSlider,100)
         TextGadget(#Text_2, 730, 30, 210, 20, "Master volume")
         
-      EndIf
+      ;EndIf
     EndIf
 EndProcedure
 
 Procedure Open_EditorWindow()
   If OpenWindow(#EditorWindow, 533, 221, 910, 710, "Cue - Editor",  #PB_Window_SystemMenu | #PB_Window_Invisible | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
-    If CreateGadgetList(WindowID(#EditorWindow))
+    ;If CreateGadgetList(WindowID(#EditorWindow))
       ListViewGadget(#EditorList, 10, 50, 200, 640)
       ButtonGadget(#AddAudio, 10, 10, 130, 30, "Add audio cue")
       ButtonGadget(#AddChange, 290, 10, 130, 30, "Add level change cue")
       ButtonGadget(#AddEvent, 430, 10, 130, 30, "Add event cue")
       ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
       
-    EndIf
+    ;EndIf
   EndIf
 EndProcedure
 
+
+; IDE Options = PureBasic 4.50 (Windows - x86)
+; CursorPosition = 52
+; FirstLine = 29
+; Folding = -
+; EnableXP
