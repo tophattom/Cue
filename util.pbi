@@ -66,16 +66,7 @@ Procedure AddCue(type.i)
 	With cueList()
 		\cueType = type
 		
-		Select type
-			Case #TYPE_AUDIO
-				\name = "(Audio)"
-			Case #TYPE_VIDEO
-				\name = "(Video)"
-			Case #TYPE_CHANGE
-				\name = "(Change)"
-			Case #TYPE_EVENT
-				\name = "(Event)"
-		EndSelect
+		\name = "Q" + Str(gCueCounter)
 
 		\state = #STATE_STOPPED
 		
@@ -102,6 +93,7 @@ Procedure GetCueById(id.l)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 7
+; CursorPosition = 68
+; FirstLine = 35
 ; Folding = -
 ; EnableXP

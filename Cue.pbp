@@ -7,16 +7,16 @@
   <section name="data">
     <explorer view="..\..\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2011-09-17 11:09" user="Jaakko" host="UNTO"/>
+    <lastopen date="2011-09-17 13:15" user="Jaakko" host="UNTO"/>
   </section>
   <section name="files">
     <file name="util.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="d9942b2de5d1d0a86bc7a3c4c440d4b9"/>
+      <fingerprint md5="39bba3e840d6a419d089aea9afc6a437"/>
     </file>
     <file name="Cue.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="fe15d827c97f1062173c111cb7e12cd7"/>
+      <fingerprint md5="6cdaa4ae322b0c3e98d120a1c6f6c59d"/>
     </file>
     <file name="ui.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>

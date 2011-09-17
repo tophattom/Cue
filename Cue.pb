@@ -7,6 +7,12 @@ Declare UpdateCueControls()
 IncludeFile "util.pbi"
 IncludeFile "ui.pb"
 
+UseOGGSoundDecoder()
+UseFLACSoundDecoder()
+
+InitMovie()
+InitSound()
+
 Open_MainWindow()
 Open_EditorWindow()
 HideWindow(#EditorWindow, 1)
@@ -76,6 +82,7 @@ Repeat ; Start of the event loop
 			EndIf
 		ElseIf GadgetID = #AddAudio
 			*gCurrentCue = AddCue(#TYPE_AUDIO)
+			UpdateEditorList()
 		ElseIf GadgetID = #AddChange
 			*gCurrentCue = AddCue(#TYPE_CHANGE)
 			UpdateEditorList()
@@ -95,7 +102,27 @@ Repeat ; Start of the event loop
     	ElseIf GadgetID = #CueFileField
       
     	ElseIf GadgetID = #OpenCueFile
-      
+    		Select *gCurrentCue\cueType
+    			Case #TYPE_AUDIO
+    				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.flac) |*.mp3;*.wav;*.ogg;*.flac"
+    		EndSelect
+    		
+    		path.s = OpenFileRequester("Select file","",pattern,0)
+    		
+    		If path
+    			*gCurrentCue\filePath = path
+    			
+    			Select *gCurrentCue\cueType
+    				Case #TYPE_AUDIO
+    					If GetExtensionPart(path) = "mp3"
+    						*gCurrentCue\file = LoadMovie(#PB_Any,path)
+    					Else
+    						*gCurrentCue\file = LoadSound(#PB_Any,path)
+    					EndIf
+    			EndSelect
+    			
+    			UpdateCueControls()
+    		EndIf
     	ElseIf GadgetID = #Image_1
       
     	ElseIf GadgetID = #ModeSelect
@@ -119,7 +146,19 @@ Procedure UpdateEditorList()
 	i = 0
 	
 	ForEach cueList()
-		AddGadgetItem(#EditorList,i,cueList()\name + "  " + cueList()\desc)
+		text.s = cueList()\name + "  " + cueList()\desc
+		Select cueList()\cueType
+			Case #TYPE_AUDIO
+				text = text + "  (Audio)"
+			Case #TYPE_VIDEO
+				text = text + "  (Video)"
+			Case #TYPE_CHANGE
+				text = text + "  (Change)"
+			Case #TYPE_EVENT
+				text = text + "  (Event)"
+		EndSelect
+		
+		AddGadgetItem(#EditorList,i,text)
 		SetGadgetItemData(#EditorList,i,cueList()\id)
 		
 		i + 1
@@ -146,7 +185,6 @@ Procedure UpdateCueControls()
 	SetGadgetText(#CueFileField,*gCurrentCue\filePath)
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 77
-; FirstLine = 51
-; Folding = 5
+; CursorPosition = 13
+; Folding = 9
 ; EnableXP
