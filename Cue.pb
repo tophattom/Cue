@@ -1,6 +1,8 @@
 ; PureBasic Visual Designer v3.95 build 1485 (PB4Code)
 
 Declare UpdateEditorList()
+Declare HideCueControls(value)
+Declare UpdateCueControls()
 
 IncludeFile "util.pbi"
 IncludeFile "ui.pb"
@@ -8,6 +10,7 @@ IncludeFile "ui.pb"
 Open_MainWindow()
 Open_EditorWindow()
 HideWindow(#EditorWindow, 1)
+HideCueControls(1)
 
 Repeat ; Start of the event loop
   
@@ -15,7 +18,14 @@ Repeat ; Start of the event loop
 	WindowID = EventWindow() ; The Window where the event is generated, can be used in the gadget procedures
 	GadgetID = EventGadget() ; Is it a gadget event?
 	EventType = EventType() ; The event type
-	  
+	
+	
+	If *gCurrentCue <> 0
+		HideCueControls(0)
+	Else
+		HideCueControls(1)
+	EndIf
+	
 	;You can place code here, and use the result as parameters for the procedures
 	  
 	If Event = #PB_Event_Menu
@@ -59,10 +69,13 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #EditorButton
 		   	HideWindow(#EditorWindow,0)
 		ElseIf GadgetID = #EditorList
-		      
+			*gCurrentCue = GetCueById(GetGadgetItemData(#EditorList,GetGadgetState(#EditorList)))
+			
+			If *gCurrentCue <> 0
+				UpdateCueControls()
+			EndIf
 		ElseIf GadgetID = #AddAudio
 			*gCurrentCue = AddCue(#TYPE_AUDIO)
-			UpdateEditorList()
 		ElseIf GadgetID = #AddChange
 			*gCurrentCue = AddCue(#TYPE_CHANGE)
 			UpdateEditorList()
@@ -73,7 +86,21 @@ Repeat ; Start of the event loop
 		      
 		ElseIf GadgetID = #MasterSlider
 		      
-		EndIf
+		ElseIf GadgetID = #CueNameField
+			*gCurrentCue\name = GetGadgetText(#CueNameField)
+			UpdateEditorList()
+  		ElseIf GadgetID = #CueDescField
+  			*gCurrentCue\desc = GetGadgetText(#CueDescField)
+  			UpdateEditorList()
+    	ElseIf GadgetID = #CueFileField
+      
+    	ElseIf GadgetID = #OpenCueFile
+      
+    	ElseIf GadgetID = #Image_1
+      
+    	ElseIf GadgetID = #ModeSelect
+      		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
+    	EndIf
 	EndIf
 	
 	If Event = #PB_Event_CloseWindow
@@ -89,13 +116,37 @@ ForEver
 Procedure UpdateEditorList()
 	ClearGadgetItems(#EditorList)
 	
+	i = 0
+	
 	ForEach cueList()
-		AddGadgetItem(#EditorList,-1,cueList()\name + "  " + cueList()\desc)
+		AddGadgetItem(#EditorList,i,cueList()\name + "  " + cueList()\desc)
+		SetGadgetItemData(#EditorList,i,cueList()\id)
+		
+		i + 1
 	Next
+	
+	ProcedureReturn i
 EndProcedure
 
+Procedure HideCueControls(value)
+	HideGadget(#CueNameField,value)
+	HideGadget(#CueDescField,value)
+	HideGadget(#CueFileField,value)
+	HideGadget(#OpenCueFile,value)
+	HideGadget(#ModeSelect,value)
+	HideGadget(#Text_3,value)
+	HideGadget(#Text_4,value)
+	HideGadget(#Text_6,value)
+	HideGadget(#Text_8,value)
+EndProcedure
+
+Procedure UpdateCueControls()
+	SetGadgetText(#CueNameField,*gCurrentCue\name)
+	SetGadgetText(#CueDescField,*gCurrentCue\desc)
+	SetGadgetText(#CueFileField,*gCurrentCue\filePath)
+EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 69
-; FirstLine = 35
-; Folding = -
+; CursorPosition = 77
+; FirstLine = 51
+; Folding = 5
 ; EnableXP

@@ -5,6 +5,7 @@ Structure Cue
 	desc.s
 	
 	file.i
+	filePath.s
 	
 	state.i
 	
@@ -23,6 +24,8 @@ Structure Cue
 	pan.i
 	
 	List *followCues.Cue()
+	
+	id.l
 EndStructure
 
 Enumeration
@@ -49,6 +52,8 @@ Global gPlayState.i
 Global *gCurrentCue.Cue
 Global gCueCount.i
 
+Global gCueCounter.l
+
 
 
 Procedure AddCue(type.i)
@@ -56,6 +61,7 @@ Procedure AddCue(type.i)
 	AddElement(cueList())
 	
 	gCueCount + 1
+	gCueCounter + 1
 	
 	With cueList()
 		\cueType = type
@@ -78,12 +84,24 @@ Procedure AddCue(type.i)
 		
 		\volume = 100
 		\pan = 0
+		
+		\id = gCueCounter
 	EndWith
 	
 	ProcedureReturn @cueList()
 EndProcedure
+
+Procedure GetCueById(id.l)
+	ForEach cueList()
+		If cueList()\id = id
+			ProcedureReturn @cueList()
+		EndIf
+	Next
+	
+	ProcedureReturn #False
+EndProcedure
+
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 69
-; FirstLine = 25
+; CursorPosition = 7
 ; Folding = -
 ; EnableXP
