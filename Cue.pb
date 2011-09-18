@@ -4,8 +4,9 @@ Declare UpdateEditorList()
 Declare HideCueControls(value)
 Declare UpdateCueControls()
 
-IncludeFile "util.pbi"
-IncludeFile "ui.pb"
+IncludeFile "includes\util.pbi"
+IncludeFile "includes\ui.pb"
+IncludeFile "bass\bass.pbi"
 
 UseOGGSoundDecoder()
 UseFLACSoundDecoder()
@@ -185,6 +186,6 @@ Procedure UpdateCueControls()
 	SetGadgetText(#CueFileField,*gCurrentCue\filePath)
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 13
+; CursorPosition = 8
 ; Folding = 9
 ; EnableXP
