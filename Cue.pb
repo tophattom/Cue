@@ -6,18 +6,16 @@ Declare UpdateCueControls()
 
 IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
-IncludeFile "bass\bass.pbi"
+IncludeFile "includes\bass.pbi"
 
-UseOGGSoundDecoder()
-UseFLACSoundDecoder()
 
-InitMovie()
-InitSound()
 
 Open_MainWindow()
 Open_EditorWindow()
 HideWindow(#EditorWindow, 1)
 HideCueControls(1)
+
+BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
 
 Repeat ; Start of the event loop
   
@@ -105,7 +103,7 @@ Repeat ; Start of the event loop
     	ElseIf GadgetID = #OpenCueFile
     		Select *gCurrentCue\cueType
     			Case #TYPE_AUDIO
-    				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.flac) |*.mp3;*.wav;*.ogg;*.flac"
+    				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
     		EndSelect
     		
     		path.s = OpenFileRequester("Select file","",pattern,0)
@@ -115,11 +113,9 @@ Repeat ; Start of the event loop
     			
     			Select *gCurrentCue\cueType
     				Case #TYPE_AUDIO
-    					If GetExtensionPart(path) = "mp3"
-    						*gCurrentCue\file = LoadMovie(#PB_Any,path)
-    					Else
-    						*gCurrentCue\file = LoadSound(#PB_Any,path)
-    					EndIf
+    					*gCurrentCue\stream = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE)
+    					
+    					*gCurrentCue\length = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetLength(*gCurrentCue\stream,#BASS_POS_BYTE))
     			EndSelect
     			
     			UpdateCueControls()
@@ -173,19 +169,27 @@ Procedure HideCueControls(value)
 	HideGadget(#CueDescField,value)
 	HideGadget(#CueFileField,value)
 	HideGadget(#OpenCueFile,value)
+	HideGadget(#LengthField,value)
 	HideGadget(#ModeSelect,value)
 	HideGadget(#Text_3,value)
 	HideGadget(#Text_4,value)
 	HideGadget(#Text_6,value)
 	HideGadget(#Text_8,value)
+	HideGadget(#Text_9,value)
 EndProcedure
 
 Procedure UpdateCueControls()
 	SetGadgetText(#CueNameField,*gCurrentCue\name)
 	SetGadgetText(#CueDescField,*gCurrentCue\desc)
 	SetGadgetText(#CueFileField,*gCurrentCue\filePath)
+	
+	mins = Int(*gCurrentCue\length / 60)
+	secs = *gCurrentCue\length % 60
+	
+	SetGadgetText(#LengthField,Str(mins) + ":" + Str(secs))
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 8
-; Folding = 9
+; CursorPosition = 188
+; FirstLine = 105
+; Folding = +
 ; EnableXP

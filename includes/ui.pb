@@ -53,6 +53,8 @@ Enumeration
   #Image_1
   #ModeSelect
   #Text_8
+  #Text_9
+  #LengthField
 EndEnumeration
 
 ;- Fonts
@@ -112,8 +114,10 @@ Procedure Open_EditorWindow()
       StringGadget(#CueFileField, 290, 140, 300, 20, "")
       TextGadget(#Text_6, 220, 140, 60, 20, "File:")
       ButtonGadget(#OpenCueFile, 600, 140, 30, 20, "...")
+      TextGadget(#Text_9, 220, 170, 60, 20, "Length:")
+      StringGadget(#LengthField, 290, 170, 50, 20, "",#PB_String_ReadOnly)
       
-      ComboBoxGadget(#ModeSelect, 220, 200, 140, 20)
+      ComboBoxGadget(#ModeSelect, 290, 200, 140, 20)
       AddGadgetItem(#ModeSelect,0,"Manual")
       SetGadgetItemData(#ModeSelect,0,#START_MANUAL)
       AddGadgetItem(#ModeSelect,1,"After start of cue")
@@ -123,14 +127,14 @@ Procedure Open_EditorWindow()
       AddGadgetItem(#ModeSelect,3,"Hotkey")
       SetGadgetItemData(#ModeSelect,3,#START_HOTKEY)
       
-      TextGadget(#Text_8, 220, 180, 60, 20, "Start mode:")
+      TextGadget(#Text_8, 220, 200, 60, 20, "Start mode:")
     ;EndIf
   EndIf
 EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 124
-; FirstLine = 68
-; Folding = -
+; CursorPosition = 117
+; FirstLine = 41
+; Folding = +
 ; EnableXP

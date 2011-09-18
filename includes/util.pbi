@@ -4,8 +4,10 @@ Structure Cue
 	name.s
 	desc.s
 	
-	file.i
+	stream.i
 	filePath.s
+	waveform.i
+	length.i
 	
 	state.i
 	
@@ -13,7 +15,10 @@ Structure Cue
 	delay.i
 
 	*afterCue.Cue
-
+	
+	startPos.i
+	endPos.i
+	
 	startTime.l
 	duration.l
 	
@@ -93,7 +98,6 @@ Procedure GetCueById(id.l)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 68
-; FirstLine = 35
+; CursorPosition = 9
 ; Folding = -
 ; EnableXP
