@@ -1,12 +1,17 @@
 ; PureBasic Visual Designer v3.95 build 1485 (PB4Code)
 
 Declare UpdateEditorList()
-Declare HideCueControls(value)
-Declare UpdateCueControls()
-
 IncludeFile "includes\bass.pbi"
 IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
+
+
+Declare HideCueControls(value)
+Declare UpdateCueControls()
+Declare PlayCue(*cue.Cue)
+Declare PauseCue(*cue.Cue)
+Declare StopCue(*cue.Cue)
+Declare UpdateCues()
 
 
 Open_MainWindow()
@@ -29,6 +34,8 @@ Repeat ; Start of the event loop
 	Else
 		HideCueControls(1)
 	EndIf
+	
+	UpdateCues()
 	
 	;You can place code here, and use the result as parameters for the procedures
 	  
@@ -121,7 +128,8 @@ Repeat ; Start of the event loop
     			EndSelect
     			
     			If *gCurrentCue\desc = ""
-    				*gCurrentCue\desc = GetFilePart(path)
+    				file.s = GetFilePart(path)
+    				*gCurrentCue\desc = Mid(file,0,Len(file) - 4)
     			EndIf
     			
     			UpdateCueControls()
@@ -132,18 +140,21 @@ Repeat ; Start of the event loop
     	ElseIf GadgetID = #ModeSelect
       		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
       	ElseIf GadgetID = #PreviewButton
-      		If *gCurrentCue\stream <> 0
-      			If GetGadgetState(#PreviewButton) = 1
-      				BASS_ChannelSetPosition(*gCurrentCue\stream,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,*gCurrentCue\startPos),#BASS_POS_BYTE)
-      				BASS_ChannelPlay(*gCurrentCue\stream,0)
-      			Else
-      				BASS_ChannelStop(*gCurrentCue\stream)
-      			EndIf
+      		If GetGadgetState(#PreviewButton) = 1
+      			PlayCue(*gCurrentCue)
+      		Else
+      			StopCue(*gCurrentCue)
       		EndIf
       	ElseIf GadgetID = #StartPos
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
+      		*gCurrentCue\playTime = (*gCurrentCue\endPos - *gCurrentCue\startPos)
       	ElseIf GadgetID = #EndPos
       		*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#EndPos))
+      		*gCurrentCue\playTime = (*gCurrentCue\endPos - *gCurrentCue\startPos)
+      	ElseIf GadgetID = #FadeIn
+      		*gCurrentCue\fadeIn = Val(GetGadgetText(#FadeIn))
+      	ElseIf GadgetID = #FadeOut
+      		*gCurrentCue\fadeOut = Val(GetGadgetText(#FadeOut))
       	EndIf
 	EndIf
 	
@@ -201,6 +212,10 @@ Procedure HideCueControls(value)
 	HideGadget(#Text_11,value)
 	HideGadget(#StartPos,value)
 	HideGadget(#EndPos,value)
+	HideGadget(#Text_12,value)
+	HideGadget(#Text_13,value)
+	HideGadget(#FadeIn,value)
+	HideGadget(#FadeOut,value)
 EndProcedure
 
 Procedure UpdateCueControls()
@@ -212,9 +227,75 @@ Procedure UpdateCueControls()
 	
 	SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
 	SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
+	
+	SetGadgetText(#FadeIn,Str(*gCurrentCue\fadeIn))
+	SetGadgetText(#FadeOut,Str(*gCurrentCue\fadeOut))
 EndProcedure
+
+Procedure PlayCue(*cue.Cue)
+	If *cue\stream <> 0
+		*cue\state = #STATE_PLAYING
+		*cue\startTime = ElapsedMilliseconds()
+		BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
+		BASS_ChannelPlay(*cue\stream,0)
+		
+		If *cue\fadeIn > 0
+			BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,0)
+			BASS_ChannelSlideAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
+		EndIf
+
+		ProcedureReturn #True
+	Else
+		ProcedureReturn #False
+	EndIf
+EndProcedure
+
+Procedure StopCue(*cue.Cue)
+	If *cue\stream <> 0
+		*cue\state = #STATE_STOPPED
+		BASS_ChannelStop(*cue\stream)
+		
+		ProcedureReturn #True
+	Else
+		ProcedureReturn #False
+	EndIf
+EndProcedure
+
+Procedure PauseCue(*cue.Cue)
+	If *cue\stream <> 0
+		If *cue\state = #STATE_PLAYING
+			*cue\state = #STATE_PAUSED
+			*cue\pauseTime = ElapsedMilliseconds()
+			BASS_ChannelPause(*cue\stream)
+			
+			ProcedureReturn #True
+		ElseIf *cue\state = #STATE_PAUSED
+			*cue\state = #STATE_PLAYING
+			BASS_ChannelPlay(*cue\stream,0)
+			
+			ProcedureReturn #True
+		EndIf
+		
+		ProcedureReturn #False
+	Else
+		ProcedureReturn #False
+	EndIf
+EndProcedure
+
+Procedure UpdateCues()
+	ForEach cueList()
+		If cueList()\state = #STATE_PLAYING
+			pos = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
+			If pos >= cueList()\endPos
+				StopCue(@cueList())
+			EndIf
+
+		EndIf
+	Next
+EndProcedure
+
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 137
-; FirstLine = 100
-; Folding = +
+; CursorPosition = 231
+; FirstLine = 132
+; Folding = E+
 ; EnableXP

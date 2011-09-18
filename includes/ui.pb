@@ -60,6 +60,10 @@ Enumeration
   #EndPos
   #Text_10
   #Text_11
+  #Text_12
+  #Text_13
+  #FadeIn
+  #FadeOut
 EndEnumeration
 
 ;- Fonts
@@ -129,6 +133,11 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_11, 360, 230, 40, 20, "End:")
       StringGadget(#EndPos, 400, 230, 50, 20, "")
       
+      TextGadget(#Text_12, 220, 260, 40, 20, "Fade in:")
+      StringGadget(#FadeIn, 260, 260, 50, 20, "")
+      TextGadget(#Text_13, 350, 260, 50, 30, "Fade out:")
+      StringGadget(#FadeOut, 400, 260, 50, 20, "")
+      
       ComboBoxGadget(#ModeSelect, 290, 200, 140, 20)
       AddGadgetItem(#ModeSelect,0,"Manual")
       SetGadgetItemData(#ModeSelect,0,#START_MANUAL)
@@ -146,7 +155,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 124
-; FirstLine = 85
+; CursorPosition = 137
+; FirstLine = 95
 ; Folding = -
 ; EnableXP

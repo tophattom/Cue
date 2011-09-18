@@ -18,14 +18,16 @@ Structure Cue
 	
 	startPos.d
 	endPos.d
+	playTime.i
 	
 	startTime.l
+	pauseTime.l
 	duration.l
 	
-	fadeIn.i
-	fadeOut.i
+	fadeIn.f
+	fadeOut.f
 	
-	volume.i
+	volume.f
 	pan.i
 	
 	List *followCues.Cue()
@@ -78,7 +80,7 @@ Procedure AddCue(type.i)
 		\startMode = #START_MANUAL
 		\delay = 0
 		
-		\volume = 100
+		\volume = 1
 		\pan = 0
 		
 		\id = gCueCounter
@@ -118,7 +120,7 @@ Procedure StringToSeconds(text.s)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 114
-; FirstLine = 26
-; Folding = 9
+; CursorPosition = 81
+; FirstLine = 37
+; Folding = x
 ; EnableXP
