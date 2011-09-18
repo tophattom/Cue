@@ -286,6 +286,13 @@ Procedure UpdateCues()
 	ForEach cueList()
 		If cueList()\state = #STATE_PLAYING
 			pos = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
+			
+			If cueList()\fadeOut > 0
+				If pos >= (cueList()\endPos - cueList()\fadeOut) And BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL) = 0
+					BASS_ChannelSlideAttribute(cueList()\stream,#BASS_ATTRIB_VOL,0,cueList()\fadeOut * 1000)
+				EndIf
+			EndIf
+			
 			If pos >= cueList()\endPos
 				StopCue(@cueList())
 			EndIf
@@ -295,7 +302,7 @@ Procedure UpdateCues()
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 231
-; FirstLine = 132
-; Folding = E+
+; CursorPosition = 290
+; FirstLine = 168
+; Folding = M-
 ; EnableXP
