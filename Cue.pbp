@@ -7,24 +7,24 @@
   <section name="data">
     <explorer view="..\..\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2011-09-18 13:05" user="Jaakko" host="UNTO"/>
+    <lastopen date="2011-09-18 14:30" user="Jaakko" host="UNTO"/>
   </section>
   <section name="files">
     <file name="includes\util.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="8133ccd700683f1bafcbbfcaf00bfc05"/>
+      <fingerprint md5="dc6525a32b30442043852bf912098c5e"/>
     </file>
     <file name="Cue.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="9ddbaf7de605bcc7754bba9af973467c"/>
+      <fingerprint md5="14812b40c46a51a72e0828b3586fa405"/>
     </file>
     <file name="includes\ui.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="baeb3351306dd996090790f66ce796c8"/>
+      <fingerprint md5="458470d8b7eb437c37db5ecb5af71e23"/>
     </file>
-    <file name="bass\bass.pbi">
+    <file name="includes\bass.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5=""/>
+      <fingerprint md5="e8b2d8161fb90ad54a422c1ea838ac21"/>
     </file>
   </section>
   <section name="targets">

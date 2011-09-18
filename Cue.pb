@@ -4,10 +4,9 @@ Declare UpdateEditorList()
 Declare HideCueControls(value)
 Declare UpdateCueControls()
 
+IncludeFile "includes\bass.pbi"
 IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
-IncludeFile "includes\bass.pbi"
-
 
 
 Open_MainWindow()
@@ -19,7 +18,7 @@ BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
 
 Repeat ; Start of the event loop
   
-	Event = WaitWindowEvent() ; This line waits until an event is received from Windows
+	Event = WindowEvent() ; This line waits until an event is received from Windows
 	WindowID = EventWindow() ; The Window where the event is generated, can be used in the gadget procedures
 	GadgetID = EventGadget() ; Is it a gadget event?
 	EventType = EventType() ; The event type
@@ -91,7 +90,7 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #AddVideo
 		      
 		ElseIf GadgetID = #MasterSlider
-		      
+			BASS_SetVolume(GetGadgetState(#MasterSlider) / 100)
 		ElseIf GadgetID = #CueNameField
 			*gCurrentCue\name = GetGadgetText(#CueNameField)
 			UpdateEditorList()
@@ -113,18 +112,39 @@ Repeat ; Start of the event loop
     			
     			Select *gCurrentCue\cueType
     				Case #TYPE_AUDIO
-    					*gCurrentCue\stream = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE)
+    					*gCurrentCue\stream = BASS_StreamCreateFile(0,@path,0,0,0)
     					
     					*gCurrentCue\length = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetLength(*gCurrentCue\stream,#BASS_POS_BYTE))
+    					
+    					*gCurrentCue\startPos = 0
+    					*gCurrentCue\endPos = *gCurrentCue\length
     			EndSelect
     			
+    			If *gCurrentCue\desc = ""
+    				*gCurrentCue\desc = GetFilePart(path)
+    			EndIf
+    			
     			UpdateCueControls()
+    			UpdateEditorList()
     		EndIf
     	ElseIf GadgetID = #Image_1
       
     	ElseIf GadgetID = #ModeSelect
       		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
-    	EndIf
+      	ElseIf GadgetID = #PreviewButton
+      		If *gCurrentCue\stream <> 0
+      			If GetGadgetState(#PreviewButton) = 1
+      				BASS_ChannelSetPosition(*gCurrentCue\stream,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,*gCurrentCue\startPos),#BASS_POS_BYTE)
+      				BASS_ChannelPlay(*gCurrentCue\stream,0)
+      			Else
+      				BASS_ChannelStop(*gCurrentCue\stream)
+      			EndIf
+      		EndIf
+      	ElseIf GadgetID = #StartPos
+      		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
+      	ElseIf GadgetID = #EndPos
+      		*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#EndPos))
+      	EndIf
 	EndIf
 	
 	If Event = #PB_Event_CloseWindow
@@ -176,6 +196,11 @@ Procedure HideCueControls(value)
 	HideGadget(#Text_6,value)
 	HideGadget(#Text_8,value)
 	HideGadget(#Text_9,value)
+	HideGadget(#PreviewButton,value)
+	HideGadget(#Text_10,value)
+	HideGadget(#Text_11,value)
+	HideGadget(#StartPos,value)
+	HideGadget(#EndPos,value)
 EndProcedure
 
 Procedure UpdateCueControls()
@@ -183,13 +208,13 @@ Procedure UpdateCueControls()
 	SetGadgetText(#CueDescField,*gCurrentCue\desc)
 	SetGadgetText(#CueFileField,*gCurrentCue\filePath)
 	
-	mins = Int(*gCurrentCue\length / 60)
-	secs = *gCurrentCue\length % 60
+	SetGadgetText(#LengthField,SecondsToString(*gCurrentCue\length))
 	
-	SetGadgetText(#LengthField,Str(mins) + ":" + Str(secs))
+	SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
+	SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 188
-; FirstLine = 105
+; CursorPosition = 137
+; FirstLine = 100
 ; Folding = +
 ; EnableXP

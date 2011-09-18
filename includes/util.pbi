@@ -16,8 +16,8 @@ Structure Cue
 
 	*afterCue.Cue
 	
-	startPos.i
-	endPos.i
+	startPos.d
+	endPos.d
 	
 	startTime.l
 	duration.l
@@ -97,7 +97,28 @@ Procedure GetCueById(id.l)
 	ProcedureReturn #False
 EndProcedure
 
+Procedure.s SecondsToString(value)
+	mins.s = Str(Int(value / 60))
+	tmp = value % 60
+	
+	If tmp < 10
+		secs.s = "0" + Str(tmp)
+	Else
+		secs.s = Str(tmp)
+	EndIf
+	
+	ProcedureReturn mins + ":" + secs
+EndProcedure
+
+Procedure StringToSeconds(text.s)
+	mins = Val(StringField(text,1,":"))
+	secs = ValD(StringField(text,2,":"))
+	
+	ProcedureReturn mins * 60 + secs
+EndProcedure
+
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 9
-; Folding = -
+; CursorPosition = 114
+; FirstLine = 26
+; Folding = 9
 ; EnableXP

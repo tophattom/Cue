@@ -55,6 +55,11 @@ Enumeration
   #Text_8
   #Text_9
   #LengthField
+  #PreviewButton
+  #StartPos
+  #EndPos
+  #Text_10
+  #Text_11
 EndEnumeration
 
 ;- Fonts
@@ -117,6 +122,13 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_9, 220, 170, 60, 20, "Length:")
       StringGadget(#LengthField, 290, 170, 50, 20, "",#PB_String_ReadOnly)
       
+      ButtonGadget(#PreviewButton, 470, 230, 50, 20, "Preview", #PB_Button_Toggle)
+      
+      TextGadget(#Text_10, 220, 230, 40, 20, "Start:")
+      StringGadget(#StartPos, 260, 230, 50, 20, "")
+      TextGadget(#Text_11, 360, 230, 40, 20, "End:")
+      StringGadget(#EndPos, 400, 230, 50, 20, "")
+      
       ComboBoxGadget(#ModeSelect, 290, 200, 140, 20)
       AddGadgetItem(#ModeSelect,0,"Manual")
       SetGadgetItemData(#ModeSelect,0,#START_MANUAL)
@@ -134,7 +146,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 117
-; FirstLine = 41
-; Folding = +
+; CursorPosition = 124
+; FirstLine = 85
+; Folding = -
 ; EnableXP
