@@ -64,6 +64,12 @@ Enumeration
   #Text_13
   #FadeIn
   #FadeOut
+  #Text_14
+  #Text_15
+  #VolumeSlider
+  #PanSlider
+  #CueVolume
+  #CuePan
 EndEnumeration
 
 ;- Fonts
@@ -138,6 +144,13 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_13, 350, 260, 50, 30, "Fade out:")
       StringGadget(#FadeOut, 400, 260, 50, 20, "")
       
+      TextGadget(#Text_14, 540, 230, 40, 20, "Volume:")
+      TrackBarGadget(#VolumeSlider, 600, 230, 100, 30, 0, 100)
+      StringGadget(#CueVolume, 720, 230, 40, 20, "", #PB_String_ReadOnly)
+      TextGadget(#Text_15, 540, 260, 40, 20, "Pan:")
+      TrackBarGadget(#PanSlider, 600, 260, 100, 30, 0, 200)
+      StringGadget(#CuePan, 720, 260, 40, 20, "", #PB_String_ReadOnly)
+      
       ComboBoxGadget(#ModeSelect, 290, 200, 140, 20)
       AddGadgetItem(#ModeSelect,0,"Manual")
       SetGadgetItemData(#ModeSelect,0,#START_MANUAL)
@@ -155,7 +168,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 137
-; FirstLine = 95
+; CursorPosition = 150
+; FirstLine = 101
 ; Folding = -
 ; EnableXP

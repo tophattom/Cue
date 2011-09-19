@@ -155,6 +155,12 @@ Repeat ; Start of the event loop
       		*gCurrentCue\fadeIn = Val(GetGadgetText(#FadeIn))
       	ElseIf GadgetID = #FadeOut
       		*gCurrentCue\fadeOut = Val(GetGadgetText(#FadeOut))
+      	ElseIf GadgetID = #VolumeSlider
+      		*gCurrentCue\volume = GetGadgetState(#VolumeSlider) / 100
+      		UpdateCueControls()
+      	ElseIf GadgetID = #PanSlider
+      		*gCurrentCue\pan = (GetGadgetState(#PanSlider) - 100) / 100
+      		UpdateCueControls()
       	EndIf
 	EndIf
 	
@@ -216,6 +222,12 @@ Procedure HideCueControls(value)
 	HideGadget(#Text_13,value)
 	HideGadget(#FadeIn,value)
 	HideGadget(#FadeOut,value)
+	HideGadget(#Text_14,value)
+	HideGadget(#Text_15,value)
+	HideGadget(#CueVolume,value)
+	HideGadget(#CuePan,value)
+	HideGadget(#VolumeSlider,value)
+	HideGadget(#PanSlider,value)
 EndProcedure
 
 Procedure UpdateCueControls()
@@ -230,6 +242,11 @@ Procedure UpdateCueControls()
 	
 	SetGadgetText(#FadeIn,Str(*gCurrentCue\fadeIn))
 	SetGadgetText(#FadeOut,Str(*gCurrentCue\fadeOut))
+	
+	SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 100)
+	SetGadgetState(#PanSlider,*gCurrentCue\pan * 100 + 100)
+	SetGadgetText(#CueVolume,Str(*gCurrentCue\volume * 100))
+	SetGadgetText(#CuePan,Str(*gCurrentCue\pan * 100))
 EndProcedure
 
 Procedure PlayCue(*cue.Cue)
@@ -237,6 +254,8 @@ Procedure PlayCue(*cue.Cue)
 		*cue\state = #STATE_PLAYING
 		*cue\startTime = ElapsedMilliseconds()
 		BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
+		BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume)
+		BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_PAN,*cue\pan)
 		BASS_ChannelPlay(*cue\stream,0)
 		
 		If *cue\fadeIn > 0
@@ -293,7 +312,7 @@ Procedure UpdateCues()
 				EndIf
 			EndIf
 			
-			If pos >= cueList()\endPos
+			If pos >= cueList()\endPos And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
 				StopCue(@cueList())
 			EndIf
 
@@ -302,7 +321,7 @@ Procedure UpdateCues()
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 290
-; FirstLine = 168
-; Folding = M-
+; CursorPosition = 229
+; FirstLine = 150
+; Folding = C+
 ; EnableXP
