@@ -321,7 +321,7 @@ Procedure UpdateCues()
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 229
-; FirstLine = 150
-; Folding = C+
+; CursorPosition = 246
+; FirstLine = 146
+; Folding = E+
 ; EnableXP

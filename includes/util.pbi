@@ -28,7 +28,7 @@ Structure Cue
 	fadeOut.f
 	
 	volume.f
-	pan.i
+	pan.f
 	
 	List *followCues.Cue()
 	
@@ -120,7 +120,6 @@ Procedure StringToSeconds(text.s)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 81
-; FirstLine = 37
+; CursorPosition = 30
 ; Folding = x
 ; EnableXP
