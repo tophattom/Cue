@@ -161,7 +161,30 @@ Repeat ; Start of the event loop
       	ElseIf GadgetID = #PanSlider
       		*gCurrentCue\pan = (GetGadgetState(#PanSlider) - 100) / 100
       		UpdateCueControls()
-      	EndIf
+      	ElseIf GadgetID = #DeleteButton
+      		If *gCurrentCue <> 0
+      			GetCueListIndex(*gCurrentCue)
+      			DeleteElement(cueList())
+      			*gCurrentCue = 0
+      			gCueAmount - 1
+      			UpdateEditorList()
+      		EndIf
+      	ElseIf GadgetID = #UpButton
+      		If *gCurrentCue <> 0 And *gCurrentCue <> FirstElement(cueList())
+      			GetCueListIndex(*gCurrentCue)
+      			*prev.Cue = PreviousElement(cueList())
+      			SwapElements(cueList(),*gCurrentCue,*prev)
+      			UpdateEditorList()
+      		EndIf
+      	ElseIf GadgetID = #DownButton
+			If *gCurrentCue <> 0 And *gCurrentCue <> LastElement(cueList())
+				GetCueListIndex(*gCurrentCue)
+				*nex.Cue = NextElement(cueList())
+				SwapElements(cueList(),*gCurrentCue,*nex)
+				UpdateEditorList()
+			EndIf	
+		EndIf
+		     
 	EndIf
 	
 	If Event = #PB_Event_CloseWindow
@@ -194,6 +217,10 @@ Procedure UpdateEditorList()
 		
 		AddGadgetItem(#EditorList,i,text)
 		SetGadgetItemData(#EditorList,i,cueList()\id)
+		
+		If @cueList() = *gCurrentCue
+			SetGadgetState(#EditorList,i)
+		EndIf
 		
 		i + 1
 	Next
@@ -321,7 +348,7 @@ Procedure UpdateCues()
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 246
-; FirstLine = 146
-; Folding = E+
+; CursorPosition = 187
+; FirstLine = 62
+; Folding = A+
 ; EnableXP

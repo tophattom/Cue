@@ -70,6 +70,12 @@ Enumeration
   #PanSlider
   #CueVolume
   #CuePan
+  #UpButton
+  #DownButton
+  #DeleteButton
+  #DeleteImg
+  #UpImg
+  #DownImg
 EndEnumeration
 
 ;- Fonts
@@ -99,7 +105,7 @@ Procedure Open_MainWindow()
         ButtonGadget(#StopButton, 200, 20, 80, 50, "Stop all")
         ListViewGadget(#Listview_1, 10, 420, 1010, 320)
         
-        ;-
+        
         ListIconGadget(#CueList, 10, 90, 1010, 320, "Cue Name", 300)
         AddGadgetColumn(#CueList, 1, "Cue type", 100)
         AddGadgetColumn(#CueList, 2, "Start mode", 100)
@@ -116,11 +122,19 @@ EndProcedure
 Procedure Open_EditorWindow()
   If OpenWindow(#EditorWindow, 533, 221, 910, 710, "Cue - Editor",  #PB_Window_SystemMenu | #PB_Window_Invisible | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
     ;If CreateGadgetList(WindowID(#EditorWindow))
-      ListViewGadget(#EditorList, 10, 50, 200, 640)
-      ButtonGadget(#AddAudio, 10, 10, 130, 30, "Add audio cue")
-      ButtonGadget(#AddChange, 290, 10, 130, 30, "Add level change cue")
-      ButtonGadget(#AddEvent, 430, 10, 130, 30, "Add event cue")
-      ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
+    ListViewGadget(#EditorList, 10, 50, 200, 605)
+    
+    LoadImage(#DeleteImg,"Images/delete.ico")
+    LoadImage(#UpImg,"Images/up.ico")
+    LoadImage(#DownImg,"Images/down.ico")
+    ButtonImageGadget(#DeleteButton, 180, 660, 30, 30, ImageID(#DeleteImg))
+    ButtonImageGadget(#UpButton, 10, 660, 30, 30, ImageID(#UpImg))
+    ButtonImageGadget(#DownButton, 45, 660, 30, 30, ImageID(#DownImg))
+    
+    ButtonGadget(#AddAudio, 10, 10, 130, 30, "Add audio cue")
+    ButtonGadget(#AddChange, 290, 10, 130, 30, "Add level change cue")
+    ButtonGadget(#AddEvent, 430, 10, 130, 30, "Add event cue")
+    ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
       
       StringGadget(#CueNameField, 290, 50, 300, 20, "")
       TextGadget(#Text_3, 220, 50, 40, 20, "Name:")
@@ -168,7 +182,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 150
-; FirstLine = 101
-; Folding = -
+; CursorPosition = 135
+; FirstLine = 68
+; Folding = +
 ; EnableXP

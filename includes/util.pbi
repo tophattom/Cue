@@ -57,7 +57,7 @@ Global NewList cueList.Cue()
 
 Global gPlayState.i
 Global *gCurrentCue.Cue
-Global gCueCount.i
+Global gCueAmount.i
 
 Global gCueCounter.l
 
@@ -67,7 +67,7 @@ Procedure AddCue(type.i)
 	LastElement(cueList())
 	AddElement(cueList())
 	
-	gCueCount + 1
+	gCueAmount + 1
 	gCueCounter + 1
 	
 	With cueList()
@@ -99,6 +99,14 @@ Procedure GetCueById(id.l)
 	ProcedureReturn #False
 EndProcedure
 
+Procedure GetCueListIndex(*cue.Cue)
+	ForEach cueList()
+		If @cueList() = *cue
+			ProcedureReturn ListIndex(cueList())
+		EndIf
+	Next
+EndProcedure
+
 Procedure.s SecondsToString(value)
 	mins.s = Str(Int(value / 60))
 	tmp = value % 60
@@ -120,6 +128,7 @@ Procedure StringToSeconds(text.s)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 30
-; Folding = x
+; CursorPosition = 74
+; FirstLine = 44
+; Folding = l
 ; EnableXP
