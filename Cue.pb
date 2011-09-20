@@ -12,6 +12,7 @@ Declare PlayCue(*cue.Cue)
 Declare PauseCue(*cue.Cue)
 Declare StopCue(*cue.Cue)
 Declare UpdateCues()
+Declare UpdateMainCueList()
 
 
 Open_MainWindow()
@@ -74,13 +75,17 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #Listview_1
 		      
 		ElseIf GadgetID = #CueList
+			*gCurrentCue = GetGadgetItemData(#CueList,GetGadgetState(#CueList))
+			
 			If EventType() = #PB_EventType_LeftDoubleClick
 				HideWindow(#EditorWindow,0)
+				UpdateEditorList()
+				UpdateCueControls()
 			EndIf
 		ElseIf GadgetID = #EditorButton
 		   	HideWindow(#EditorWindow,0)
 		ElseIf GadgetID = #EditorList
-			*gCurrentCue = GetCueById(GetGadgetItemData(#EditorList,GetGadgetState(#EditorList)))
+			*gCurrentCue = GetGadgetItemData(#EditorList,GetGadgetState(#EditorList))
 			
 			If *gCurrentCue <> 0
 				UpdateCueControls()
@@ -190,6 +195,7 @@ Repeat ; Start of the event loop
 	If Event = #PB_Event_CloseWindow
 		If EventWindow() = #EditorWindow
 			HideWindow(#EditorWindow,1)
+			UpdateMainCueList()
 		ElseIf EventWindow = #MainWindow
 			End
 		EndIf
@@ -216,7 +222,7 @@ Procedure UpdateEditorList()
 		EndSelect
 		
 		AddGadgetItem(#EditorList,i,text)
-		SetGadgetItemData(#EditorList,i,cueList()\id)
+		SetGadgetItemData(#EditorList,i,@cueList())
 		
 		If @cueList() = *gCurrentCue
 			SetGadgetState(#EditorList,i)
@@ -347,8 +353,42 @@ Procedure UpdateCues()
 	Next
 EndProcedure
 
+Procedure UpdateMainCueList()
+	ClearGadgetItems(#CueList)
+	
+	i = 0
+	
+	ForEach cueList()
+		Select cueList()\cueType
+			Case #TYPE_AUDIO
+				text.s = "Audio"
+			Case #TYPE_VIDEO
+				text.s = "Video"
+			Case #TYPE_CHANGE
+				text.s = "Change"
+			Case #TYPE_EVENT
+				text.s = "Event"
+		EndSelect
+		
+		Select cueList()\startMode
+			Case #START_MANUAL
+				start.s = "Manual"
+			Case #START_HOTKEY
+				start.s = "Hotkey"
+			Case #START_AFTER_START
+				start.s = "After start"
+			Case #START_AFTER_END
+				start.s = "After end"
+		EndSelect
+		
+		AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start)
+		SetGadgetItemData(#CueList, i, @cueList())
+		
+		i + 1
+	Next
+EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 187
-; FirstLine = 62
-; Folding = A+
+; CursorPosition = 81
+; FirstLine = 46
+; Folding = A9
 ; EnableXP
