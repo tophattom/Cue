@@ -100,17 +100,17 @@ Procedure Open_MainWindow()
       MenuItem(#MenuExit, "Exit")
       MenuTitle("Help")
       MenuItem(#MenuAbout, "About")
-      EndIf
+    EndIf
 
       ;If CreateGadgetList(WindowID(#MainWindow))
         Frame3DGadget(#Frame3D_0, 10, 0, 280, 80, "Controls")
-        ButtonGadget(#PlayButton, 20, 20, 80, 50, "Play next")
+        ButtonGadget(#PlayButton, 20, 20, 80, 50, "Play")
         ButtonGadget(#PauseButton, 110, 20, 80, 50, "Pause")
         ButtonGadget(#StopButton, 200, 20, 80, 50, "Stop all")
         ListViewGadget(#Listview_1, 10, 420, 1010, 320)
         
         
-        ListIconGadget(#CueList, 10, 90, 1010, 320, "Cue", 300, #PB_ListIcon_FullRowSelect)
+        ListIconGadget(#CueList, 10, 90, 1010, 320, "Cue", 300, #PB_ListIcon_FullRowSelect | #PB_ListIcon_AlwaysShowSelection)
         AddGadgetColumn(#CueList, 1, "Cue type", 100)
         AddGadgetColumn(#CueList, 2, "Start mode", 100)
         AddGadgetColumn(#CueList, 3, "State", 100)
@@ -121,8 +121,10 @@ Procedure Open_MainWindow()
         SetGadgetState(#MasterSlider,100)
         TextGadget(#Text_2, 730, 30, 210, 20, "Master volume")
         
-      ;EndIf
-    EndIf
+        ;EndIf
+        
+        
+  EndIf
 EndProcedure
 
 Procedure Open_EditorWindow()
@@ -195,7 +197,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 115
-; FirstLine = 65
+; CursorPosition = 125
+; FirstLine = 69
 ; Folding = 0
 ; EnableXP

@@ -73,15 +73,15 @@ Repeat ; Start of the event loop
 				
 				*gCurrentCue = NextElement(cueList())
 
-				
+				UpdateMainCueList()
 			EndIf
-			UpdateMainCueList()
 		ElseIf GadgetID = #PauseButton
-		      
+			
 		ElseIf GadgetID = #StopButton
 			ForEach cueList()
 				StopCue(@cueList())
 			Next
+			UpdateMainCueList()
 		ElseIf GadgetID = #Listview_1
 		      
 		ElseIf GadgetID = #CueList
@@ -434,6 +434,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 7
+; CursorPosition = 78
+; FirstLine = 39
 ; Folding = B9
 ; EnableXP

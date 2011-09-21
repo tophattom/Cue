@@ -7,7 +7,7 @@
   <section name="data">
     <explorer view="..\..\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2011-09-21 17:49" user="Jaakko" host="UNTO"/>
+    <lastopen date="2011-09-21 21:01" user="Jaakko" host="UNTO"/>
   </section>
   <section name="files">
     <file name="includes\util.pbi">
@@ -16,11 +16,11 @@
     </file>
     <file name="Cue.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="c637aef971beb7772e63fa5f46aa3cce"/>
+      <fingerprint md5="3f4113e09fe1f2e8581eb16efce24ff0"/>
     </file>
     <file name="includes\ui.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="ad2bafd7b492dfa979c5c8469893f0e1"/>
+      <fingerprint md5="b1ce8920c6b06b1d6b1fb8ddd0c6336e"/>
     </file>
     <file name="includes\bass.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
@@ -32,7 +32,7 @@
       <inputfile value="Cue.pb"/>
       <outputfile value="Cue.exe"/>
       <executable value="Cue.exe"/>
-      <options xpskin="1" debug="1"/>
+      <options thread="1" xpskin="1" debug="1"/>
     </target>
   </section>
 </project>
