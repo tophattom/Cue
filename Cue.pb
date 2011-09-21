@@ -136,6 +136,10 @@ Repeat ; Start of the event loop
     			
     			Select *gCurrentCue\cueType
     				Case #TYPE_AUDIO
+    					If *gCurrentCue\stream <> 0
+    						BASS_StreamFree(*gCurrentCue\stream)
+    					EndIf
+    					
     					*gCurrentCue\stream = BASS_StreamCreateFile(0,@path,0,0,0)
     					
     					*gCurrentCue\length = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetLength(*gCurrentCue\stream,#BASS_POS_BYTE))
@@ -155,7 +159,8 @@ Repeat ; Start of the event loop
     	ElseIf GadgetID = #Image_1
       
     	ElseIf GadgetID = #ModeSelect
-      		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
+    		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
+    		UpdateCueControls()
       	ElseIf GadgetID = #PreviewButton
       		If GetGadgetState(#PreviewButton) = 1
       			PlayCue(*gCurrentCue)
@@ -300,6 +305,32 @@ Procedure UpdateCueControls()
 	SetGadgetText(#CuePan,Str(*gCurrentCue\pan * 100))
 	
 	SetGadgetText(#StartDelay,StrF(*gCurrentCue\delay / 1000.0,2))
+	
+	ClearGadgetItems(#CueSelect)
+	If *gCurrentCue\startMode = #START_AFTER_END Or *gCurrentCue\startMode = #START_AFTER_START
+		DisableGadget(#CueSelect, 0)
+		i = 0
+		ForEach cueList()
+			AddGadgetItem(#CueSelect, i, cueList()\name + "  " + cueList()\desc)
+			SetGadgetItemData(#CueSelect, i, @cueList())
+			
+			i + 1
+		Next
+	Else
+		DisableGadget(#CueSelect, 1)
+	EndIf
+	
+	Select *gCurrentCue\startMode
+		Case #START_MANUAL
+			SetGadgetState(#ModeSelect, 0)
+		Case #START_AFTER_START
+			SetGadgetState(#ModeSelect, 1)
+		Case #START_AFTER_END
+			SetGadgetState(#ModeSelect, 2)
+		Case #START_HOTKEY
+			SetGadgetState(#ModeSelect, 3)
+	EndSelect
+	
 EndProcedure
 
 Procedure PlayCue(*cue.Cue)
@@ -434,7 +465,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 78
-; FirstLine = 39
-; Folding = B9
+; CursorPosition = 332
+; FirstLine = 215
+; Folding = E9
 ; EnableXP
