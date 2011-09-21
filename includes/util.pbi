@@ -42,6 +42,7 @@ Enumeration
 	#TYPE_CHANGE
 	
 	#STATE_STOPPED
+	#STATE_WAITING
 	#STATE_PLAYING
 	#STATE_PAUSED
 	#STATE_DONE
@@ -60,6 +61,8 @@ Global *gCurrentCue.Cue
 Global gCueAmount.i
 
 Global gCueCounter.l
+
+Global gEditor = #False
 
 
 
@@ -127,8 +130,14 @@ Procedure StringToSeconds(text.s)
 	ProcedureReturn mins * 60 + secs
 EndProcedure
 
+Procedure DeleteCue(*cue.Cue)
+	GetCueListIndex(*cue)
+	DeleteElement(cueList())
+	gCueAmount - 1
+EndProcedure
+
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 74
-; FirstLine = 44
-; Folding = l
+; CursorPosition = 44
+; FirstLine = 22
+; Folding = g-
 ; EnableXP

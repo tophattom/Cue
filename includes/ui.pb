@@ -76,6 +76,10 @@ Enumeration
   #DeleteImg
   #UpImg
   #DownImg
+  #Text_16
+  #CueSelect
+  #Text_17
+  #StartDelay
 EndEnumeration
 
 ;- Fonts
@@ -165,6 +169,7 @@ Procedure Open_EditorWindow()
       TrackBarGadget(#PanSlider, 600, 260, 100, 30, 0, 200)
       StringGadget(#CuePan, 720, 260, 40, 20, "", #PB_String_ReadOnly)
       
+      TextGadget(#Text_8, 220, 200, 60, 20, "Start mode:")
       ComboBoxGadget(#ModeSelect, 290, 200, 140, 20)
       AddGadgetItem(#ModeSelect,0,"Manual")
       SetGadgetItemData(#ModeSelect,0,#START_MANUAL)
@@ -175,14 +180,20 @@ Procedure Open_EditorWindow()
       AddGadgetItem(#ModeSelect,3,"Hotkey")
       SetGadgetItemData(#ModeSelect,3,#START_HOTKEY)
       
-      TextGadget(#Text_8, 220, 200, 60, 20, "Start mode:")
+      TextGadget(#Text_16, 450, 200, 40, 20, "Cue:")
+      ComboBoxGadget(#CueSelect, 490, 200, 200, 20)
+      
+      TextGadget(#Text_17, 710, 200, 40, 20, "Delay:")
+      StringGadget(#StartDelay, 750, 200, 50, 20, "")
+      
+      
     ;EndIf
   EndIf
 EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 108
-; FirstLine = 63
-; Folding = 0
+; CursorPosition = 169
+; FirstLine = 95
+; Folding = +
 ; EnableXP

@@ -14,7 +14,6 @@ Declare StopCue(*cue.Cue)
 Declare UpdateCues()
 Declare UpdateMainCueList()
 
-
 Open_MainWindow()
 Open_EditorWindow()
 HideWindow(#EditorWindow, 1)
@@ -23,7 +22,7 @@ HideCueControls(1)
 BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
 
 Repeat ; Start of the event loop
-  
+	
 	Event = WindowEvent() ; This line waits until an event is received from Windows
 	WindowID = EventWindow() ; The Window where the event is generated, can be used in the gadget procedures
 	GadgetID = EventGadget() ; Is it a gadget event?
@@ -42,7 +41,7 @@ Repeat ; Start of the event loop
 	  
 	If Event = #PB_Event_Menu
 		MenuID = EventMenu()
-		    
+		   
 		If MenuID = #MenuNew
 			Debug "GadgetID: #MenuNew"
 		
@@ -78,6 +77,7 @@ Repeat ; Start of the event loop
 			*gCurrentCue = GetGadgetItemData(#CueList,GetGadgetState(#CueList))
 			
 			If EventType() = #PB_EventType_LeftDoubleClick
+				gEditor = #True
 				HideWindow(#EditorWindow,0)
 				UpdateEditorList()
 				UpdateCueControls()
@@ -168,10 +168,8 @@ Repeat ; Start of the event loop
       		UpdateCueControls()
       	ElseIf GadgetID = #DeleteButton
       		If *gCurrentCue <> 0
-      			GetCueListIndex(*gCurrentCue)
-      			DeleteElement(cueList())
+      			DeleteCue(*gCurrentCue)
       			*gCurrentCue = 0
-      			gCueAmount - 1
       			UpdateEditorList()
       		EndIf
       	ElseIf GadgetID = #UpButton
@@ -187,13 +185,17 @@ Repeat ; Start of the event loop
 				*nex.Cue = NextElement(cueList())
 				SwapElements(cueList(),*gCurrentCue,*nex)
 				UpdateEditorList()
-			EndIf	
+			EndIf
+		ElseIf GadgetID = #StartDelay
+			*gCurrentCue\delay = ValF(GetGadgetText(#StartDelay)) * 1000
+			UpdateCueControls()
 		EndIf
 		     
 	EndIf
 	
 	If Event = #PB_Event_CloseWindow
 		If EventWindow() = #EditorWindow
+			gEditor = #False
 			HideWindow(#EditorWindow,1)
 			UpdateMainCueList()
 		ElseIf EventWindow = #MainWindow
@@ -261,6 +263,10 @@ Procedure HideCueControls(value)
 	HideGadget(#CuePan,value)
 	HideGadget(#VolumeSlider,value)
 	HideGadget(#PanSlider,value)
+	HideGadget(#Text_16,value)
+	HideGadget(#Text_17,value)
+	HideGadget(#CueSelect,value)
+	HideGadget(#StartDelay,value)
 EndProcedure
 
 Procedure UpdateCueControls()
@@ -280,20 +286,27 @@ Procedure UpdateCueControls()
 	SetGadgetState(#PanSlider,*gCurrentCue\pan * 100 + 100)
 	SetGadgetText(#CueVolume,Str(*gCurrentCue\volume * 100))
 	SetGadgetText(#CuePan,Str(*gCurrentCue\pan * 100))
+	
+	SetGadgetText(#StartDelay,StrF(*gCurrentCue\delay / 1000.0,2))
 EndProcedure
 
 Procedure PlayCue(*cue.Cue)
 	If *cue\stream <> 0
-		*cue\state = #STATE_PLAYING
-		*cue\startTime = ElapsedMilliseconds()
-		BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
-		BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume)
-		BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_PAN,*cue\pan)
-		BASS_ChannelPlay(*cue\stream,0)
-		
-		If *cue\fadeIn > 0
-			BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,0)
-			BASS_ChannelSlideAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
+		If *cue\delay > 0 And *cue\state = #STATE_STOPPED
+			*cue\state = #STATE_WAITING
+			*cue\startTime = ElapsedMilliseconds()
+		Else
+			*cue\state = #STATE_PLAYING
+			*cue\startTime = ElapsedMilliseconds()
+			BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
+			BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume)
+			BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_PAN,*cue\pan)
+			BASS_ChannelPlay(*cue\stream,0)
+			
+			If *cue\fadeIn > 0
+				BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,0)
+				BASS_ChannelSlideAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
+			EndIf
 		EndIf
 
 		ProcedureReturn #True
@@ -349,6 +362,10 @@ Procedure UpdateCues()
 				StopCue(@cueList())
 			EndIf
 
+		ElseIf cueList()\state = #STATE_WAITING
+			If ElapsedMilliseconds() >= (cueList()\startTime + cueList()\delay)
+				PlayCue(@cueList())
+			EndIf
 		EndIf
 	Next
 EndProcedure
@@ -388,7 +405,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 81
-; FirstLine = 46
-; Folding = A9
+; CursorPosition = 289
+; FirstLine = 180
+; Folding = M0
 ; EnableXP
