@@ -1,11 +1,11 @@
 ; PureBasic Visual Designer v3.95 build 1485 (PB4Code)
 
-Declare UpdateEditorList()
+
 IncludeFile "includes\bass.pbi"
 IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
 
-
+Declare UpdateEditorList()
 Declare HideCueControls(value)
 Declare UpdateCueControls()
 Declare PlayCue(*cue.Cue)
@@ -20,6 +20,7 @@ HideWindow(#EditorWindow, 1)
 HideCueControls(1)
 
 BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
+
 
 Repeat ; Start of the event loop
 	
@@ -66,16 +67,26 @@ Repeat ; Start of the event loop
 	  
 	If Event = #PB_Event_Gadget
 		If GadgetID = #PlayButton
-		      
+			If *gCurrentCue <> 0
+				PlayCue(*gCurrentCue)
+				GetCueListIndex(*gCurrentCue)
+				
+				*gCurrentCue = NextElement(cueList())
+
+				
+			EndIf
+			UpdateMainCueList()
 		ElseIf GadgetID = #PauseButton
 		      
 		ElseIf GadgetID = #StopButton
-		      
+			ForEach cueList()
+				StopCue(@cueList())
+			Next
 		ElseIf GadgetID = #Listview_1
 		      
 		ElseIf GadgetID = #CueList
 			*gCurrentCue = GetGadgetItemData(#CueList,GetGadgetState(#CueList))
-			
+
 			If EventType() = #PB_EventType_LeftDoubleClick
 				gEditor = #True
 				HideWindow(#EditorWindow,0)
@@ -93,6 +104,7 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #AddAudio
 			*gCurrentCue = AddCue(#TYPE_AUDIO)
 			UpdateEditorList()
+			UpdateCueControls()
 		ElseIf GadgetID = #AddChange
 			*gCurrentCue = AddCue(#TYPE_CHANGE)
 			UpdateEditorList()
@@ -398,14 +410,30 @@ Procedure UpdateMainCueList()
 				start.s = "After end"
 		EndSelect
 		
-		AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start)
+		Select cueList()\state
+			Case #STATE_STOPPED
+				state.s = "Stopped"
+			Case #STATE_WAITING
+				state.s = "Waiting to start"
+			Case #STATE_PLAYING
+				state.s = "Playing"
+			Case #STATE_DONE
+				state.s = "Done"
+			Case #STATE_PAUSED
+				state.s = "Paused"
+		EndSelect
+		
+		AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start + Chr(10) + state)
 		SetGadgetItemData(#CueList, i, @cueList())
+		
+		If @cueList() = *gCurrentCue
+			SetGadgetState(#CueList,i)
+		EndIf
 		
 		i + 1
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 289
-; FirstLine = 180
-; Folding = M0
+; CursorPosition = 7
+; Folding = B9
 ; EnableXP

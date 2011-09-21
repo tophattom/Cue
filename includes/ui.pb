@@ -113,6 +113,8 @@ Procedure Open_MainWindow()
         ListIconGadget(#CueList, 10, 90, 1010, 320, "Cue", 300, #PB_ListIcon_FullRowSelect)
         AddGadgetColumn(#CueList, 1, "Cue type", 100)
         AddGadgetColumn(#CueList, 2, "Start mode", 100)
+        AddGadgetColumn(#CueList, 3, "State", 100)
+        
         Frame3DGadget(#Frame3D_2, 310, 0, 250, 80, "Actions")
         ButtonGadget(#EditorButton, 320, 20, 80, 50, "Editor")
         TrackBarGadget(#MasterSlider, 730, 50, 290, 30, 0, 100)
@@ -193,7 +195,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 169
-; FirstLine = 95
-; Folding = +
+; CursorPosition = 115
+; FirstLine = 65
+; Folding = 0
 ; EnableXP
