@@ -7,7 +7,7 @@
   <section name="data">
     <explorer view="..\..\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2011-09-21 21:01" user="Jaakko" host="UNTO"/>
+    <lastopen date="2011-09-22 08:22" user="Jaakko" host="UNTO"/>
   </section>
   <section name="files">
     <file name="includes\util.pbi">
@@ -16,11 +16,11 @@
     </file>
     <file name="Cue.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="3f4113e09fe1f2e8581eb16efce24ff0"/>
+      <fingerprint md5="5783441474bd87276379c4b2636a0228"/>
     </file>
     <file name="includes\ui.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="b1ce8920c6b06b1d6b1fb8ddd0c6336e"/>
+      <fingerprint md5="6f699fae177529d9aa1842e0ff989b43"/>
     </file>
     <file name="includes\bass.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>

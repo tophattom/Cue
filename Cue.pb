@@ -422,12 +422,15 @@ Procedure UpdateMainCueList()
 		Select cueList()\cueType
 			Case #TYPE_AUDIO
 				text.s = "Audio"
+				color = RGB(100,100,200)
 			Case #TYPE_VIDEO
 				text.s = "Video"
 			Case #TYPE_CHANGE
 				text.s = "Change"
+				color = RGB(100,200,100)
 			Case #TYPE_EVENT
 				text.s = "Event"
+				color = RGB(200,200,100)
 		EndSelect
 		
 		Select cueList()\startMode
@@ -456,6 +459,7 @@ Procedure UpdateMainCueList()
 		
 		AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start + Chr(10) + state)
 		SetGadgetItemData(#CueList, i, @cueList())
+		SetGadgetItemColor(#CueList, i, #PB_Gadget_BackColor, color, -1)
 		
 		If @cueList() = *gCurrentCue
 			SetGadgetState(#CueList,i)
@@ -465,7 +469,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 332
-; FirstLine = 215
-; Folding = E9
+; CursorPosition = 461
+; FirstLine = 233
+; Folding = A+
 ; EnableXP
