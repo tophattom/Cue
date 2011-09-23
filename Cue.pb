@@ -69,9 +69,15 @@ Repeat ; Start of the event loop
 		If GadgetID = #PlayButton
 			If *gCurrentCue <> 0
 				PlayCue(*gCurrentCue)
+
 				GetCueListIndex(*gCurrentCue)
 				
 				*gCurrentCue = NextElement(cueList())
+				If *gCurrentCue <> 0
+					While *gCurrentCue\state <> #STATE_STOPPED
+						*gCurrentCue = NextElement(cueList())
+					Wend
+				EndIf
 
 				UpdateMainCueList()
 			EndIf
@@ -504,7 +510,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 226
-; FirstLine = 199
-; Folding = I9
+; CursorPosition = 78
+; FirstLine = 58
+; Folding = A+
 ; EnableXP
