@@ -76,6 +76,10 @@ Repeat ; Start of the event loop
 				If *gCurrentCue <> 0
 					While *gCurrentCue\state <> #STATE_STOPPED
 						*gCurrentCue = NextElement(cueList())
+						
+						If *gCurrentCue = 0
+							Break
+						EndIf
 					Wend
 				EndIf
 
@@ -92,15 +96,27 @@ Repeat ; Start of the event loop
 		      
 		ElseIf GadgetID = #CueList
 			*gCurrentCue = GetGadgetItemData(#CueList,GetGadgetState(#CueList))
-
+			
+			If *gCurrentCue = 0
+				*gCurrentCue = FirstElement(cueList())
+			EndIf
+			
 			If EventType() = #PB_EventType_LeftDoubleClick
 				gEditor = #True
 				HideWindow(#EditorWindow,0)
 				UpdateEditorList()
-				UpdateCueControls()
+				If *gCurrentCue <> 0
+					UpdateCueControls()
+				EndIf
+				
 			EndIf
 		ElseIf GadgetID = #EditorButton
-		   	HideWindow(#EditorWindow,0)
+			HideWindow(#EditorWindow,0)
+			
+			If *gCurrentCue = 0
+				*gCurrentCue = FirstElement(cueList())
+			EndIf
+			
 		ElseIf GadgetID = #EditorList
 			*gCurrentCue = GetGadgetItemData(#EditorList,GetGadgetState(#EditorList))
 			
@@ -211,7 +227,6 @@ Repeat ; Start of the event loop
 			EndIf
 		ElseIf GadgetID = #StartDelay
 			*gCurrentCue\delay = ValF(GetGadgetText(#StartDelay)) * 1000
-			UpdateCueControls()
 		ElseIf GadgetID = #CueSelect
 			tmpState = GetGadgetState(#CueSelect)
 			
@@ -317,22 +332,22 @@ Procedure UpdateCueControls()
 	SetGadgetText(#CueNameField,*gCurrentCue\name)
 	SetGadgetText(#CueDescField,*gCurrentCue\desc)
 	SetGadgetText(#CueFileField,*gCurrentCue\filePath)
-	
+		
 	SetGadgetText(#LengthField,SecondsToString(*gCurrentCue\length))
-	
+		
 	SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
 	SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
-	
+		
 	SetGadgetText(#FadeIn,Str(*gCurrentCue\fadeIn))
 	SetGadgetText(#FadeOut,Str(*gCurrentCue\fadeOut))
-	
+		
 	SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 100)
 	SetGadgetState(#PanSlider,*gCurrentCue\pan * 100 + 100)
 	SetGadgetText(#CueVolume,Str(*gCurrentCue\volume * 100))
 	SetGadgetText(#CuePan,Str(*gCurrentCue\pan * 100))
-	
+		
 	SetGadgetText(#StartDelay,StrF(*gCurrentCue\delay / 1000.0,2))
-	
+		
 	ClearGadgetItems(#CueSelect)
 	If *gCurrentCue\startMode = #START_AFTER_END Or *gCurrentCue\startMode = #START_AFTER_START
 		DisableGadget(#CueSelect, 0)
@@ -345,11 +360,10 @@ Procedure UpdateCueControls()
 				If @cueList() = *gCurrentCue\afterCue
 					SetGadgetState(#CueSelect, i)
 				EndIf
-				
+					
 				i + 1
 			EndIf
-			
-			
+							
 		Next
 	Else
 		DisableGadget(#CueSelect, 1)
@@ -365,7 +379,6 @@ Procedure UpdateCueControls()
 		Case #START_HOTKEY
 			SetGadgetState(#ModeSelect, 3)
 	EndSelect
-	
 EndProcedure
 
 Procedure PlayCue(*cue.Cue)
@@ -389,6 +402,8 @@ Procedure PlayCue(*cue.Cue)
 			ForEach *cue\followCues()
 				If *cue\followCues()\startMode = #START_AFTER_START
 					PlayCue(*cue\followCues())
+				ElseIf *cue\followCues()\startMode = #START_AFTER_END
+					*cue\followCues()\state = #STATE_WAITING_END
 				EndIf
 			Next
 		EndIf
@@ -403,6 +418,12 @@ Procedure StopCue(*cue.Cue)
 	If *cue\stream <> 0
 		*cue\state = #STATE_STOPPED
 		BASS_ChannelStop(*cue\stream)
+		
+		ForEach *cue\followCues()
+			If *cue\followCues()\startMode = #START_AFTER_END
+				PlayCue(*cue\followCues())
+			EndIf
+		Next
 		
 		ProcedureReturn #True
 	Else
@@ -442,7 +463,7 @@ Procedure UpdateCues()
 				EndIf
 			EndIf
 			
-			If pos >= cueList()\endPos And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
+			If pos >= cueList()\endPos ;And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
 				StopCue(@cueList())
 			EndIf
 
@@ -490,6 +511,8 @@ Procedure UpdateMainCueList()
 				state.s = "Stopped"
 			Case #STATE_WAITING
 				state.s = "Waiting to start"
+			Case #STATE_WAITING_END
+				state.s = "Waiting to start"
 			Case #STATE_PLAYING
 				state.s = "Playing"
 			Case #STATE_DONE
@@ -510,7 +533,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 78
-; FirstLine = 58
-; Folding = A+
+; CursorPosition = 228
+; FirstLine = 204
+; Folding = M-
 ; EnableXP

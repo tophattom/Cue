@@ -42,6 +42,7 @@ Enumeration
 	
 	#STATE_STOPPED
 	#STATE_WAITING
+	#STATE_WAITING_END
 	#STATE_PLAYING
 	#STATE_PAUSED
 	#STATE_DONE
@@ -136,6 +137,7 @@ Procedure DeleteCue(*cue.Cue)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 17
+; CursorPosition = 44
+; FirstLine = 22
 ; Folding = g-
 ; EnableXP
