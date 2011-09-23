@@ -15,6 +15,7 @@ Structure Cue
 	delay.i
 
 	*afterCue.Cue
+	List *followCues.Cue()
 	
 	startPos.d
 	endPos.d
@@ -29,9 +30,7 @@ Structure Cue
 	
 	volume.f
 	pan.f
-	
-	List *followCues.Cue()
-	
+
 	id.l
 EndStructure
 
@@ -137,7 +136,6 @@ Procedure DeleteCue(*cue.Cue)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 44
-; FirstLine = 22
+; CursorPosition = 17
 ; Folding = g-
 ; EnableXP

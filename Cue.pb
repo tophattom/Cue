@@ -206,6 +206,27 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #StartDelay
 			*gCurrentCue\delay = ValF(GetGadgetText(#StartDelay)) * 1000
 			UpdateCueControls()
+		ElseIf GadgetID = #CueSelect
+			tmpState = GetGadgetState(#CueSelect)
+			
+			If tmpState > -1
+				If *gCurrentCue\afterCue <> 0
+					ForEach *gCurrentCue\afterCue\followCues()
+						If *gCurrentCue\afterCue\followCues() = *gCurrentCue
+							DeleteElement(*gCurrentCue\afterCue\followCues())
+						EndIf
+					Next
+				EndIf
+				
+				*tmp.Cue = GetGadgetItemData(#CueSelect, tmpState)
+				
+				If *tmp <> 0
+					*gCurrentCue\afterCue = *tmp
+					
+					AddElement(*tmp\followCues())
+					*tmp\followCues() = *gCurrentCue
+				EndIf
+			EndIf
 		EndIf
 		     
 	EndIf
@@ -311,10 +332,18 @@ Procedure UpdateCueControls()
 		DisableGadget(#CueSelect, 0)
 		i = 0
 		ForEach cueList()
-			AddGadgetItem(#CueSelect, i, cueList()\name + "  " + cueList()\desc)
-			SetGadgetItemData(#CueSelect, i, @cueList())
+			If @cueList() <> *gCurrentCue
+				AddGadgetItem(#CueSelect, i, cueList()\name + "  " + cueList()\desc)
+				SetGadgetItemData(#CueSelect, i, @cueList())
+				
+				If @cueList() = *gCurrentCue\afterCue
+					SetGadgetState(#CueSelect, i)
+				EndIf
+				
+				i + 1
+			EndIf
 			
-			i + 1
+			
 		Next
 	Else
 		DisableGadget(#CueSelect, 1)
@@ -350,6 +379,12 @@ Procedure PlayCue(*cue.Cue)
 				BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,0)
 				BASS_ChannelSlideAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
 			EndIf
+			
+			ForEach *cue\followCues()
+				If *cue\followCues()\startMode = #START_AFTER_START
+					PlayCue(*cue\followCues())
+				EndIf
+			Next
 		EndIf
 
 		ProcedureReturn #True
@@ -392,7 +427,7 @@ EndProcedure
 
 Procedure UpdateCues()
 	ForEach cueList()
-		If cueList()\state = #STATE_PLAYING
+		If cueList()\state = #STATE_PLAYING		
 			pos = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
 			
 			If cueList()\fadeOut > 0
@@ -469,7 +504,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 461
-; FirstLine = 233
-; Folding = A+
+; CursorPosition = 226
+; FirstLine = 199
+; Folding = I9
 ; EnableXP
