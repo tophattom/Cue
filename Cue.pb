@@ -38,6 +38,8 @@ Repeat ; Start of the event loop
 	
 	UpdateCues()
 	
+	
+	
 	;You can place code here, and use the result as parameters for the procedures
 	  
 	If Event = #PB_Event_Menu
@@ -379,6 +381,10 @@ Procedure UpdateCueControls()
 		Case #START_HOTKEY
 			SetGadgetState(#ModeSelect, 3)
 	EndSelect
+	
+	If *gCurrentCue\waveform <> 0
+		SetGadgetState(#WaveImg,ImageID(*gCurrentCue\waveform))
+	EndIf
 EndProcedure
 
 Procedure PlayCue(*cue.Cue)
@@ -484,15 +490,15 @@ Procedure UpdateMainCueList()
 		Select cueList()\cueType
 			Case #TYPE_AUDIO
 				text.s = "Audio"
-				color = RGB(100,100,200)
+				color = RGB(0,200,200)
 			Case #TYPE_VIDEO
 				text.s = "Video"
 			Case #TYPE_CHANGE
 				text.s = "Change"
-				color = RGB(100,200,100)
+				color = RGB(200,0,200)
 			Case #TYPE_EVENT
 				text.s = "Event"
-				color = RGB(200,200,100)
+				color = RGB(200,200,0)
 		EndSelect
 		
 		Select cueList()\startMode
@@ -501,9 +507,15 @@ Procedure UpdateMainCueList()
 			Case #START_HOTKEY
 				start.s = "Hotkey"
 			Case #START_AFTER_START
-				start.s = "After start"
+				start.s = StrF(cueList()\delay,2) + " as "
+				If cueList()\afterCue <> 0
+					start = start + cueList()\afterCue\name
+				EndIf
 			Case #START_AFTER_END
-				start.s = "After end"
+				start.s = StrF(cueList()\delay,2) + " ae "
+				If cueList()\afterCue <> 0
+					start = start + cueList()\afterCue\name
+				EndIf
 		EndSelect
 		
 		Select cueList()\state
@@ -533,7 +545,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 228
-; FirstLine = 204
-; Folding = M-
+; CursorPosition = 166
+; FirstLine = 157
+; Folding = A9
 ; EnableXP

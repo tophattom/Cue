@@ -80,6 +80,7 @@ Enumeration
   #CueSelect
   #Text_17
   #StartDelay
+  #WaveImg
 EndEnumeration
 
 ;- Fonts
@@ -190,6 +191,7 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_17, 710, 200, 40, 20, "Delay:")
       StringGadget(#StartDelay, 750, 200, 50, 20, "")
       
+      ImageGadget(#WaveImg, 220, 290, 512, 100, 0)
       
     ;EndIf
   EndIf
@@ -197,7 +199,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 125
-; FirstLine = 69
-; Folding = 0
+; CursorPosition = 193
+; FirstLine = 141
+; Folding = -
 ; EnableXP

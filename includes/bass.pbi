@@ -515,6 +515,7 @@ EndStructure
 #BASS_DATA_FFT8192	       =$80000005 ;8192 FFT
 #BASS_DATA_FFT_INDIVIDUAL =$10	      ;FFT flag: FFT for each channel, else all combined
 #BASS_DATA_FFT_NOWINDOW	  =$20	      ;FFT flag: no Hanning window
+#BASS_DATA_FFT_REMOVEDC   =$40
 
 ;- BASS_ChannelGetTags types : what's returned
 #BASS_TAG_ID3		         =0      ;ID3v1 tags : 128 byte block
@@ -766,3 +767,9 @@ Import "bass.lib"
  BASS_FXGetParameters.l(handle.l,*params)
  BASS_FXReset.l(handle.l)
 EndImport
+
+; IDE Options = PureBasic 4.50 (Windows - x86)
+; CursorPosition = 518
+; FirstLine = 486
+; Folding = ------
+; EnableXP

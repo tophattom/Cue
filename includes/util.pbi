@@ -4,7 +4,7 @@ Structure Cue
 	name.s
 	desc.s
 	
-	stream.i
+	stream.l
 	filePath.s
 	waveform.i
 	length.i
@@ -137,7 +137,6 @@ Procedure DeleteCue(*cue.Cue)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 44
-; FirstLine = 22
+; CursorPosition = 6
 ; Folding = g-
 ; EnableXP
