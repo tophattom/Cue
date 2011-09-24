@@ -53,6 +53,8 @@ Enumeration
 	#START_HOTKEY
 EndEnumeration
 
+#WAVEFORM_W = 680
+
 
 Global NewList cueList.Cue()
 
@@ -137,6 +139,7 @@ Procedure DeleteCue(*cue.Cue)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 6
+; CursorPosition = 55
+; FirstLine = 25
 ; Folding = g-
 ; EnableXP

@@ -7,20 +7,20 @@
   <section name="data">
     <explorer view="..\..\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2011-09-24 13:37" user="Jaakko" host="UNTO"/>
+    <lastopen date="2011-09-24 16:52" user="Jaakko" host="UNTO"/>
   </section>
   <section name="files">
     <file name="includes\util.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="4185e570b05ee866d68731f85ca60aaa"/>
+      <fingerprint md5="b03ee049ff1e377c5c3805196424cbfd"/>
     </file>
     <file name="Cue.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="de674fcf18a1f5c1fe0977a3d01d8df4"/>
+      <fingerprint md5="f6c2db95e6bfde3f770b43226c695c20"/>
     </file>
     <file name="includes\ui.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="6f30391c04edbb56ba0729911b86f076"/>
+      <fingerprint md5="0cc70a6a8b153e0de3fd0f6281073270"/>
     </file>
     <file name="includes\bass.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>

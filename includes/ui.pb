@@ -191,7 +191,7 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_17, 710, 200, 40, 20, "Delay:")
       StringGadget(#StartDelay, 750, 200, 50, 20, "")
       
-      ImageGadget(#WaveImg, 220, 290, 512, 100, 0)
+      ImageGadget(#WaveImg, 220, 380, #WAVEFORM_W, 120, 0)
       
     ;EndIf
   EndIf
@@ -199,7 +199,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 193
-; FirstLine = 141
+; CursorPosition = 82
+; FirstLine = 44
 ; Folding = -
 ; EnableXP
