@@ -30,6 +30,9 @@ Structure Cue
 	
 	volume.f
 	pan.f
+	
+	*actionCues.Cue[6]
+	actions.i[6]
 
 	id.l
 EndStructure
@@ -51,6 +54,9 @@ Enumeration
 	#START_AFTER_START
 	#START_AFTER_END
 	#START_HOTKEY
+	
+	#EVENT_FADE_OUT
+	#EVENT_STOP
 EndEnumeration
 
 #WAVEFORM_W = 680
@@ -138,8 +144,16 @@ Procedure DeleteCue(*cue.Cue)
 	gCueAmount - 1
 EndProcedure
 
+Procedure OnOff(value)
+	If value = 0
+		ProcedureReturn 1
+	Else
+		ProcedureReturn 0
+	EndIf
+EndProcedure
+
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 55
-; FirstLine = 25
-; Folding = g-
+; CursorPosition = 34
+; FirstLine = 32
+; Folding = A-
 ; EnableXP

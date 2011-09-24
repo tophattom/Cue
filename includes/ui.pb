@@ -36,6 +36,7 @@ Enumeration
   #CueList
   #Frame3D_2
   #EditorButton
+  
   #EditorList
   #AddAudio
   #AddChange
@@ -81,7 +82,12 @@ Enumeration
   #Text_17
   #StartDelay
   #WaveImg
+  #Text_18
+  #Text_19
 EndEnumeration
+
+Global Dim eventCueSelect(5)
+Global Dim eventActionSelect(5)
 
 ;- Fonts
 Global FontID1
@@ -193,13 +199,21 @@ Procedure Open_EditorWindow()
       
       ImageGadget(#WaveImg, 220, 380, #WAVEFORM_W, 120, 0)
       
+      ;Event cue
+      TextGadget(#Text_18, 220, 250, 40, 20, "Cue:")
+      TextGadget(#Text_19, 490, 250, 40, 20, "Action:")
+      For i = 0 To 5
+      	eventCueSelect(i) = ComboBoxGadget(#PB_Any, 260, 250 + (i * 40), 200, 20)
+      	eventActionSelect(i) = ComboBoxGadget(#PB_Any, 530, 250 + (i * 40), 200, 20)
+      Next i
+      
     ;EndIf
   EndIf
 EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 82
-; FirstLine = 44
+; CursorPosition = 206
+; FirstLine = 154
 ; Folding = -
 ; EnableXP

@@ -331,36 +331,68 @@ Procedure UpdateEditorList()
 EndProcedure
 
 Procedure HideCueControls(value)
+	;Otetaan tyyppi taltee
+	If *gCurrentCue <> 0
+		type = *gCurrentCue\cueType
+	EndIf
+	
+	;Kaikille yhteiset
 	HideGadget(#CueNameField,value)
 	HideGadget(#CueDescField,value)
-	HideGadget(#CueFileField,value)
-	HideGadget(#OpenCueFile,value)
-	HideGadget(#LengthField,value)
-	HideGadget(#ModeSelect,value)
 	HideGadget(#Text_3,value)
 	HideGadget(#Text_4,value)
-	HideGadget(#Text_6,value)
+	HideGadget(#ModeSelect,value)
 	HideGadget(#Text_8,value)
-	HideGadget(#Text_9,value)
-	HideGadget(#PreviewButton,value)
-	HideGadget(#Text_10,value)
-	HideGadget(#Text_11,value)
-	HideGadget(#StartPos,value)
-	HideGadget(#EndPos,value)
-	HideGadget(#Text_12,value)
-	HideGadget(#Text_13,value)
-	HideGadget(#FadeIn,value)
-	HideGadget(#FadeOut,value)
-	HideGadget(#Text_14,value)
-	HideGadget(#Text_15,value)
-	HideGadget(#CueVolume,value)
-	HideGadget(#CuePan,value)
-	HideGadget(#VolumeSlider,value)
-	HideGadget(#PanSlider,value)
 	HideGadget(#Text_16,value)
 	HideGadget(#Text_17,value)
 	HideGadget(#CueSelect,value)
 	HideGadget(#StartDelay,value)
+	
+	;***** Audioon liittyv‰t s‰‰timet
+	If type <> #TYPE_AUDIO And value = 0
+		audioValue = 1
+	Else
+		audioValue = value
+	EndIf
+	
+	HideGadget(#CueFileField,audioValue)
+	HideGadget(#OpenCueFile,audioValue)
+	HideGadget(#LengthField,audioValue)
+	HideGadget(#Text_6,audioValue)
+	HideGadget(#Text_9,audioValue)
+	HideGadget(#PreviewButton,audioValue)
+	HideGadget(#Text_10,audioValue)
+	HideGadget(#Text_11,audioValue)
+	HideGadget(#StartPos,audioValue)
+	HideGadget(#EndPos,audioValue)
+	HideGadget(#Text_12,audioValue)
+	HideGadget(#Text_13,audioValue)
+	HideGadget(#FadeIn,audioValue)
+	HideGadget(#FadeOut,audioValue)
+	HideGadget(#Text_14,audioValue)
+	HideGadget(#Text_15,audioValue)
+	HideGadget(#CueVolume,audioValue)
+	HideGadget(#CuePan,audioValue)
+	HideGadget(#VolumeSlider,audioValue)
+	HideGadget(#PanSlider,audioValue)
+	HideGadget(#WaveImg,audioValue)
+	;*****
+	
+	;***** Eventeihin liittyv‰t s‰‰timet
+	If type <> #TYPE_EVENT And value = 0
+		eventValue = 1
+	Else
+		eventValue = value
+	EndIf
+	
+	HideGadget(#Text_18,eventValue)
+	HideGadget(#Text_19,eventValue)
+	
+	For i = 0 To 5
+		HideGadget(eventCueSelect(i),eventValue)
+		HideGadget(eventActionSelect(i),eventValue)
+	Next i
+	;******
 EndProcedure
 
 Procedure UpdateCueControls()
@@ -420,6 +452,27 @@ Procedure UpdateCueControls()
 	Else
 		SetGadgetState(#WaveImg,0)
 	EndIf
+	
+	
+	For i = 0 To 5
+		ClearGadgetItems(eventCueSelect(i))
+		ClearGadgetItems(eventActionSelect(i))
+		
+		k = 0
+		ForEach cueList()
+			AddGadgetItem(eventCueSelect(i), k, cueList()\name + "  " + cueList()\desc)
+			SetGadgetItemData(eventCueSelect(i), k, @cueList())
+			
+			If @cueList() = *gCurrentCue\actionCues[i]
+				SetGadgetState(eventCueSelect(i), k)
+			EndIf
+		Next
+		
+		AddGadgetItem(eventActionSelect(i), 0 , "Fade out")
+		SetGadgetItemData(eventActionSelect(i), 0, #EVENT_FADE_OUT)
+		AddGadgetItem(eventActionSelect(i), 1, "Stop")
+		SetGadgetItemData(eventActionSelect(i), 1, #EVENT_STOP)
+	Next i
 	
 EndProcedure
 
@@ -543,12 +596,12 @@ Procedure UpdateMainCueList()
 			Case #START_HOTKEY
 				start.s = "Hotkey"
 			Case #START_AFTER_START
-				start.s = StrF(cueList()\delay,2) + " as "
+				start.s = StrF(cueList()\delay / 1000,2) + " as "
 				If cueList()\afterCue <> 0
 					start = start + cueList()\afterCue\name
 				EndIf
 			Case #START_AFTER_END
-				start.s = StrF(cueList()\delay,2) + " ae "
+				start.s = StrF(cueList()\delay / 1000,2) + " ae "
 				If cueList()\afterCue <> 0
 					start = start + cueList()\afterCue\name
 				EndIf
@@ -581,7 +634,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 190
-; FirstLine = 23
+; CursorPosition = 465
+; FirstLine = 336
 ; Folding = E9
 ; EnableXP
