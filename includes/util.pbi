@@ -49,6 +49,8 @@ Enumeration
 	#STATE_PLAYING
 	#STATE_PAUSED
 	#STATE_DONE
+	#STATE_FADING_OUT
+	#STATE_FADING_IN
 	
 	#START_MANUAL
 	#START_AFTER_START
@@ -153,7 +155,7 @@ Procedure OnOff(value)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 34
+; CursorPosition = 52
 ; FirstLine = 32
 ; Folding = A-
 ; EnableXP

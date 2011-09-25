@@ -11,6 +11,7 @@ Declare UpdateCueControls()
 Declare PlayCue(*cue.Cue)
 Declare PauseCue(*cue.Cue)
 Declare StopCue(*cue.Cue)
+Declare StartEvents(*cue.Cue)
 Declare UpdateCues()
 Declare UpdateMainCueList()
 
@@ -70,7 +71,11 @@ Repeat ; Start of the event loop
 	If Event = #PB_Event_Gadget
 		If GadgetID = #PlayButton
 			If *gCurrentCue <> 0
-				PlayCue(*gCurrentCue)
+				If *gCurrentCue\cueType = #TYPE_AUDIO
+					PlayCue(*gCurrentCue)
+				ElseIf *gCurrentCue\cueType = #TYPE_EVENT Or *gCurrentCue\cueType = #TYPE_CHANGE
+					StartEvents(*gCurrentCue)
+				EndIf
 
 				GetCueListIndex(*gCurrentCue)
 				
@@ -287,6 +292,17 @@ Repeat ; Start of the event loop
 		     
 	EndIf
 	
+	For i = 0 To 5
+		If GadgetID = eventCueSelect(i)
+			*gCurrentCue\actionCues[i] = GetGadgetItemData(eventCueSelect(i),GetGadgetState(eventCueSelect(i)))
+		EndIf
+		
+		If GadgetID = eventActionSelect(i)
+			*gCurrentCue\actions[i] = GetGadgetItemData(eventActionSelect(i),GetGadgetState(eventActionSelect(i)))
+		EndIf
+	Next i
+	
+	
 	If Event = #PB_Event_CloseWindow
 		If EventWindow() = #EditorWindow
 			gEditor = #False
@@ -460,11 +476,15 @@ Procedure UpdateCueControls()
 		
 		k = 0
 		ForEach cueList()
-			AddGadgetItem(eventCueSelect(i), k, cueList()\name + "  " + cueList()\desc)
-			SetGadgetItemData(eventCueSelect(i), k, @cueList())
-			
-			If @cueList() = *gCurrentCue\actionCues[i]
-				SetGadgetState(eventCueSelect(i), k)
+			If @cueList() <> *gCurrentCue
+				AddGadgetItem(eventCueSelect(i), k, cueList()\name + "  " + cueList()\desc)
+				SetGadgetItemData(eventCueSelect(i), k, @cueList())
+				
+				If @cueList() = *gCurrentCue\actionCues[i]
+					SetGadgetState(eventCueSelect(i), k)
+				EndIf
+				
+				k + 1
 			EndIf
 		Next
 		
@@ -472,6 +492,13 @@ Procedure UpdateCueControls()
 		SetGadgetItemData(eventActionSelect(i), 0, #EVENT_FADE_OUT)
 		AddGadgetItem(eventActionSelect(i), 1, "Stop")
 		SetGadgetItemData(eventActionSelect(i), 1, #EVENT_STOP)
+		
+		If *gCurrentCue\actions[i] = #EVENT_FADE_OUT
+			SetGadgetState(eventActionSelect(i), 0)
+		ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
+			SetGadgetState(eventActionSelect(i), 1)
+		EndIf
+		
 	Next i
 	
 EndProcedure
@@ -547,6 +574,22 @@ Procedure PauseCue(*cue.Cue)
 	EndIf
 EndProcedure
 
+Procedure StartEvents(*cue.Cue)
+	If *cue\cueType = #TYPE_EVENT
+		For i = 0 To 5
+			If *cue\actionCues[i] <> 0
+				Select *cue\actions[i]
+					Case #EVENT_FADE_OUT
+						*cue\actionCues[i]\state = #STATE_FADING_OUT
+						BASS_ChannelSlideAttribute(*cue\actionCues[i]\stream,#BASS_ATTRIB_VOL,0,*cue\actionCues[i]\fadeOut * 1000)
+					Case #EVENT_STOP
+						StopCue(*cue\actionCues[i])
+				EndSelect
+			EndIf
+		Next i
+	EndIf
+EndProcedure
+
 Procedure UpdateCues()
 	ForEach cueList()
 		If cueList()\state = #STATE_PLAYING		
@@ -554,6 +597,7 @@ Procedure UpdateCues()
 			
 			If cueList()\fadeOut > 0
 				If pos >= (cueList()\endPos - cueList()\fadeOut) And BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL) = 0
+					cueList()\state = #STATE_FADING_OUT
 					BASS_ChannelSlideAttribute(cueList()\stream,#BASS_ATTRIB_VOL,0,cueList()\fadeOut * 1000)
 				EndIf
 			EndIf
@@ -561,12 +605,14 @@ Procedure UpdateCues()
 			If pos >= cueList()\endPos ;And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
 				StopCue(@cueList())
 			EndIf
-
 		ElseIf cueList()\state = #STATE_WAITING
 			If ElapsedMilliseconds() >= (cueList()\startTime + cueList()\delay)
 				PlayCue(@cueList())
 			EndIf
+		ElseIf cueList()\state = #STATE_FADING_OUT And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
+			StopCue(@cueList())
 		EndIf
+		
 	Next
 EndProcedure
 
@@ -634,7 +680,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 465
-; FirstLine = 336
-; Folding = E9
+; CursorPosition = 582
+; FirstLine = 341
+; Folding = I8
 ; EnableXP
