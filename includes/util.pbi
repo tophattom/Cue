@@ -37,7 +37,7 @@ Structure Cue
 	id.l
 EndStructure
 
-Enumeration
+Enumeration 1
 	#TYPE_AUDIO
 	#TYPE_VIDEO
 	#TYPE_EVENT
@@ -73,6 +73,9 @@ Global gCueAmount.i
 Global gCueCounter.l
 
 Global gEditor = #False
+
+Global gControlsHidden = #False
+Global gLastType = 0
 
 
 
@@ -155,7 +158,7 @@ Procedure OnOff(value)
 EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 52
-; FirstLine = 32
+; CursorPosition = 77
+; FirstLine = 37
 ; Folding = A-
 ; EnableXP

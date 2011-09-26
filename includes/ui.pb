@@ -84,6 +84,8 @@ Enumeration
   #WaveImg
   #Text_18
   #Text_19
+  #Text_20
+  #ChangeDur
 EndEnumeration
 
 Global Dim eventCueSelect(5)
@@ -200,12 +202,16 @@ Procedure Open_EditorWindow()
       ImageGadget(#WaveImg, 220, 380, #WAVEFORM_W, 120, 0)
       
       ;Event cue
-      TextGadget(#Text_18, 220, 250, 40, 20, "Cue:")
-      TextGadget(#Text_19, 490, 250, 40, 20, "Action:")
+      TextGadget(#Text_18, 220, 260, 40, 20, "Cue:")
+      TextGadget(#Text_19, 490, 260, 40, 20, "Action:")
       For i = 0 To 5
-      	eventCueSelect(i) = ComboBoxGadget(#PB_Any, 260, 250 + (i * 40), 200, 20)
-      	eventActionSelect(i) = ComboBoxGadget(#PB_Any, 530, 250 + (i * 40), 200, 20)
+      	eventCueSelect(i) = ComboBoxGadget(#PB_Any, 260, 260 + (i * 40), 200, 20)
+      	eventActionSelect(i) = ComboBoxGadget(#PB_Any, 530, 260 + (i * 40), 200, 20)
       Next i
+      
+      ;Change cue
+      TextGadget(#Text_20, 220, 230, 100, 20, "Change duration:")
+      StringGadget(#ChangeDur, 320, 230, 40, 20, "")
       
     ;EndIf
   EndIf
@@ -213,7 +219,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 206
-; FirstLine = 154
-; Folding = -
+; CursorPosition = 205
+; FirstLine = 120
+; Folding = +
 ; EnableXP

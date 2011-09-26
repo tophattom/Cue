@@ -6,7 +6,8 @@ IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
 
 Declare UpdateEditorList()
-Declare HideCueControls(value)
+Declare HideCueControls()
+Declare ShowCueControls()
 Declare UpdateCueControls()
 Declare PlayCue(*cue.Cue)
 Declare PauseCue(*cue.Cue)
@@ -18,7 +19,7 @@ Declare UpdateMainCueList()
 Open_MainWindow()
 Open_EditorWindow()
 HideWindow(#EditorWindow, 1)
-HideCueControls(1)
+HideCueControls()
 
 BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
 
@@ -32,14 +33,18 @@ Repeat ; Start of the event loop
 	
 	
 	If *gCurrentCue <> 0
-		HideCueControls(0)
+		If gControlsHidden = #True Or gLastType <> *gCurrentCue\cueType
+			gLastType = *gCurrentCue\cueType
+			ShowCueControls()
+		EndIf
 	Else
-		HideCueControls(1)
+		If gControlsHidden = #False
+			HideCueControls()
+		EndIf
+		
 	EndIf
 	
 	UpdateCues()
-	
-	
 	
 	;You can place code here, and use the result as parameters for the procedures
 	  
@@ -124,6 +129,11 @@ Repeat ; Start of the event loop
 				*gCurrentCue = FirstElement(cueList())
 			EndIf
 			
+			UpdateEditorList()
+			
+			If *gCurrentCue <> 0
+				UpdateCueControls()
+			EndIf
 		ElseIf GadgetID = #EditorList
 			*gCurrentCue = GetGadgetItemData(#EditorList,GetGadgetState(#EditorList))
 			
@@ -137,9 +147,11 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #AddChange
 			*gCurrentCue = AddCue(#TYPE_CHANGE)
 			UpdateEditorList()
+			UpdateCueControls()
 		ElseIf GadgetID = #AddEvent
 			*gCurrentCue = AddCue(#TYPE_EVENT)
 			UpdateEditorList()
+			UpdateCueControls()
 		ElseIf GadgetID = #AddVideo
 		      
 		ElseIf GadgetID = #MasterSlider
@@ -236,9 +248,9 @@ Repeat ; Start of the event loop
       		*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#EndPos))
       		*gCurrentCue\playTime = (*gCurrentCue\endPos - *gCurrentCue\startPos)
       	ElseIf GadgetID = #FadeIn
-      		*gCurrentCue\fadeIn = Val(GetGadgetText(#FadeIn))
+      		*gCurrentCue\fadeIn = ValF(GetGadgetText(#FadeIn))
       	ElseIf GadgetID = #FadeOut
-      		*gCurrentCue\fadeOut = Val(GetGadgetText(#FadeOut))
+      		*gCurrentCue\fadeOut = ValF(GetGadgetText(#FadeOut))
       	ElseIf GadgetID = #VolumeSlider
       		*gCurrentCue\volume = GetGadgetState(#VolumeSlider) / 100
       		UpdateCueControls()
@@ -288,6 +300,8 @@ Repeat ; Start of the event loop
 					*tmp\followCues() = *gCurrentCue
 				EndIf
 			EndIf
+		ElseIf GadgetID = #ChangeDur
+			*gCurrentCue\fadeIn = Val(GetGadgetText(#ChangeDur))
 		EndIf
 		     
 	EndIf
@@ -346,69 +360,111 @@ Procedure UpdateEditorList()
 	ProcedureReturn i
 EndProcedure
 
-Procedure HideCueControls(value)
-	;Otetaan tyyppi taltee
-	If *gCurrentCue <> 0
-		type = *gCurrentCue\cueType
-	EndIf
+Procedure HideCueControls()
+	gControlsHidden = #True
 	
-	;Kaikille yhteiset
-	HideGadget(#CueNameField,value)
-	HideGadget(#CueDescField,value)
-	HideGadget(#Text_3,value)
-	HideGadget(#Text_4,value)
-	HideGadget(#ModeSelect,value)
-	HideGadget(#Text_8,value)
-	HideGadget(#Text_16,value)
-	HideGadget(#Text_17,value)
-	HideGadget(#CueSelect,value)
-	HideGadget(#StartDelay,value)
-	
-	;***** Audioon liittyv‰t s‰‰timet
-	If type <> #TYPE_AUDIO And value = 0
-		audioValue = 1
-	Else
-		audioValue = value
-	EndIf
-	
-	HideGadget(#CueFileField,audioValue)
-	HideGadget(#OpenCueFile,audioValue)
-	HideGadget(#LengthField,audioValue)
-	HideGadget(#Text_6,audioValue)
-	HideGadget(#Text_9,audioValue)
-	HideGadget(#PreviewButton,audioValue)
-	HideGadget(#Text_10,audioValue)
-	HideGadget(#Text_11,audioValue)
-	HideGadget(#StartPos,audioValue)
-	HideGadget(#EndPos,audioValue)
-	HideGadget(#Text_12,audioValue)
-	HideGadget(#Text_13,audioValue)
-	HideGadget(#FadeIn,audioValue)
-	HideGadget(#FadeOut,audioValue)
-	HideGadget(#Text_14,audioValue)
-	HideGadget(#Text_15,audioValue)
-	HideGadget(#CueVolume,audioValue)
-	HideGadget(#CuePan,audioValue)
-	HideGadget(#VolumeSlider,audioValue)
-	HideGadget(#PanSlider,audioValue)
-	HideGadget(#WaveImg,audioValue)
-	;*****
-	
-	;***** Eventeihin liittyv‰t s‰‰timet
-	If type <> #TYPE_EVENT And value = 0
-		eventValue = 1
-	Else
-		eventValue = value
-	EndIf
-	
-	HideGadget(#Text_18,eventValue)
-	HideGadget(#Text_19,eventValue)
+	HideGadget(#CueNameField,1)
+	HideGadget(#CueDescField,1)
+	HideGadget(#Text_3,1)
+	HideGadget(#Text_4,1)
+	HideGadget(#ModeSelect,1)
+	HideGadget(#Text_8,1)
+	HideGadget(#Text_16,1)
+	HideGadget(#Text_17,1)
+	HideGadget(#CueSelect,1)
+	HideGadget(#StartDelay,1)
+	HideGadget(#CueFileField,1)
+	HideGadget(#OpenCueFile,1)
+	HideGadget(#LengthField,1)
+	HideGadget(#Text_6,1)
+	HideGadget(#Text_9,1)
+	HideGadget(#PreviewButton,1)
+	HideGadget(#Text_10,1)
+	HideGadget(#Text_11,1)
+	HideGadget(#StartPos,1)
+	HideGadget(#EndPos,1)
+	HideGadget(#Text_12,1)
+	HideGadget(#Text_13,1)
+	HideGadget(#FadeIn,1)
+	HideGadget(#FadeOut,1)
+	HideGadget(#Text_14,1)
+	HideGadget(#Text_15,1)
+	HideGadget(#CueVolume,1)
+	HideGadget(#CuePan,1)
+	HideGadget(#VolumeSlider,1)
+	HideGadget(#PanSlider,1)
+	HideGadget(#WaveImg,1)
+	HideGadget(#Text_18,1)
+	HideGadget(#Text_19,1)
+	HideGadget(#Text_20,1)
+	HideGadget(#ChangeDur,1)
 	
 	For i = 0 To 5
-		HideGadget(eventCueSelect(i),eventValue)
-		HideGadget(eventActionSelect(i),eventValue)
+		HideGadget(eventCueSelect(i),1)
+		HideGadget(eventActionSelect(i),1)
 	Next i
-	;******
+EndProcedure
+
+Procedure ShowCueControls()
+	If *gCurrentCue <> 0
+		HideCueControls()
+		
+		gControlsHidden = #False
+		HideGadget(#CueNameField,0)
+		HideGadget(#CueDescField,0)
+		HideGadget(#Text_3,0)
+		HideGadget(#Text_4,0)
+		HideGadget(#ModeSelect,0)
+		HideGadget(#Text_8,0)
+		HideGadget(#Text_16,0)
+		HideGadget(#Text_17,0)
+		HideGadget(#CueSelect,0)
+		HideGadget(#StartDelay,0)
+		
+		Select *gCurrentCue\cueType
+			Case #TYPE_AUDIO
+				HideGadget(#CueFileField,0)
+				HideGadget(#OpenCueFile,0)
+				HideGadget(#LengthField,0)
+				HideGadget(#Text_6,0)
+				HideGadget(#Text_9,0)
+				HideGadget(#PreviewButton,0)
+				HideGadget(#Text_10,0)
+				HideGadget(#Text_11,0)
+				HideGadget(#StartPos,0)
+				HideGadget(#EndPos,0)
+				HideGadget(#Text_12,0)
+				HideGadget(#Text_13,0)
+				HideGadget(#FadeIn,0)
+				HideGadget(#FadeOut,0)
+				HideGadget(#Text_14,0)
+				HideGadget(#Text_15,0)
+				HideGadget(#CueVolume,0)
+				HideGadget(#CuePan,0)
+				HideGadget(#VolumeSlider,0)
+				HideGadget(#PanSlider,0)
+				HideGadget(#WaveImg,0)
+			Case #TYPE_EVENT
+				HideGadget(#Text_18,0)
+				HideGadget(#Text_19,0)
+				
+				For i = 0 To 5
+					HideGadget(eventCueSelect(i),0)
+					HideGadget(eventActionSelect(i),0)
+				Next i
+			Case #TYPE_CHANGE
+				HideGadget(#Text_14,0)
+				HideGadget(#Text_15,0)
+				HideGadget(#CueVolume,0)
+				HideGadget(#CuePan,0)
+				HideGadget(#VolumeSlider,0)
+				HideGadget(#PanSlider,0)
+				HideGadget(#Text_20,0)
+				HideGadget(#ChangeDur,0)
+				HideGadget(#Text_18,0)
+				HideGadget(eventCueSelect(0),0)
+		EndSelect
+	EndIf
 EndProcedure
 
 Procedure UpdateCueControls()
@@ -421,8 +477,8 @@ Procedure UpdateCueControls()
 	SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
 	SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
 		
-	SetGadgetText(#FadeIn,Str(*gCurrentCue\fadeIn))
-	SetGadgetText(#FadeOut,Str(*gCurrentCue\fadeOut))
+	SetGadgetText(#FadeIn,StrF(*gCurrentCue\fadeIn,2))
+	SetGadgetText(#FadeOut,StrF(*gCurrentCue\fadeOut,2))
 		
 	SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 100)
 	SetGadgetState(#PanSlider,*gCurrentCue\pan * 100 + 100)
@@ -430,6 +486,8 @@ Procedure UpdateCueControls()
 	SetGadgetText(#CuePan,Str(*gCurrentCue\pan * 100))
 		
 	SetGadgetText(#StartDelay,StrF(*gCurrentCue\delay / 1000.0,2))
+	
+	SetGadgetText(#ChangeDur,StrF(*gCurrentCue\fadeIn,2))
 		
 	ClearGadgetItems(#CueSelect)
 	If *gCurrentCue\startMode = #START_AFTER_END Or *gCurrentCue\startMode = #START_AFTER_START
@@ -587,7 +645,13 @@ Procedure StartEvents(*cue.Cue)
 				EndSelect
 			EndIf
 		Next i
+	ElseIf *cue\cueType = #TYPE_CHANGE
+		If *cue\actionCues[0] <> 0
+			BASS_ChannelSlideAttribute(*cue\actionCues[0]\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
+			BASS_ChannelSlideAttribute(*cue\actionCues[0]\stream,#BASS_ATTRIB_PAN,*cue\pan,*cue\fadeIn * 1000)
+		EndIf
 	EndIf
+	
 EndProcedure
 
 Procedure UpdateCues()
@@ -680,7 +744,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 582
-; FirstLine = 341
-; Folding = I8
+; CursorPosition = 132
+; FirstLine = 93
+; Folding = Ay
 ; EnableXP
