@@ -12,14 +12,13 @@ Structure Cue
 	state.i
 	
 	startMode.i
-	delay.i
+	delay.f
 
 	*afterCue.Cue
 	List *followCues.Cue()
 	
-	startPos.d
-	endPos.d
-	playTime.i
+	startPos.f
+	endPos.f
 	
 	startTime.l
 	pauseTime.l
@@ -60,6 +59,8 @@ Enumeration 1
 	#EVENT_FADE_OUT
 	#EVENT_STOP
 EndEnumeration
+
+#FORMAT_VERSION = 1.0
 
 #WAVEFORM_W = 680
 
@@ -157,8 +158,84 @@ Procedure OnOff(value)
 	EndIf
 EndProcedure
 
+Procedure SaveCueList(path.s)
+	If GetExtensionPart(path) = ""
+		path = path + ".clf"
+	EndIf
+	
+	If FileSize(path) > -1
+		result = MessageRequester("Overwrite","File " + path + " already found. Do you want to overwrite it?",#PB_MessageRequester_YesNo)
+		
+		If result <> #PB_MessageRequester_Yes
+			ProcedureReturn #False
+		EndIf
+	EndIf
+	
+	If CreateFile(0,path)
+		;CLF
+		WriteByte(0,67)
+		WriteByte(0,76)
+		WriteByte(0,70)
+		
+		;Tiedostoformaatin versio
+		WriteFloat(0,#FORMAT_VERSION)
+		
+		;Cuejen lukum‰‰r‰
+		WriteInteger(0,gCueAmount)
+		
+		;**** Data
+		ForEach cueList()
+			WriteByte(0,cueList()\cueType)
+			
+			WriteString(0,cueList()\name)
+			WriteString(0,cueList()\desc)
+			
+			WriteString(0,cueList()\filePath)
+			
+			WriteByte(0,cueList()\startMode)
+			WriteFloat(0,cueList()\delay)
+			
+			WriteInteger(0,cueList()\afterCue\id)
+			
+			;Cuen j‰lkeiset cuet
+			WriteInteger(0,ListSize(cueList()\followCues()))
+			ForEach cueList()\followCues()
+				WriteInteger(0,cueList()\followCues()\id)
+			Next
+			
+			WriteFloat(0,cueList()\startPos)
+			WriteFloat(0,cueList()\endPos)
+			
+			WriteFloat(0,cueList()\fadeIn)
+			WriteFloat(0,cueList()\fadeOut)
+			
+			WriteFloat(0,cueList()\volume)
+			WriteFloat(0,cueList()\pan)
+			
+			;"Action cuet"
+			For i = 0 To 5
+				If cueList()\actionCues[i] <> 0
+					WriteInteger(0,cueList()\actionCues[i]\id)
+				Else
+					WriteInteger(0,0)
+				EndIf
+				
+				WriteByte(0,cueList()\actions[i])
+			Next i
+			
+			WriteInteger(0,cueList()\id)
+		Next
+	EndIf
+	
+	ProcedureReturn #True
+EndProcedure
+
+			
+		
+		
+		
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 77
-; FirstLine = 37
-; Folding = A-
+; CursorPosition = 231
+; FirstLine = 109
+; Folding = A+
 ; EnableXP

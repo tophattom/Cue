@@ -243,10 +243,8 @@ Repeat ; Start of the event loop
       		EndIf
       	ElseIf GadgetID = #StartPos
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
-      		*gCurrentCue\playTime = (*gCurrentCue\endPos - *gCurrentCue\startPos)
       	ElseIf GadgetID = #EndPos
       		*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#EndPos))
-      		*gCurrentCue\playTime = (*gCurrentCue\endPos - *gCurrentCue\startPos)
       	ElseIf GadgetID = #FadeIn
       		*gCurrentCue\fadeIn = ValF(GetGadgetText(#FadeIn))
       	ElseIf GadgetID = #FadeOut
@@ -744,7 +742,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 132
-; FirstLine = 93
+; CursorPosition = 246
+; FirstLine = 224
 ; Folding = Ay
 ; EnableXP
