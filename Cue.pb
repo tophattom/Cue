@@ -55,11 +55,23 @@ Repeat ; Start of the event loop
 			Debug "GadgetID: #MenuNew"
 		
 		ElseIf MenuID = #MenuOpen
-			Debug "GadgetID: #MenuOpen"
-		      
+			path.s = OpenFileRequester("Open cue list","","Cue list files (*.clf) |*.clf",0)
+			
+			If path <> ""
+				ClearList(cueList())
+				LoadCueList(path)
+				
+				*gCurrentCue = FirstElement(cueList())
+				UpdateMainCueList()
+				UpdateEditorList()
+				UpdateCueControls()
+			EndIf		      
 		ElseIf MenuID = #MenuSave
-			Debug "GadgetID: #MenuSave"
-		      
+			path.s = OpenFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+			
+			If path <> ""
+				SaveCueList(path)
+			EndIf  
 		ElseIf MenuID = #MenuSaveAs
 			Debug "GadgetID: #MenuSaveAs"
 		      
@@ -177,49 +189,7 @@ Repeat ; Start of the event loop
     			
     			Select *gCurrentCue\cueType
     				Case #TYPE_AUDIO
-    					If *gCurrentCue\stream <> 0
-    						BASS_StreamFree(*gCurrentCue\stream)
-    					EndIf
-    					
-    					*gCurrentCue\stream = BASS_StreamCreateFile(0,@path,0,0,0)
-    					
-    					*gCurrentCue\length = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetLength(*gCurrentCue\stream,#BASS_POS_BYTE))
-    					
-    					*gCurrentCue\startPos = 0
-    					*gCurrentCue\endPos = *gCurrentCue\length
-    					
-    					;****Aallon piirto
-    					tmpStream.l = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE |#BASS_SAMPLE_FLOAT)
-    					length.l = BASS_ChannelGetLength(tmpStream,#BASS_POS_BYTE)
-    					Dim buffer.f(length / 4)
-    					
-    					BASS_ChannelGetData(tmpStream,@buffer(0), length)
-    					
-    					amount = ArraySize(buffer())
-    					s = amount / #WAVEFORM_W
-    					pos = 0
-    					
-    					If *gCurrentCue\waveform = 0
-    						*gCurrentCue\waveform = CreateImage(#PB_Any,#WAVEFORM_W,120)
-    					EndIf
-    					
-    					StartDrawing(ImageOutput(*gCurrentCue\waveform))
-    					Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
-    					For i = 0 To #WAVEFORM_W - 1
-    						maxValue.f = 0.0
-    						minValue.f = 1000.0
-    						For k = (i * s) To (i * s + s)
-    							If buffer(k) > maxValue
-    								maxValue = buffer(k)
-    							EndIf
-    						Next k
-    						
-    						LineXY(i,60,i,60 + 55 * (maxValue),RGB(200,200,250))
-    						LineXY(i,60,i,60 - 55 * (maxValue),RGB(200,200,250))
-    					Next i
-    					StopDrawing()
-    						
-    					;********
+    					LoadCueStream(*gCurrentCue,path)
     			EndSelect
     			
     			If *gCurrentCue\desc = ""
@@ -742,7 +712,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 246
-; FirstLine = 224
-; Folding = Ay
+; CursorPosition = 63
+; FirstLine = 28
+; Folding = Aw
 ; EnableXP
