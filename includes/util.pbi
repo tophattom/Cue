@@ -80,7 +80,7 @@ Global gLastType = 0
 
 
 
-Procedure AddCue(type.i)
+Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 	LastElement(cueList())
 	AddElement(cueList())
 	
@@ -90,7 +90,11 @@ Procedure AddCue(type.i)
 	With cueList()
 		\cueType = type
 		
-		\name = "Q" + Str(gCueCounter)
+		If name = ""
+			\name = "Q" + Str(gCueCounter)
+		Else
+			\name = name
+		EndIf
 
 		\state = #STATE_STOPPED
 		
@@ -100,7 +104,11 @@ Procedure AddCue(type.i)
 		\volume = 1
 		\pan = 0
 		
-		\id = gCueCounter
+		If id = 0
+			\id = gCueCounter
+		Else
+			\id = id
+		EndIf
 	EndWith
 	
 	ProcedureReturn @cueList()
@@ -230,12 +238,33 @@ Procedure SaveCueList(path.s)
 	ProcedureReturn #True
 EndProcedure
 
-			
+Procedure LoadCueList(path.s)
+	If GetExtensionPart(path) = ""
+		path = path + ".clf"
+	EndIf
+	
+	If ReadFile(0,path)
+		tmp.s = Chr(ReadByte(0)) + Chr(ReadByte(0)) + Chr(ReadByte(0))
+		
+		If tmp <> "CLF"
+			MessageRequester("Error","File type not supported!")
+			ProcedureReturn #False
+		EndIf
+		
+		version.f = ReadFloat(0)
+		
+		tmpAmount = ReadInteger(0)
+		
+		For i = 1 To tmpAmount
+		Next i
+	EndIf
+EndProcedure
+
 		
 		
 		
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 231
-; FirstLine = 109
-; Folding = A+
+; CursorPosition = 261
+; FirstLine = 176
+; Folding = B+
 ; EnableXP
