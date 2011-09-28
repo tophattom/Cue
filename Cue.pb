@@ -23,9 +23,7 @@ HideCueControls()
 
 BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
 
-
 Repeat ; Start of the event loop
-	
 	Event = WindowEvent() ; This line waits until an event is received from Windows
 	WindowID = EventWindow() ; The Window where the event is generated, can be used in the gadget procedures
 	GadgetID = EventGadget() ; Is it a gadget event?
@@ -205,12 +203,30 @@ Repeat ; Start of the event loop
     	ElseIf GadgetID = #ModeSelect
     		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
     		UpdateCueControls()
-      	ElseIf GadgetID = #PreviewButton
-      		If GetGadgetState(#PreviewButton) = 1
-      			PlayCue(*gCurrentCue)
-      		Else
-      			StopCue(*gCurrentCue)
-      		EndIf
+    	ElseIf GadgetID = #EditorPlay
+    		If *gCurrentCue\state = #STATE_PAUSED
+    			PauseCue(*gCurrentCue)
+    		ElseIf *gCurrentCue\state <> #STATE_PLAYING
+    			PlayCue(*gCurrentCue)
+    		EndIf
+    		
+    		SetGadgetState(#EditorPause,0)
+    		SetGadgetState(#EditorPlay,1)
+    	ElseIf GadgetID = #EditorPause
+    		If *gCurrentCue\state <> #STATE_STOPPED
+	    		PauseCue(*gCurrentCue)
+	    		
+	    		If *gCurrentCue\state = #STATE_PAUSED
+	    			SetGadgetState(#EditorPlay,0)
+	    		Else
+	    			SetGadgetState(#EditorPlay,1)
+	    		EndIf
+	    	EndIf
+    	ElseIf GadgetID = #EditorStop
+    		StopCue(*gCurrentCue)
+    		
+    		SetGadgetState(#EditorPlay,0)
+    		SetGadgetState(#EditorPause,0)
       	ElseIf GadgetID = #StartPos
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
       	ElseIf GadgetID = #EndPos
@@ -346,7 +362,6 @@ Procedure HideCueControls()
 	HideGadget(#LengthField,1)
 	HideGadget(#Text_6,1)
 	HideGadget(#Text_9,1)
-	HideGadget(#PreviewButton,1)
 	HideGadget(#Text_10,1)
 	HideGadget(#Text_11,1)
 	HideGadget(#StartPos,1)
@@ -366,6 +381,9 @@ Procedure HideCueControls()
 	HideGadget(#Text_19,1)
 	HideGadget(#Text_20,1)
 	HideGadget(#ChangeDur,1)
+	HideGadget(#EditorPlay,1)
+	HideGadget(#EditorPause,1)
+	HideGadget(#EditorStop,1)
 	
 	For i = 0 To 5
 		HideGadget(eventCueSelect(i),1)
@@ -396,7 +414,6 @@ Procedure ShowCueControls()
 				HideGadget(#LengthField,0)
 				HideGadget(#Text_6,0)
 				HideGadget(#Text_9,0)
-				HideGadget(#PreviewButton,0)
 				HideGadget(#Text_10,0)
 				HideGadget(#Text_11,0)
 				HideGadget(#StartPos,0)
@@ -412,6 +429,9 @@ Procedure ShowCueControls()
 				HideGadget(#VolumeSlider,0)
 				HideGadget(#PanSlider,0)
 				HideGadget(#WaveImg,0)
+				HideGadget(#EditorPlay,0)
+				HideGadget(#EditorPause,0)
+				HideGadget(#EditorStop,0)
 			Case #TYPE_EVENT
 				HideGadget(#Text_18,0)
 				HideGadget(#Text_19,0)
@@ -492,7 +512,7 @@ Procedure UpdateCueControls()
 	If *gCurrentCue\waveform <> 0
 		SetGadgetState(#WaveImg,ImageID(*gCurrentCue\waveform))
 	Else
-		SetGadgetState(#WaveImg,0)
+		SetGadgetState(#WaveImg,ImageID(#BlankWave))
 	EndIf
 	
 	
@@ -566,6 +586,7 @@ Procedure StopCue(*cue.Cue)
 	If *cue\stream <> 0
 		*cue\state = #STATE_STOPPED
 		BASS_ChannelStop(*cue\stream)
+		BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
 		
 		ForEach *cue\followCues()
 			If *cue\followCues()\startMode = #START_AFTER_END
@@ -712,7 +733,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 63
-; FirstLine = 28
-; Folding = Aw
+; CursorPosition = 415
+; FirstLine = 386
+; Folding = +x
 ; EnableXP

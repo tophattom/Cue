@@ -56,7 +56,6 @@ Enumeration
   #Text_8
   #Text_9
   #LengthField
-  #PreviewButton
   #StartPos
   #EndPos
   #Text_10
@@ -86,6 +85,13 @@ Enumeration
   #Text_19
   #Text_20
   #ChangeDur
+  #PlayImg
+  #PauseImg
+  #StopImg
+  #EditorPlay
+  #EditorPause
+  #EditorStop
+  #BlankWave
 EndEnumeration
 
 Global Dim eventCueSelect(5)
@@ -144,6 +150,15 @@ Procedure Open_EditorWindow()
     LoadImage(#DeleteImg,"Images/delete.ico")
     LoadImage(#UpImg,"Images/up.ico")
     LoadImage(#DownImg,"Images/down.ico")
+    LoadImage(#PlayImg,"Images/eplay.ico")
+    LoadImage(#PauseImg,"Images/epause.ico")
+    LoadImage(#StopImg,"Images/estop.ico")
+    
+    CreateImage(#BlankWave, #WAVEFORM_W, 120)
+    StartDrawing(ImageOutput(#BlankWave))
+    Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
+    StopDrawing()
+    
     ButtonImageGadget(#DeleteButton, 180, 660, 30, 30, ImageID(#DeleteImg))
     ButtonImageGadget(#UpButton, 10, 660, 30, 30, ImageID(#UpImg))
     ButtonImageGadget(#DownButton, 45, 660, 30, 30, ImageID(#DownImg))
@@ -162,9 +177,7 @@ Procedure Open_EditorWindow()
       ButtonGadget(#OpenCueFile, 600, 140, 30, 20, "...")
       TextGadget(#Text_9, 220, 170, 60, 20, "Length:")
       StringGadget(#LengthField, 290, 170, 50, 20, "",#PB_String_ReadOnly)
-      
-      ButtonGadget(#PreviewButton, 470, 230, 50, 20, "Preview", #PB_Button_Toggle)
-      
+
       TextGadget(#Text_10, 220, 230, 40, 20, "Start:")
       StringGadget(#StartPos, 260, 230, 50, 20, "")
       TextGadget(#Text_11, 360, 230, 40, 20, "End:")
@@ -201,6 +214,10 @@ Procedure Open_EditorWindow()
       
       ImageGadget(#WaveImg, 220, 380, #WAVEFORM_W, 120, 0)
       
+      ButtonImageGadget(#EditorPlay, 220, 505, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorPause, 255, 505, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorStop, 290, 505, 30, 30, ImageID(#StopImg))
+      
       ;Event cue
       TextGadget(#Text_18, 220, 260, 40, 20, "Cue:")
       TextGadget(#Text_19, 490, 260, 40, 20, "Action:")
@@ -219,7 +236,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 205
-; FirstLine = 120
+; CursorPosition = 57
+; FirstLine = 38
 ; Folding = +
 ; EnableXP
