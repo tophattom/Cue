@@ -12,6 +12,7 @@ Declare UpdateCueControls()
 Declare PlayCue(*cue.Cue)
 Declare PauseCue(*cue.Cue)
 Declare StopCue(*cue.Cue)
+Declare LoopProc(handle.l,channel.l,d,*user.Cue)
 Declare StartEvents(*cue.Cue)
 Declare UpdateCues()
 Declare UpdateMainCueList()
@@ -188,6 +189,7 @@ Repeat ; Start of the event loop
     			Select *gCurrentCue\cueType
     				Case #TYPE_AUDIO
     					LoadCueStream(*gCurrentCue,path)
+    					
     			EndSelect
     			
     			If *gCurrentCue\desc = ""
@@ -286,6 +288,26 @@ Repeat ; Start of the event loop
 			EndIf
 		ElseIf GadgetID = #ChangeDur
 			*gCurrentCue\fadeIn = Val(GetGadgetText(#ChangeDur))
+		ElseIf GadgetID = #LoopEnable
+			If GetGadgetState(#LoopEnable) = #PB_Checkbox_Checked
+				*gCurrentCue\looped = #True
+				DisableGadget(#LoopStart, 0)
+				DisableGadget(#LoopEnd, 0)
+			Else
+				*gCurrentCue\looped = #False
+				
+				If *gCurrentCue\loopHandle <> 0
+					BASS_ChannelRemoveSync(*gCurrentCue\stream,*gCurrentCue\loopHandle)
+					*gCurrentCue\loopHandle = 0
+				EndIf
+				
+				DisableGadget(#LoopStart, 1)
+				DisableGadget(#LoopEnd, 1)
+			EndIf
+		ElseIf GadgetID = #LoopStart
+			*gCurrentCue\loopStart = StringToSeconds(GetGadgetText(#LoopStart))
+		ElseIf GadgetID = #LoopEnd
+			*gCurrentCue\loopEnd = StringToSeconds(GetGadgetText(#LoopEnd))
 		EndIf
 		     
 	EndIf
@@ -384,6 +406,11 @@ Procedure HideCueControls()
 	HideGadget(#EditorPlay,1)
 	HideGadget(#EditorPause,1)
 	HideGadget(#EditorStop,1)
+	HideGadget(#LoopStart, 1)
+	HideGadget(#LoopEnd, 1)
+	HideGadget(#LoopEnable, 1)
+	HideGadget(#Text_21, 1)
+	HideGadget(#Text_22, 1)
 	
 	For i = 0 To 5
 		HideGadget(eventCueSelect(i),1)
@@ -432,6 +459,11 @@ Procedure ShowCueControls()
 				HideGadget(#EditorPlay,0)
 				HideGadget(#EditorPause,0)
 				HideGadget(#EditorStop,0)
+				HideGadget(#LoopStart, 0)
+				HideGadget(#LoopEnd, 0)
+				HideGadget(#LoopEnable, 0)
+				HideGadget(#Text_21, 0)
+				HideGadget(#Text_22, 0)
 			Case #TYPE_EVENT
 				HideGadget(#Text_18,0)
 				HideGadget(#Text_19,0)
@@ -467,6 +499,9 @@ Procedure UpdateCueControls()
 		
 	SetGadgetText(#FadeIn,StrF(*gCurrentCue\fadeIn,2))
 	SetGadgetText(#FadeOut,StrF(*gCurrentCue\fadeOut,2))
+	
+	SetGadgetText(#LoopStart,SecondsToString(*gCurrentCue\loopStart))
+	SetGadgetText(#LoopEnd, SecondsToString(*gCurrentCue\loopEnd))
 		
 	SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 100)
 	SetGadgetState(#PanSlider,*gCurrentCue\pan * 100 + 100)
@@ -560,6 +595,14 @@ Procedure PlayCue(*cue.Cue)
 			BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
 			BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume)
 			BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_PAN,*cue\pan)
+			
+			If *cue\looped = #True
+				If *cue\loopHandle <> 0
+					BASS_ChannelRemoveSync(*cue\stream,*cue\loopHandle)
+					*cue\loopHandle = 0
+				EndIf
+				*cue\loopHandle = BASS_ChannelSetSync(*cue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\loopEnd),@LoopProc(),*cue)
+			EndIf
 			BASS_ChannelPlay(*cue\stream,0)
 			
 			If *cue\fadeIn > 0
@@ -621,6 +664,10 @@ Procedure PauseCue(*cue.Cue)
 	EndIf
 EndProcedure
 
+Procedure LoopProc(handle.l,channel.l,d,*user.Cue)
+	BASS_ChannelSetPosition(channel,BASS_ChannelSeconds2Bytes(channel,*user\loopStart),#BASS_POS_BYTE)
+EndProcedure
+	
 Procedure StartEvents(*cue.Cue)
 	If *cue\cueType = #TYPE_EVENT
 		For i = 0 To 5
@@ -733,7 +780,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 415
-; FirstLine = 386
-; Folding = +x
+; CursorPosition = 302
+; FirstLine = 257
+; Folding = Qi
 ; EnableXP

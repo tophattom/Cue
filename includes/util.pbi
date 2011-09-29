@@ -20,6 +20,11 @@ Structure Cue
 	startPos.f
 	endPos.f
 	
+	loopStart.f
+	loopEnd.f
+	loopHandle.l
+	looped.i
+	
 	startTime.l
 	pauseTime.l
 	duration.l
@@ -380,7 +385,6 @@ EndProcedure
 		
 		
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 332
-; FirstLine = 172
-; Folding = D5
+; CursorPosition = 25
+; Folding = Aw
 ; EnableXP

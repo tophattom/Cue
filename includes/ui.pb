@@ -92,6 +92,11 @@ Enumeration
   #EditorPause
   #EditorStop
   #BlankWave
+  #Text_21
+  #Text_22
+  #LoopStart
+  #LoopEnd
+  #LoopEnable
 EndEnumeration
 
 Global Dim eventCueSelect(5)
@@ -188,6 +193,14 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_13, 350, 260, 50, 30, "Fade out:")
       StringGadget(#FadeOut, 400, 260, 50, 20, "")
       
+      TextGadget(#Text_21, 220, 290, 40, 30, "Loop start:")
+      StringGadget(#LoopStart, 260, 290, 50, 20, "")
+      DisableGadget(#LoopStart, 1)
+      TextGadget(#Text_22, 350, 290, 40, 30, "Loop end:")
+      StringGadget(#LoopEnd, 400, 290, 50, 20, "")
+      DisableGadget(#LoopEnd, 1)
+      CheckBoxGadget(#LoopEnable, 480, 290, 40, 20, "Loop")
+      
       TextGadget(#Text_14, 540, 230, 40, 20, "Volume:")
       TrackBarGadget(#VolumeSlider, 600, 230, 100, 30, 0, 100)
       StringGadget(#CueVolume, 720, 230, 40, 20, "", #PB_String_ReadOnly)
@@ -236,7 +249,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 57
-; FirstLine = 38
+; CursorPosition = 200
+; FirstLine = 125
 ; Folding = +
 ; EnableXP
