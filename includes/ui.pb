@@ -122,6 +122,12 @@ Procedure Open_MainWindow()
       MenuItem(#MenuExit, "Exit")
       MenuTitle("Help")
       MenuItem(#MenuAbout, "About")
+      
+      AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_N,#MenuNew)
+      AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_O,#MenuOpen)
+      AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_S,#MenuSave)
+      AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_Alt | #PB_Shortcut_N,#MenuSaveAs)
+      
     EndIf
 
       ;If CreateGadgetList(WindowID(#MainWindow))
@@ -254,7 +260,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 206
-; FirstLine = 139
-; Folding = +
+; CursorPosition = 128
+; FirstLine = 94
+; Folding = 0
 ; EnableXP

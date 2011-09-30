@@ -57,6 +57,7 @@ Repeat ; Start of the event loop
 			path.s = OpenFileRequester("Open cue list","","Cue list files (*.clf) |*.clf",0)
 			
 			If path <> ""
+				gSavePath = path
 				ClearList(cueList())
 				LoadCueList(path)
 				
@@ -66,14 +67,22 @@ Repeat ; Start of the event loop
 				UpdateCueControls()
 			EndIf		      
 		ElseIf MenuID = #MenuSave
-			path.s = OpenFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+			If gSavePath = ""
+				check = 1
+				gSavePath = OpenFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+			Else
+				check = 0
+			endif
 			
-			If path <> ""
-				SaveCueList(path)
+			If gSavePath <> ""
+				SaveCueList(gSavePath,check)
 			EndIf  
 		ElseIf MenuID = #MenuSaveAs
-			Debug "GadgetID: #MenuSaveAs"
-		      
+			gSavePath = OpenFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+			
+			If gSavePath <> ""
+				SaveCueList(gSavePath)
+			EndIf
 		ElseIf MenuID = #MenuPref
 			Debug "GadgetID: #MenuPref"
 		      
@@ -829,7 +838,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 520
-; FirstLine = 336
-; Folding = Ig
+; CursorPosition = 74
+; FirstLine = 34
+; Folding = Ag
 ; EnableXP

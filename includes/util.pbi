@@ -86,6 +86,7 @@ Global gEditor = #False
 Global gControlsHidden = #False
 Global gLastType = 0
 
+Global gSavePath.s = ""
 
 
 Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
@@ -218,16 +219,18 @@ Procedure OnOff(value)
 	EndIf
 EndProcedure
 
-Procedure SaveCueList(path.s)
+Procedure SaveCueList(path.s,check=1)
 	If GetExtensionPart(path) = ""
 		path = path + ".clf"
 	EndIf
 	
-	If FileSize(path) > -1
-		result = MessageRequester("Overwrite?","File " + path + " already found. Do you want to overwrite it?",#PB_MessageRequester_YesNo)
-		
-		If result <> #PB_MessageRequester_Yes
-			ProcedureReturn #False
+	If check = 1
+		If FileSize(path) > -1
+			result = MessageRequester("Overwrite?","File " + path + " already found. Do you want to overwrite it?",#PB_MessageRequester_YesNo)
+			
+			If result <> #PB_MessageRequester_Yes
+				ProcedureReturn #False
+			EndIf
 		EndIf
 	EndIf
 	
@@ -326,12 +329,18 @@ Procedure LoadCueList(path.s)
 		;Cuejen m‰‰r‰
 		tmpAmount = ReadInteger(0)
 		
+		gCueAmount = 0
+		gCueCounter = 0
+		
 		;Luetaan idt ja luodaan cuet
 		For i = 1 To tmpAmount
 			AddElement(cueList())
 			cueList()\id = ReadInteger(0)
 			
 			cueList()\state = #STATE_STOPPED
+			
+			gCueAmount + 1
+			gCueCounter + 1
 		Next i
 		
 		;Luetaan cuejen tiedot
@@ -377,10 +386,10 @@ Procedure LoadCueList(path.s)
 				For k = 0 To 5
 					tmpId = ReadInteger(0)
 					If tmpId <> 0
-						\actionCues[i] = GetCueById(tmpId)
+						\actionCues[k] = GetCueById(tmpId)
 					EndIf
 					
-					\actions[i] = ReadByte(0)
+					\actions[k] = ReadByte(0)
 				Next k
 			EndWith
 		Next
@@ -398,7 +407,7 @@ EndProcedure
 		
 		
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 70
-; FirstLine = 30
-; Folding = Aw
+; CursorPosition = 391
+; FirstLine = 232
+; Folding = A9
 ; EnableXP
