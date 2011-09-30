@@ -145,6 +145,8 @@ Repeat ; Start of the event loop
 			If *gCurrentCue <> 0
 				UpdateCueControls()
 			EndIf
+			
+			gEditor = #True
 		ElseIf GadgetID = #EditorList
 			*gCurrentCue = GetGadgetItemData(#EditorList,GetGadgetState(#EditorList))
 			
@@ -231,16 +233,8 @@ Repeat ; Start of the event loop
     		SetGadgetState(#EditorPause,0)
       	ElseIf GadgetID = #StartPos
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
-      		
-      		If *gCurrentCue\startPos > *gCurrentCue\loopStart
-      			*gCurrentCue\loopStart = *gCurrentCue\startPos
-      		EndIf
       	ElseIf GadgetID = #EndPos
       		*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#EndPos))
-      		
-      		If *gCurrentCue\endPos < *gCurrentCue\loopEnd
-      			*gCurrentCue\loopEnd = *gCurrentCue\endPos
-      		EndIf
       	ElseIf GadgetID = #FadeIn
       		*gCurrentCue\fadeIn = ValF(GetGadgetText(#FadeIn))
       	ElseIf GadgetID = #FadeOut
@@ -520,6 +514,17 @@ Procedure UpdateCueControls()
 	SetGadgetText(#LoopStart,SecondsToString(*gCurrentCue\loopStart))
 	SetGadgetText(#LoopEnd, SecondsToString(*gCurrentCue\loopEnd))
 	SetGadgetText(#LoopCount, Str(*gCurrentCue\loopCount))
+	If *gCurrentCue\looped = #True
+		SetGadgetState(#LoopEnable,#PB_Checkbox_Checked)
+		DisableGadget(#LoopStart, 0)
+		DisableGadget(#LoopEnd, 0)
+		DisableGadget(#LoopCount, 0)
+	Else
+		SetGadgetState(#LoopEnable,#PB_Checkbox_Unchecked)
+		DisableGadget(#LoopStart, 1)
+		DisableGadget(#LoopEnd, 1)
+		DisableGadget(#LoopCount, 1)
+	EndIf
 		
 	SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 100)
 	SetGadgetState(#PanSlider,*gCurrentCue\pan * 100 + 100)
@@ -591,6 +596,8 @@ Procedure UpdateCueControls()
 		SetGadgetItemData(eventActionSelect(i), 0, #EVENT_FADE_OUT)
 		AddGadgetItem(eventActionSelect(i), 1, "Stop")
 		SetGadgetItemData(eventActionSelect(i), 1, #EVENT_STOP)
+		AddGadgetItem(eventActionSelect(i), 2, "Release loop")
+		SetGadgetItemData(eventActionSelect(i), 2, #EVENT_RELEASE)
 		
 		If *gCurrentCue\actions[i] = #EVENT_FADE_OUT
 			SetGadgetState(eventActionSelect(i), 0)
@@ -649,11 +656,16 @@ Procedure StopCue(*cue.Cue)
 		BASS_ChannelStop(*cue\stream)
 		BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
 		
-		ForEach *cue\followCues()
-			If *cue\followCues()\startMode = #START_AFTER_END
-				PlayCue(*cue\followCues())
-			EndIf
-		Next
+		If gEditor = #False
+			ForEach *cue\followCues()
+				If *cue\followCues()\startMode = #START_AFTER_END
+					PlayCue(*cue\followCues())
+				EndIf
+			Next
+		Else
+			SetGadgetState(#EditorPlay, 0)
+			SetGadgetState(#EditorPause, 0)
+		EndIf
 		
 		*cue\loopsDone = 0
 		
@@ -707,6 +719,12 @@ Procedure StartEvents(*cue.Cue)
 						BASS_ChannelSlideAttribute(*cue\actionCues[i]\stream,#BASS_ATTRIB_VOL,0,*cue\actionCues[i]\fadeOut * 1000)
 					Case #EVENT_STOP
 						StopCue(*cue\actionCues[i])
+					Case #EVENT_RELEASE
+						If *cue\actionCues[i]\loopHandle <> 0
+							BASS_ChannelRemoveSync(*cue\actionCues[i]\stream,*cue\actionCues[i]\loopHandle)
+							*cue\actionCues[i]\loopHandle = 0
+							*cue\actionCues[i]\loopsDone = 0
+						EndIf
 				EndSelect
 			EndIf
 		Next i
@@ -811,7 +829,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 316
-; FirstLine = 274
-; Folding = Ai
+; CursorPosition = 520
+; FirstLine = 336
+; Folding = Ig
 ; EnableXP

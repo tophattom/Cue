@@ -65,9 +65,10 @@ Enumeration 1
 	
 	#EVENT_FADE_OUT
 	#EVENT_STOP
+	#EVENT_RELEASE
 EndEnumeration
 
-#FORMAT_VERSION = 1.0
+#FORMAT_VERSION = 2.0
 
 #WAVEFORM_W = 680
 
@@ -132,7 +133,6 @@ Procedure LoadCueStream(*cue.Cue,path.s)
     
     *cue\startPos = 0
     *cue\endPos = *cue\length
-    *cue\loopEnd = *cue\length
     
     ;****Aallon piirto
     tmpStream.l = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE |#BASS_SAMPLE_FLOAT)
@@ -276,6 +276,11 @@ Procedure SaveCueList(path.s)
 			WriteFloat(0,cueList()\startPos)
 			WriteFloat(0,cueList()\endPos)
 			
+			WriteByte(0,cueList()\looped)
+			WriteFloat(0,cueList()\loopStart)
+			WriteFloat(0,cueList()\loopEnd)
+			WriteInteger(0,cueList()\loopCount)
+			
 			WriteFloat(0,cueList()\fadeIn)
 			WriteFloat(0,cueList()\fadeOut)
 			
@@ -358,6 +363,11 @@ Procedure LoadCueList(path.s)
 				\startPos = ReadFloat(0)
 				\endPos = ReadFloat(0)
 				
+				\looped = ReadByte(0)
+				\loopStart = ReadFloat(0)
+				\loopEnd = ReadFloat(0)
+				\loopStart = ReadFloat(0)
+				
 				\fadeIn = ReadFloat(0)
 				\fadeOut = ReadFloat(0)
 				
@@ -388,7 +398,7 @@ EndProcedure
 		
 		
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 134
-; FirstLine = 60
-; Folding = Cw
+; CursorPosition = 70
+; FirstLine = 30
+; Folding = Aw
 ; EnableXP
