@@ -22,6 +22,8 @@ Structure Cue
 	
 	loopStart.f
 	loopEnd.f
+	loopCount.i
+	loopsDone.i
 	loopHandle.l
 	looped.i
 	
@@ -130,6 +132,7 @@ Procedure LoadCueStream(*cue.Cue,path.s)
     
     *cue\startPos = 0
     *cue\endPos = *cue\length
+    *cue\loopEnd = *cue\length
     
     ;****Aallon piirto
     tmpStream.l = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE |#BASS_SAMPLE_FLOAT)
@@ -385,6 +388,7 @@ EndProcedure
 		
 		
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 25
-; Folding = Aw
+; CursorPosition = 134
+; FirstLine = 60
+; Folding = Cw
 ; EnableXP

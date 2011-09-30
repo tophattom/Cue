@@ -231,8 +231,16 @@ Repeat ; Start of the event loop
     		SetGadgetState(#EditorPause,0)
       	ElseIf GadgetID = #StartPos
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
+      		
+      		If *gCurrentCue\startPos > *gCurrentCue\loopStart
+      			*gCurrentCue\loopStart = *gCurrentCue\startPos
+      		EndIf
       	ElseIf GadgetID = #EndPos
       		*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#EndPos))
+      		
+      		If *gCurrentCue\endPos < *gCurrentCue\loopEnd
+      			*gCurrentCue\loopEnd = *gCurrentCue\endPos
+      		EndIf
       	ElseIf GadgetID = #FadeIn
       		*gCurrentCue\fadeIn = ValF(GetGadgetText(#FadeIn))
       	ElseIf GadgetID = #FadeOut
@@ -293,6 +301,7 @@ Repeat ; Start of the event loop
 				*gCurrentCue\looped = #True
 				DisableGadget(#LoopStart, 0)
 				DisableGadget(#LoopEnd, 0)
+				DisableGadget(#LoopCount, 0)
 			Else
 				*gCurrentCue\looped = #False
 				
@@ -303,11 +312,15 @@ Repeat ; Start of the event loop
 				
 				DisableGadget(#LoopStart, 1)
 				DisableGadget(#LoopEnd, 1)
+				DisableGadget(#LoopCount, 1)
 			EndIf
+			UpdateCueControls()
 		ElseIf GadgetID = #LoopStart
 			*gCurrentCue\loopStart = StringToSeconds(GetGadgetText(#LoopStart))
 		ElseIf GadgetID = #LoopEnd
 			*gCurrentCue\loopEnd = StringToSeconds(GetGadgetText(#LoopEnd))
+		ElseIf GadgetID = #LoopCount
+			*gCurrentCue\loopCount = Val(GetGadgetText(#LoopCount))
 		EndIf
 		     
 	EndIf
@@ -408,9 +421,11 @@ Procedure HideCueControls()
 	HideGadget(#EditorStop,1)
 	HideGadget(#LoopStart, 1)
 	HideGadget(#LoopEnd, 1)
+	HideGadget(#LoopCount, 1)
 	HideGadget(#LoopEnable, 1)
 	HideGadget(#Text_21, 1)
 	HideGadget(#Text_22, 1)
+	HideGadget(#Text_23, 1)
 	
 	For i = 0 To 5
 		HideGadget(eventCueSelect(i),1)
@@ -461,9 +476,11 @@ Procedure ShowCueControls()
 				HideGadget(#EditorStop,0)
 				HideGadget(#LoopStart, 0)
 				HideGadget(#LoopEnd, 0)
+				HideGadget(#LoopCount, 0)
 				HideGadget(#LoopEnable, 0)
 				HideGadget(#Text_21, 0)
 				HideGadget(#Text_22, 0)
+				HideGadget(#Text_23, 0)
 			Case #TYPE_EVENT
 				HideGadget(#Text_18,0)
 				HideGadget(#Text_19,0)
@@ -502,6 +519,7 @@ Procedure UpdateCueControls()
 	
 	SetGadgetText(#LoopStart,SecondsToString(*gCurrentCue\loopStart))
 	SetGadgetText(#LoopEnd, SecondsToString(*gCurrentCue\loopEnd))
+	SetGadgetText(#LoopCount, Str(*gCurrentCue\loopCount))
 		
 	SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 100)
 	SetGadgetState(#PanSlider,*gCurrentCue\pan * 100 + 100)
@@ -637,6 +655,8 @@ Procedure StopCue(*cue.Cue)
 			EndIf
 		Next
 		
+		*cue\loopsDone = 0
+		
 		ProcedureReturn #True
 	Else
 		ProcedureReturn #False
@@ -666,6 +686,15 @@ EndProcedure
 
 Procedure LoopProc(handle.l,channel.l,d,*user.Cue)
 	BASS_ChannelSetPosition(channel,BASS_ChannelSeconds2Bytes(channel,*user\loopStart),#BASS_POS_BYTE)
+	
+	If *user\loopCount > 0
+		*user\loopsDone + 1
+		If *user\loopsDone = *user\loopCount
+			BASS_ChannelRemoveSync(channel,*user\loopHandle)
+			*user\loopHandle = 0
+			*user\loopsDone = 0
+		EndIf
+	EndIf
 EndProcedure
 	
 Procedure StartEvents(*cue.Cue)
@@ -695,15 +724,17 @@ Procedure UpdateCues()
 		If cueList()\state = #STATE_PLAYING		
 			pos = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
 			
-			If cueList()\fadeOut > 0
-				If pos >= (cueList()\endPos - cueList()\fadeOut) And BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL) = 0
-					cueList()\state = #STATE_FADING_OUT
-					BASS_ChannelSlideAttribute(cueList()\stream,#BASS_ATTRIB_VOL,0,cueList()\fadeOut * 1000)
+			If cueList()\loopHandle = 0
+				If cueList()\fadeOut > 0
+					If pos >= (cueList()\endPos - cueList()\fadeOut) And BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL) = 0
+						cueList()\state = #STATE_FADING_OUT
+						BASS_ChannelSlideAttribute(cueList()\stream,#BASS_ATTRIB_VOL,0,cueList()\fadeOut * 1000)
+					EndIf
 				EndIf
-			EndIf
-			
-			If pos >= cueList()\endPos ;And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
-				StopCue(@cueList())
+				
+				If pos >= cueList()\endPos ;And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
+					StopCue(@cueList())
+				EndIf
 			EndIf
 		ElseIf cueList()\state = #STATE_WAITING
 			If ElapsedMilliseconds() >= (cueList()\startTime + cueList()\delay)
@@ -780,7 +811,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 302
-; FirstLine = 257
-; Folding = Qi
+; CursorPosition = 316
+; FirstLine = 274
+; Folding = Ai
 ; EnableXP

@@ -94,8 +94,10 @@ Enumeration
   #BlankWave
   #Text_21
   #Text_22
+  #Text_23
   #LoopStart
   #LoopEnd
+  #LoopCount
   #LoopEnable
 EndEnumeration
 
@@ -199,7 +201,10 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_22, 350, 290, 40, 30, "Loop end:")
       StringGadget(#LoopEnd, 400, 290, 50, 20, "")
       DisableGadget(#LoopEnd, 1)
-      CheckBoxGadget(#LoopEnable, 480, 290, 40, 20, "Loop")
+      TextGadget(#Text_23, 480, 290, 40, 30, "Loop count:")
+      StringGadget(#LoopCount, 530, 290, 50, 20, "")
+      DisableGadget(#LoopCount, 1)
+      CheckBoxGadget(#LoopEnable, 610, 290, 40, 20, "Loop")
       
       TextGadget(#Text_14, 540, 230, 40, 20, "Volume:")
       TrackBarGadget(#VolumeSlider, 600, 230, 100, 30, 0, 100)
@@ -249,7 +254,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 200
-; FirstLine = 125
+; CursorPosition = 206
+; FirstLine = 139
 ; Folding = +
 ; EnableXP
