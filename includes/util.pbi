@@ -403,11 +403,23 @@ Procedure LoadCueList(path.s)
 	ProcedureReturn #True
 EndProcedure
 
+Procedure ClearCueList()
+	ForEach cueList()
+		If cueList()\stream <> 0
+			BASS_StreamFree(cueList()\stream)
+		EndIf
 		
-		
+		If cueList()\waveform <> 0
+			FreeImage(cueList()\waveform)
+		EndIf
+	Next
+	
+	ClearList(cueList())
+EndProcedure
+
 		
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 391
-; FirstLine = 232
-; Folding = A9
+; CursorPosition = 418
+; FirstLine = 64
+; Folding = Aw
 ; EnableXP
