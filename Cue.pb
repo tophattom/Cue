@@ -45,6 +45,13 @@ Repeat ; Start of the event loop
 	
 	UpdateCues()
 	
+	If gEditor = #False
+		If ElapsedMilliseconds() > lastUpdate + 500
+			UpdateMainCueList()
+			lastUpdate = ElapsedMilliseconds()
+		EndIf
+	EndIf
+	
 	;You can place code here, and use the result as parameters for the procedures
 	  
 	If Event = #PB_Event_Menu
@@ -55,6 +62,7 @@ Repeat ; Start of the event loop
 			gCueAmount = 0
 			gCueCounter = 0
 			gSavePath = ""
+			gProjectFolder = ""
 			
 			UpdateMainCueList()
 			UpdateEditorList()
@@ -357,7 +365,9 @@ Repeat ; Start of the event loop
 			End
 		EndIf
 	EndIf
-  
+	
+	Delay(1)
+	
 ForEver
 
 Procedure UpdateEditorList()
@@ -846,7 +856,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 169
-; FirstLine = 132
+; CursorPosition = 369
+; FirstLine = 315
 ; Folding = Ig
 ; EnableXP
