@@ -57,7 +57,6 @@ Repeat ; Start of the event loop
 			gSavePath = ""
 			
 			UpdateMainCueList()
-			UpdateCueControls()
 			UpdateEditorList()
 		ElseIf MenuID = #MenuOpen
 			path.s = OpenFileRequester("Open cue list","","Cue list files (*.clf) |*.clf",0)
@@ -162,6 +161,13 @@ Repeat ; Start of the event loop
 			EndIf
 			
 			gEditor = #True
+		ElseIf GadgetID = #CreateDirButton
+			path.s = PathRequester("Select folder","")
+			
+			If path <> ""
+				gProjectFolder = path
+				CreateProjectFolder(gProjectFolder)
+			EndIf
 		ElseIf GadgetID = #EditorList
 			*gCurrentCue = GetGadgetItemData(#EditorList,GetGadgetState(#EditorList))
 			
@@ -190,8 +196,6 @@ Repeat ; Start of the event loop
   		ElseIf GadgetID = #CueDescField
   			*gCurrentCue\desc = GetGadgetText(#CueDescField)
   			UpdateEditorList()
-    	ElseIf GadgetID = #CueFileField
-      
     	ElseIf GadgetID = #OpenCueFile
     		Select *gCurrentCue\cueType
     			Case #TYPE_AUDIO
@@ -206,7 +210,6 @@ Repeat ; Start of the event loop
     			Select *gCurrentCue\cueType
     				Case #TYPE_AUDIO
     					LoadCueStream(*gCurrentCue,path)
-    					
     			EndSelect
     			
     			If *gCurrentCue\desc = ""
@@ -581,7 +584,7 @@ Procedure UpdateCueControls()
 		Case #START_HOTKEY
 			SetGadgetState(#ModeSelect, 3)
 	EndSelect
-	
+
 	If *gCurrentCue\waveform <> 0
 		SetGadgetState(#WaveImg,ImageID(*gCurrentCue\waveform))
 	Else
@@ -619,9 +622,8 @@ Procedure UpdateCueControls()
 		ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
 			SetGadgetState(eventActionSelect(i), 1)
 		EndIf
-		
 	Next i
-	
+
 EndProcedure
 
 Procedure PlayCue(*cue.Cue)
@@ -844,7 +846,7 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 60
-; FirstLine = 49
-; Folding = Ag
+; CursorPosition = 169
+; FirstLine = 132
+; Folding = Ig
 ; EnableXP

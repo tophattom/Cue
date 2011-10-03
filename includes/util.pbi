@@ -88,6 +88,8 @@ Global gLastType = 0
 
 Global gSavePath.s = ""
 
+Global gProjectFolder.s = ""
+
 
 Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 	LastElement(cueList())
@@ -154,7 +156,6 @@ Procedure LoadCueStream(*cue.Cue,path.s)
     Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
     For i = 0 To #WAVEFORM_W - 1
     	maxValue.f = 0.0
-    	minValue.f = 1000.0
     	For k = (i * s) To (i * s + s)
     		If buffer(k) > maxValue
     			maxValue = buffer(k)
@@ -417,9 +418,36 @@ Procedure ClearCueList()
 	ClearList(cueList())
 EndProcedure
 
-		
+Procedure CreateProjectFolder(path.s)
+	If FileSize(path) = -1
+		CreateDirectory(path)	
+	EndIf
+	
+	CreateDirectory(path + "Sound\")
+	
+	ForEach cueList()
+		If cueList()\filePath <> ""
+			Select cueList()\cueType
+				Case #TYPE_AUDIO
+					newPath.s = path + "Sound\" + GetFilePart(cueList()\filePath)
+					CopyFile(cueList()\filePath,newPath)
+			EndSelect
+			
+			cueList()\filePath = newPath
+		EndIf
+	Next
+	
+	gSavePath = OpenFileRequester("Save cue list",path,"Cue List files (*.clf) |*.clf",0)
+			
+	If gSavePath <> ""
+		SaveCueList(gSavePath)
+	EndIf
+EndProcedure
+
+
+
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 418
-; FirstLine = 64
-; Folding = Aw
+; CursorPosition = 431
+; FirstLine = 84
+; Folding = Ag-
 ; EnableXP

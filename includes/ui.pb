@@ -36,6 +36,7 @@ Enumeration
   #CueList
   #Frame3D_2
   #EditorButton
+  #CreateDirButton
   
   #EditorList
   #AddAudio
@@ -143,8 +144,9 @@ Procedure Open_MainWindow()
         AddGadgetColumn(#CueList, 2, "Start mode", 100)
         AddGadgetColumn(#CueList, 3, "State", 100)
         
-        Frame3DGadget(#Frame3D_2, 310, 0, 250, 80, "Actions")
+        Frame3DGadget(#Frame3D_2, 310, 0, 190, 80, "Actions")
         ButtonGadget(#EditorButton, 320, 20, 80, 50, "Editor")
+        ButtonGadget(#CreateDirButton, 410, 20, 80, 50, "Create project folder",#PB_Button_MultiLine)
         TrackBarGadget(#MasterSlider, 730, 50, 290, 30, 0, 100)
         SetGadgetState(#MasterSlider,100)
         TextGadget(#Text_2, 730, 30, 210, 20, "Master volume")
@@ -157,7 +159,8 @@ EndProcedure
 
 Procedure Open_EditorWindow()
   If OpenWindow(#EditorWindow, 533, 221, 910, 710, "Cue - Editor",  #PB_Window_SystemMenu | #PB_Window_Invisible | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
-    ;If CreateGadgetList(WindowID(#EditorWindow))
+  	;If CreateGadgetList(WindowID(#EditorWindow))
+  	
     ListViewGadget(#EditorList, 10, 50, 200, 605)
     
     LoadImage(#DeleteImg,"Images/delete.ico")
@@ -185,7 +188,7 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_3, 220, 50, 40, 20, "Name:")
       StringGadget(#CueDescField, 290, 80, 300, 20, "")
       TextGadget(#Text_4, 220, 80, 60, 20, "Description:")
-      StringGadget(#CueFileField, 290, 140, 300, 20, "")
+      StringGadget(#CueFileField, 290, 140, 300, 20, "", #PB_String_ReadOnly)
       TextGadget(#Text_6, 220, 140, 60, 20, "File:")
       ButtonGadget(#OpenCueFile, 600, 140, 30, 20, "...")
       TextGadget(#Text_9, 220, 170, 60, 20, "Length:")
@@ -237,10 +240,10 @@ Procedure Open_EditorWindow()
       StringGadget(#StartDelay, 750, 200, 50, 20, "")
       
       ImageGadget(#WaveImg, 220, 380, #WAVEFORM_W, 120, 0)
-      
-      ButtonImageGadget(#EditorPlay, 220, 505, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorPause, 255, 505, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorStop, 290, 505, 30, 30, ImageID(#StopImg))
+
+      ButtonImageGadget(#EditorPlay, 220, 535, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorPause, 255, 535, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorStop, 290, 535, 30, 30, ImageID(#StopImg))
       
       ;Event cue
       TextGadget(#Text_18, 220, 260, 40, 20, "Cue:")
@@ -260,7 +263,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 128
-; FirstLine = 94
-; Folding = 0
+; CursorPosition = 8
+; FirstLine = 1
+; Folding = +
 ; EnableXP
