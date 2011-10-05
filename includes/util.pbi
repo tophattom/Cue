@@ -68,12 +68,19 @@ Enumeration 1
 	#EVENT_RELEASE
 EndEnumeration
 
+;Asetusvakiot
+#SETTINGS = 1
+Enumeration
+	#SETTING_RELATIVE
+EndEnumeration
+
 #FORMAT_VERSION = 2.0
 
 #WAVEFORM_W = 680
 
 
 Global NewList cueList.Cue()
+Global Dim gSettings(#SETTINGS - 1)
 
 Global gPlayState.i
 Global *gCurrentCue.Cue
@@ -87,8 +94,6 @@ Global gControlsHidden = #False
 Global gLastType = 0
 
 Global gSavePath.s = ""
-
-Global gProjectFolder.s = ""
 
 
 Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
@@ -447,7 +452,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 431
-; FirstLine = 84
-; Folding = Ag-
+; CursorPosition = 82
+; FirstLine = 46
+; Folding = AA-
 ; EnableXP

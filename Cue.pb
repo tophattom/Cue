@@ -19,6 +19,7 @@ Declare UpdateMainCueList()
 
 Open_MainWindow()
 Open_EditorWindow()
+
 HideWindow(#EditorWindow, 1)
 HideCueControls()
 
@@ -53,7 +54,8 @@ Repeat ; Start of the event loop
 	EndIf
 	
 	;You can place code here, and use the result as parameters for the procedures
-	  
+	
+	;- Valikot
 	If Event = #PB_Event_Menu
 		MenuID = EventMenu()
 		   
@@ -62,7 +64,6 @@ Repeat ; Start of the event loop
 			gCueAmount = 0
 			gCueCounter = 0
 			gSavePath = ""
-			gProjectFolder = ""
 			
 			UpdateMainCueList()
 			UpdateEditorList()
@@ -97,15 +98,15 @@ Repeat ; Start of the event loop
 				SaveCueList(gSavePath)
 			EndIf
 		ElseIf MenuID = #MenuPref
-			Debug "GadgetID: #MenuPref"
-		      
+
 		ElseIf MenuID = #MenuExit
 			End
 		ElseIf MenuID = #MenuAbout
 			Debug "GadgetID: #MenuAbout"      
 		EndIf
 	EndIf
-	  
+	
+	;- P‰‰ikkuna
 	If Event = #PB_Event_Gadget
 		If GadgetID = #PlayButton
 			If *gCurrentCue <> 0
@@ -169,20 +170,13 @@ Repeat ; Start of the event loop
 			EndIf
 			
 			gEditor = #True
-		ElseIf GadgetID = #CreateDirButton
-			path.s = PathRequester("Select folder","")
-			
-			If path <> ""
-				gProjectFolder = path
-				CreateProjectFolder(gProjectFolder)
-			EndIf
-		ElseIf GadgetID = #EditorList
+		ElseIf GadgetID = #EditorList ;-Editori
 			*gCurrentCue = GetGadgetItemData(#EditorList,GetGadgetState(#EditorList))
 			
 			If *gCurrentCue <> 0
 				UpdateCueControls()
 			EndIf
-		ElseIf GadgetID = #AddAudio
+		ElseIf GadgetID = #AddAudio ;--- Editorin napit
 			*gCurrentCue = AddCue(#TYPE_AUDIO)
 			UpdateEditorList()
 			UpdateCueControls()
@@ -198,7 +192,7 @@ Repeat ; Start of the event loop
 		      
 		ElseIf GadgetID = #MasterSlider
 			BASS_SetVolume(GetGadgetState(#MasterSlider) / 100)
-		ElseIf GadgetID = #CueNameField
+		ElseIf GadgetID = #CueNameField 
 			*gCurrentCue\name = GetGadgetText(#CueNameField)
 			UpdateEditorList()
   		ElseIf GadgetID = #CueDescField
@@ -230,10 +224,10 @@ Repeat ; Start of the event loop
     		EndIf
     	ElseIf GadgetID = #Image_1
       
-    	ElseIf GadgetID = #ModeSelect
+    	ElseIf GadgetID = #ModeSelect ;--- Aloitustapa
     		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
     		UpdateCueControls()
-    	ElseIf GadgetID = #EditorPlay
+    	ElseIf GadgetID = #EditorPlay ;--- Esikuuntelu
     		If *gCurrentCue\state = #STATE_PAUSED
     			PauseCue(*gCurrentCue)
     		ElseIf *gCurrentCue\state <> #STATE_PLAYING
@@ -257,7 +251,7 @@ Repeat ; Start of the event loop
     		
     		SetGadgetState(#EditorPlay,0)
     		SetGadgetState(#EditorPause,0)
-      	ElseIf GadgetID = #StartPos
+      	ElseIf GadgetID = #StartPos ;--- Rajaus, fade, pan, volume
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
       	ElseIf GadgetID = #EndPos
       		*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#EndPos))
@@ -271,7 +265,7 @@ Repeat ; Start of the event loop
       	ElseIf GadgetID = #PanSlider
       		*gCurrentCue\pan = (GetGadgetState(#PanSlider) - 100) / 100
       		UpdateCueControls()
-      	ElseIf GadgetID = #DeleteButton
+      	ElseIf GadgetID = #DeleteButton ;--- Listan k‰sittely
       		If *gCurrentCue <> 0
       			DeleteCue(*gCurrentCue)
       			*gCurrentCue = 0
@@ -291,7 +285,7 @@ Repeat ; Start of the event loop
 				SwapElements(cueList(),*gCurrentCue,*nex)
 				UpdateEditorList()
 			EndIf
-		ElseIf GadgetID = #StartDelay
+		ElseIf GadgetID = #StartDelay	;--- Delay, cuen valinta, muutoksen nopeus
 			*gCurrentCue\delay = ValF(GetGadgetText(#StartDelay)) * 1000
 		ElseIf GadgetID = #CueSelect
 			tmpState = GetGadgetState(#CueSelect)
@@ -316,7 +310,7 @@ Repeat ; Start of the event loop
 			EndIf
 		ElseIf GadgetID = #ChangeDur
 			*gCurrentCue\fadeIn = Val(GetGadgetText(#ChangeDur))
-		ElseIf GadgetID = #LoopEnable
+		ElseIf GadgetID = #LoopEnable ;--- Looppaus
 			If GetGadgetState(#LoopEnable) = #PB_Checkbox_Checked
 				*gCurrentCue\looped = #True
 				DisableGadget(#LoopStart, 0)
@@ -855,8 +849,12 @@ Procedure UpdateMainCueList()
 		i + 1
 	Next
 EndProcedure
+
+
+
+
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 369
-; FirstLine = 315
-; Folding = Ig
+; CursorPosition = 336
+; FirstLine = 316
+; Folding = Ag
 ; EnableXP

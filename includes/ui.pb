@@ -36,7 +36,6 @@ Enumeration
   #CueList
   #Frame3D_2
   #EditorButton
-  #CreateDirButton
   
   #EditorList
   #AddAudio
@@ -146,7 +145,6 @@ Procedure Open_MainWindow()
         
         Frame3DGadget(#Frame3D_2, 310, 0, 190, 80, "Actions")
         ButtonGadget(#EditorButton, 320, 20, 80, 50, "Editor")
-        ButtonGadget(#CreateDirButton, 410, 20, 80, 50, "Create project folder",#PB_Button_MultiLine)
         TrackBarGadget(#MasterSlider, 730, 50, 290, 30, 0, 100)
         SetGadgetState(#MasterSlider,100)
         TextGadget(#Text_2, 730, 30, 210, 20, "Master volume")
@@ -264,6 +262,5 @@ EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
 ; CursorPosition = 8
-; FirstLine = 1
-; Folding = +
+; Folding = 9
 ; EnableXP
