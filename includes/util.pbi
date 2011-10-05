@@ -334,6 +334,7 @@ Procedure LoadCueList(path.s)
 		
 		;Cuejen m‰‰r‰
 		tmpAmount = ReadInteger(0)
+		Debug "Amount: " + Str(tmpAmount)
 		
 		gCueAmount = 0
 		gCueCounter = 0
@@ -349,16 +350,21 @@ Procedure LoadCueList(path.s)
 			gCueCounter + 1
 		Next i
 		
+		Debug ListSize(cueList())
+		
 		;Luetaan cuejen tiedot
 		ForEach cueList()
 			With cueList()
 				\cueType = ReadByte(0)
+				Debug "Type: " + Str(\cueType)
 				
 				\name = ReadString(0)
 				\desc = ReadString(0)
 				
 				\filePath = ReadString(0)
-				LoadCueStream(@cueList(),\filePath)
+				If \cueType = #TYPE_AUDIO
+					LoadCueStream(@cueList(),\filePath)
+				EndIf
 				
 				\startMode = ReadByte(0)
 				\delay = ReadFloat(0)
@@ -370,10 +376,12 @@ Procedure LoadCueList(path.s)
 					
 				
 				tmpA = ReadInteger(0)
+				*prev.Cue = @cueList()
 				For k = 1 To tmpA
-					AddElement(\followCues())
-					\followCues() = GetCueById(ReadInteger(0))
+					AddElement(*prev\followCues())
+					*prev\followCues() = GetCueById(ReadInteger(0))
 				Next k
+				ChangeCurrentElement(cueList(),*prev)
 				
 				\startPos = ReadFloat(0)
 				\endPos = ReadFloat(0)
@@ -392,11 +400,12 @@ Procedure LoadCueList(path.s)
 				For k = 0 To 5
 					tmpId = ReadInteger(0)
 					If tmpId <> 0
-						\actionCues[k] = GetCueById(tmpId)
+						*prev\actionCues[k] = GetCueById(tmpId)
 					EndIf
 					
-					\actions[k] = ReadByte(0)
+					*prev\actions[k] = ReadByte(0)
 				Next k
+				ChangeCurrentElement(cueList(),*prev)
 			EndWith
 		Next
 		
@@ -452,7 +461,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 195
-; FirstLine = 79
-; Folding = wA-
+; CursorPosition = 407
+; FirstLine = 152
+; Folding = AI-
 ; EnableXP
