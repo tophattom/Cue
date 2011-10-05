@@ -27,8 +27,8 @@ Structure Cue
 	loopHandle.l
 	looped.i
 	
-	startTime.l
-	pauseTime.l
+	startTime.f
+	pauseTime.f
 	duration.l
 	
 	fadeIn.f
@@ -193,12 +193,12 @@ EndProcedure
 
 Procedure.s SecondsToString(value)
 	mins.s = Str(Int(value / 60))
-	tmp = value % 60
+	tmp = (value / 60 - Val(mins)) * 60
 	
 	If tmp < 10
-		secs.s = "0" + Str(tmp)
+		secs.s = "0" + StrF(tmp,2)
 	Else
-		secs.s = Str(tmp)
+		secs.s = StrF(tmp,2)
 	EndIf
 	
 	ProcedureReturn mins + ":" + secs
@@ -206,7 +206,7 @@ EndProcedure
 
 Procedure StringToSeconds(text.s)
 	mins = Val(StringField(text,1,":"))
-	secs = ValD(StringField(text,2,":"))
+	secs = ValF(StringField(text,2,":"))
 	
 	ProcedureReturn mins * 60 + secs
 EndProcedure
@@ -452,7 +452,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 82
-; FirstLine = 46
-; Folding = AA-
+; CursorPosition = 195
+; FirstLine = 79
+; Folding = wA-
 ; EnableXP
