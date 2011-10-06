@@ -99,6 +99,8 @@ Enumeration
   #LoopEnd
   #LoopCount
   #LoopEnable
+  #Position
+  #Text_24
 EndEnumeration
 
 Global Dim eventCueSelect(5)
@@ -239,9 +241,12 @@ Procedure Open_EditorWindow()
       
       ImageGadget(#WaveImg, 220, 380, #WAVEFORM_W, 120, 0)
 
-      ButtonImageGadget(#EditorPlay, 220, 535, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorPause, 255, 535, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorStop, 290, 535, 30, 30, ImageID(#StopImg))
+      ButtonImageGadget(#EditorPlay, 220, 505, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorPause, 255, 505, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorStop, 290, 505, 30, 30, ImageID(#StopImg))
+      
+      TextGadget(#Text_24, 220 +#WAVEFORM_W - 95, 505, 40, 20, "Position:")
+      StringGadget(#Position, 220 + #WAVEFORM_W - 50, 505, 50, 20, "", #PB_String_ReadOnly)
       
       ;Event cue
       TextGadget(#Text_18, 220, 260, 40, 20, "Cue:")
@@ -261,6 +266,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 8
-; Folding = 9
+; CursorPosition = 248
+; FirstLine = 158
+; Folding = +
 ; EnableXP

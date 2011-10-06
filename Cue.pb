@@ -16,6 +16,7 @@ Declare LoopProc(handle.l,channel.l,d,*user.Cue)
 Declare StartEvents(*cue.Cue)
 Declare UpdateCues()
 Declare UpdateMainCueList()
+Declare UpdatePosField()
 
 Open_MainWindow()
 Open_EditorWindow()
@@ -45,6 +46,10 @@ Repeat ; Start of the event loop
 	EndIf
 	
 	UpdateCues()
+	
+	If GetGadgetState(#EditorPlay) = 1
+		UpdatePosField()
+	EndIf
 	
 	If gEditor = #False
 		If ElapsedMilliseconds() > lastUpdate + 500
@@ -251,6 +256,8 @@ Repeat ; Start of the event loop
     		
     		SetGadgetState(#EditorPlay,0)
     		SetGadgetState(#EditorPause,0)
+    		
+    		UpdatePosField()
       	ElseIf GadgetID = #StartPos ;--- Rajaus, fade, pan, volume
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
       	ElseIf GadgetID = #EndPos
@@ -442,6 +449,8 @@ Procedure HideCueControls()
 	HideGadget(#Text_21, 1)
 	HideGadget(#Text_22, 1)
 	HideGadget(#Text_23, 1)
+	HideGadget(#Text_24, 1)
+	HideGadget(#Position, 1)
 	
 	For i = 0 To 5
 		HideGadget(eventCueSelect(i),1)
@@ -497,6 +506,8 @@ Procedure ShowCueControls()
 				HideGadget(#Text_21, 0)
 				HideGadget(#Text_22, 0)
 				HideGadget(#Text_23, 0)
+				HideGadget(#Text_24, 0)
+				HideGadget(#Position, 0)
 			Case #TYPE_EVENT
 				HideGadget(#Text_18,0)
 				HideGadget(#Text_19,0)
@@ -627,6 +638,8 @@ Procedure UpdateCueControls()
 			SetGadgetState(eventActionSelect(i), 1)
 		EndIf
 	Next i
+	
+	UpdatePosField()
 
 EndProcedure
 
@@ -850,11 +863,14 @@ Procedure UpdateMainCueList()
 	Next
 EndProcedure
 
-
+Procedure UpdatePosField()
+	pos = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
+	SetGadgetText(#Position, SecondsToString(pos))
+EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 336
-; FirstLine = 316
-; Folding = Ag
+; CursorPosition = 259
+; FirstLine = 201
+; Folding = IA-
 ; EnableXP

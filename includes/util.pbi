@@ -191,9 +191,9 @@ Procedure GetCueListIndex(*cue.Cue)
 	Next
 EndProcedure
 
-Procedure.s SecondsToString(value)
+Procedure.s SecondsToString(value.f)
 	mins.s = Str(Int(value / 60))
-	tmp = (value / 60 - Val(mins)) * 60
+	tmp.f = (value / 60.0 - ValF(mins)) * 60.0
 	
 	If tmp < 10
 		secs.s = "0" + StrF(tmp,2)
@@ -204,11 +204,11 @@ Procedure.s SecondsToString(value)
 	ProcedureReturn mins + ":" + secs
 EndProcedure
 
-Procedure StringToSeconds(text.s)
-	mins = Val(StringField(text,1,":"))
-	secs = ValF(StringField(text,2,":"))
-	
-	ProcedureReturn mins * 60 + secs
+Procedure.f StringToSeconds(text.s)
+	mins.f = Val(StringField(text,1,":"))
+	secs.f = ValF(StringField(text,2,":"))
+
+	ProcedureReturn mins * 60.0 + secs
 EndProcedure
 
 Procedure DeleteCue(*cue.Cue)
@@ -461,7 +461,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 407
-; FirstLine = 152
-; Folding = AI-
+; CursorPosition = 210
+; FirstLine = 77
+; Folding = wA-
 ; EnableXP
