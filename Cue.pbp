@@ -5,23 +5,11 @@
     <options closefiles="1" openmode="0" name="Cue"/>
   </section>
   <section name="data">
-    <explorer view="..\..\" pattern="0"/>
+    <explorer view="" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2011-10-08 10:51" user="Jaakko" host="UNTO"/>
+    <lastopen date="2011-10-09 22:22" user="Jaakko" host="UNTO"/>
   </section>
   <section name="files">
-    <file name="includes\util.pbi">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="82d12959b79a22d505d47d9ca3de2d16"/>
-    </file>
-    <file name="Cue.pb">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="6b33c3942c8d314e831085e802856d43"/>
-    </file>
-    <file name="includes\ui.pb">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
-      <fingerprint md5="7614eba7fa67b1acbe72d1478012b730"/>
-    </file>
     <file name="includes\ui.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
       <fingerprint md5="2deced3eb9574a7b084f2059d1c41d07"/>
@@ -30,17 +18,20 @@
       <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
       <fingerprint md5="4cb1a34055c74b1f1c846eb209a5237b"/>
     </file>
+    <file name="includes\util.pbi">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
+      <fingerprint md5="82d12959b79a22d505d47d9ca3de2d16"/>
+    </file>
+    <file name="Cue.pb">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1"/>
+      <fingerprint md5="e6fcb4311ce2b0a52b3126ac552756c8"/>
+    </file>
   </section>
   <section name="targets">
-    <target name="Default Target" enabled="1" Default="1">
+    <target name="Default Target" enabled="1" default="1">
       <inputfile value="Cue.pb"/>
-      <outputfile value="Cue.exe"/>
-      <executable value="Cue.exe"/>
-      <options xpskin="1" Debug="1"/>
+      <outputfile value=""/>
+      <options xpskin="1" debug="1"/>
     </target>
   </section>
 </project>
-
-; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 9
-; EnableXP
