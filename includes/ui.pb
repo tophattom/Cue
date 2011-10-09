@@ -144,6 +144,7 @@ Procedure Open_MainWindow()
         AddGadgetColumn(#CueList, 1, "Cue type", 100)
         AddGadgetColumn(#CueList, 2, "Start mode", 100)
         AddGadgetColumn(#CueList, 3, "State", 100)
+        AddGadgetColumn(#CueList, 4, "Time left", 100)
         
         Frame3DGadget(#Frame3D_2, 310, 0, 190, 80, "Actions")
         ButtonGadget(#EditorButton, 320, 20, 80, 50, "Editor")
@@ -266,7 +267,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 248
-; FirstLine = 158
-; Folding = +
+; CursorPosition = 146
+; FirstLine = 129
+; Folding = -
 ; EnableXP

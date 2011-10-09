@@ -851,7 +851,9 @@ Procedure UpdateMainCueList()
 				state.s = "Paused"
 		EndSelect
 		
-		AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start + Chr(10) + state)
+		secs.f = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
+		
+		AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start + Chr(10) + state + Chr(10) + "-" + Str(cueList()\endPos - secs))
 		SetGadgetItemData(#CueList, i, @cueList())
 		SetGadgetItemColor(#CueList, i, #PB_Gadget_BackColor, color, -1)
 		
@@ -870,7 +872,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 259
-; FirstLine = 201
-; Folding = IA-
+; CursorPosition = 855
+; FirstLine = 418
+; Folding = AQ-
 ; EnableXP
