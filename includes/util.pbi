@@ -339,16 +339,22 @@ Procedure LoadCueList(path.s)
 		gCueAmount = 0
 		gCueCounter = 0
 		
+		high = 0
 		;Luetaan idt ja luodaan cuet
 		For i = 1 To tmpAmount
 			AddElement(cueList())
 			cueList()\id = ReadInteger(0)
 			
+			If cueList()\id > high
+				high = cueList()\id
+			EndIf
+			
 			cueList()\state = #STATE_STOPPED
 			
 			gCueAmount + 1
-			gCueCounter + 1
 		Next i
+		
+		gCueCounter = high
 		
 		Debug ListSize(cueList())
 		
@@ -461,7 +467,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 210
-; FirstLine = 77
-; Folding = wA-
+; CursorPosition = 356
+; FirstLine = 113
+; Folding = wI-
 ; EnableXP
