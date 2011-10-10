@@ -267,10 +267,10 @@ Repeat ; Start of the event loop
       	ElseIf GadgetID = #FadeOut
       		*gCurrentCue\fadeOut = ValF(GetGadgetText(#FadeOut))
       	ElseIf GadgetID = #VolumeSlider
-      		*gCurrentCue\volume = GetGadgetState(#VolumeSlider) / 100
+      		*gCurrentCue\volume = GetGadgetState(#VolumeSlider) / 1000.0
       		UpdateCueControls()
       	ElseIf GadgetID = #PanSlider
-      		*gCurrentCue\pan = (GetGadgetState(#PanSlider) - 100) / 100
+      		*gCurrentCue\pan = (GetGadgetState(#PanSlider) - 1000) / 1000.0
       		UpdateCueControls()
       	ElseIf GadgetID = #DeleteButton ;--- Listan käsittely
       		If *gCurrentCue <> 0
@@ -559,10 +559,10 @@ Procedure UpdateCueControls()
 		DisableGadget(#LoopCount, 1)
 	EndIf
 		
-	SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 100)
-	SetGadgetState(#PanSlider,*gCurrentCue\pan * 100 + 100)
-	SetGadgetText(#CueVolume,Str(*gCurrentCue\volume * 100))
-	SetGadgetText(#CuePan,Str(*gCurrentCue\pan * 100))
+	SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 1000)
+	SetGadgetState(#PanSlider,*gCurrentCue\pan * 1000 + 1000)
+	SetGadgetText(#CueVolume,StrF(*gCurrentCue\volume * 100.0,1))
+	SetGadgetText(#CuePan,StrF(*gCurrentCue\pan * 100.0,1))
 		
 	SetGadgetText(#StartDelay,StrF(*gCurrentCue\delay / 1000.0,2))
 	
@@ -866,13 +866,13 @@ Procedure UpdateMainCueList()
 EndProcedure
 
 Procedure UpdatePosField()
-	pos = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
+	pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
 	SetGadgetText(#Position, SecondsToString(pos))
 EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 855
-; FirstLine = 404
-; Folding = Aw-
+; CursorPosition = 272
+; FirstLine = 250
+; Folding = Ig-
 ; EnableXP

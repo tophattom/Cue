@@ -216,12 +216,13 @@ Procedure Open_EditorWindow()
       DisableGadget(#LoopCount, 1)
       CheckBoxGadget(#LoopEnable, 610, 290, 40, 20, "Loop")
       
-      TextGadget(#Text_14, 540, 230, 40, 20, "Volume:")
-      TrackBarGadget(#VolumeSlider, 600, 230, 100, 30, 0, 100)
-      StringGadget(#CueVolume, 720, 230, 40, 20, "", #PB_String_ReadOnly)
-      TextGadget(#Text_15, 540, 260, 40, 20, "Pan:")
-      TrackBarGadget(#PanSlider, 600, 260, 100, 30, 0, 200)
-      StringGadget(#CuePan, 720, 260, 40, 20, "", #PB_String_ReadOnly)
+      ;540
+      TextGadget(#Text_14, 480, 230, 40, 20, "Volume:")
+      TrackBarGadget(#VolumeSlider, 540, 230, 190, 30, 0, 1000)
+      StringGadget(#CueVolume, 750, 230, 50, 20, "", #PB_String_ReadOnly)
+      TextGadget(#Text_15, 480, 260, 40, 20, "Pan:")
+      TrackBarGadget(#PanSlider, 540, 260, 190, 30, 0, 2000)
+      StringGadget(#CuePan, 750, 260, 50, 20, "", #PB_String_ReadOnly)
       
       TextGadget(#Text_8, 220, 200, 60, 20, "Start mode:")
       ComboBoxGadget(#ModeSelect, 290, 200, 140, 20)
@@ -267,7 +268,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 146
-; FirstLine = 129
+; CursorPosition = 223
+; FirstLine = 196
 ; Folding = -
 ; EnableXP
