@@ -20,6 +20,7 @@ Enumeration
   #MenuOpen
   #MenuSave
   #MenuSaveAs
+  #MenuImport
   #MenuPref
   #MenuExit
   #MenuAbout
@@ -118,6 +119,8 @@ Procedure Open_MainWindow()
       MenuItem(#MenuOpen, "Open...")
       MenuItem(#MenuSave, "Save")
       MenuItem(#MenuSaveAs, "Save As...")
+      MenuBar()
+      MenuItem(#MenuImport, "Import cues...")
       MenuBar()
       MenuItem(#MenuPref, "Preferences...")
       MenuBar()
@@ -268,7 +271,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 223
-; FirstLine = 196
-; Folding = -
+; CursorPosition = 103
+; FirstLine = 100
+; Folding = +
 ; EnableXP
