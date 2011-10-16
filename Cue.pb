@@ -125,9 +125,9 @@ Repeat ; Start of the event loop
 				
 				*gCurrentCue = NextElement(cueList())
 				If *gCurrentCue <> 0
-					While *gCurrentCue\state <> #STATE_STOPPED
+					While *gCurrentCue\state <> #STATE_STOPPED Or *gCurrentCue\startMode <> #START_MANUAL
 						*gCurrentCue = NextElement(cueList())
-						
+							
 						If *gCurrentCue = 0
 							Break
 						EndIf
@@ -769,6 +769,12 @@ Procedure StartEvents(*cue.Cue)
 		EndIf
 	EndIf
 	
+	ForEach *cue\followCues()
+		If *cue\followCues()\startMode = #START_AFTER_START Or *cue\followCues()\startMode = #START_AFTER_END
+			PlayCue(*cue\followCues())
+		EndIf
+	Next
+	
 EndProcedure
 
 Procedure UpdateCues()
@@ -872,7 +878,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 272
-; FirstLine = 250
-; Folding = Ig-
+; CursorPosition = 127
+; FirstLine = 94
+; Folding = Yk-
 ; EnableXP
