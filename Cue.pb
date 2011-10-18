@@ -112,8 +112,11 @@ Repeat ; Start of the event loop
 			Event = #PB_Event_Gadget
 			GadgetID = #PlayButton
 		ElseIf MenuID = #DeleteSc
-			Event = #PB_Event_Gadget
-			GadgetID = #DeleteButton
+			If *gCurrentCue <> 0
+      			DeleteCue(*gCurrentCue)
+      			*gCurrentCue = 0
+      			UpdateEditorList()
+      		EndIf
 		EndIf
 			
 	EndIf
@@ -885,7 +888,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 115
-; FirstLine = 62
+; CursorPosition = 118
+; FirstLine = 110
 ; Folding = Yk-
 ; EnableXP
