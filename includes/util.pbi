@@ -1,3 +1,8 @@
+Structure Effect
+	handle.l
+	*params
+EndStructure
+
 Structure Cue
 	cueType.i
 	
@@ -39,6 +44,8 @@ Structure Cue
 	
 	*actionCues.Cue[6]
 	actions.i[6]
+	
+	List effects.Effect()
 
 	id.l
 EndStructure
@@ -76,7 +83,7 @@ EndEnumeration
 
 #FORMAT_VERSION = 2.0
 
-#WAVEFORM_W = 680
+#WAVEFORM_W = 660
 
 
 Global NewList cueList.Cue()
@@ -482,7 +489,6 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 381
-; FirstLine = 187
-; Folding = CI-
+; CursorPosition = 48
+; Folding = AA-
 ; EnableXP

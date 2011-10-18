@@ -650,6 +650,12 @@ Procedure UpdateCueControls()
 	Next i
 	
 	UpdatePosField()
+	
+	If *gCurrentCue\cueType = #TYPE_AUDIO
+		DisableGadget(#AddEffect, 0)
+	Else
+		DisableGadget(#AddEffect, 1)
+	endif
 
 EndProcedure
 
@@ -888,7 +894,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 118
-; FirstLine = 110
+; CursorPosition = 657
+; FirstLine = 455
 ; Folding = Yk-
 ; EnableXP

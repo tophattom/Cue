@@ -106,6 +106,10 @@ Enumeration
   #LoopEnable
   #Position
   #Text_24
+  
+  #EditorTabs
+  
+  #AddEffect
 EndEnumeration
 
 Global Dim eventCueSelect(5)
@@ -195,48 +199,51 @@ Procedure Open_EditorWindow()
     ButtonGadget(#AddChange, 290, 10, 130, 30, "Add level change cue")
     ButtonGadget(#AddEvent, 430, 10, 130, 30, "Add event cue")
     ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
-      
-      StringGadget(#CueNameField, 290, 50, 300, 20, "")
-      TextGadget(#Text_3, 220, 50, 40, 20, "Name:")
-      StringGadget(#CueDescField, 290, 80, 300, 20, "")
-      TextGadget(#Text_4, 220, 80, 60, 20, "Description:")
-      StringGadget(#CueFileField, 290, 140, 300, 20, "", #PB_String_ReadOnly)
-      TextGadget(#Text_6, 220, 140, 60, 20, "File:")
-      ButtonGadget(#OpenCueFile, 600, 140, 30, 20, "...")
-      TextGadget(#Text_9, 220, 170, 60, 20, "Length:")
-      StringGadget(#LengthField, 290, 170, 50, 20, "",#PB_String_ReadOnly)
+    
+    PanelGadget(#EditorTabs, 220, 50, 680, 650)
+    AddGadgetItem(#EditorTabs, 0, "Basic")
+    
+      StringGadget(#CueNameField, 75, 5, 300, 20, "")
+      TextGadget(#Text_3, 5, 5, 40, 20, "Name:")
+      StringGadget(#CueDescField, 75, 35, 300, 20, "")
+      TextGadget(#Text_4, 5, 35, 60, 20, "Description:")
+      StringGadget(#CueFileField, 75, 95, 300, 20, "", #PB_String_ReadOnly)
+      TextGadget(#Text_6, 5, 95, 60, 20, "File:")
+      ButtonGadget(#OpenCueFile, 385, 95, 30, 20, "...")
+      TextGadget(#Text_9, 5, 125, 60, 20, "Length:")
+      StringGadget(#LengthField, 75, 125, 50, 20, "",#PB_String_ReadOnly)
 
-      TextGadget(#Text_10, 220, 230, 40, 20, "Start:")
-      StringGadget(#StartPos, 260, 230, 50, 20, "")
-      TextGadget(#Text_11, 360, 230, 40, 20, "End:")
-      StringGadget(#EndPos, 400, 230, 50, 20, "")
+      TextGadget(#Text_10, 5, 185, 40, 20, "Start:")
+      StringGadget(#StartPos, 45, 185, 50, 20, "")
+      TextGadget(#Text_11, 145, 185, 40, 20, "End:")
+      StringGadget(#EndPos, 185, 185, 50, 20, "")
       
-      TextGadget(#Text_12, 220, 260, 40, 20, "Fade in:")
-      StringGadget(#FadeIn, 260, 260, 50, 20, "")
-      TextGadget(#Text_13, 350, 260, 50, 30, "Fade out:")
-      StringGadget(#FadeOut, 400, 260, 50, 20, "")
+      TextGadget(#Text_12, 5, 215, 40, 20, "Fade in:")
+      StringGadget(#FadeIn, 45, 215, 50, 20, "")
+      TextGadget(#Text_13, 135, 215, 50, 30, "Fade out:")
+      StringGadget(#FadeOut, 185, 215, 50, 20, "")
       
-      TextGadget(#Text_21, 220, 290, 40, 30, "Loop start:")
-      StringGadget(#LoopStart, 260, 290, 50, 20, "")
+      TextGadget(#Text_21, 5, 245, 40, 30, "Loop start:")
+      StringGadget(#LoopStart, 45, 245, 50, 20, "")
       DisableGadget(#LoopStart, 1)
-      TextGadget(#Text_22, 350, 290, 40, 30, "Loop end:")
-      StringGadget(#LoopEnd, 400, 290, 50, 20, "")
+      TextGadget(#Text_22, 135, 245, 40, 30, "Loop end:")
+      StringGadget(#LoopEnd, 185, 245, 50, 20, "")
       DisableGadget(#LoopEnd, 1)
-      TextGadget(#Text_23, 480, 290, 40, 30, "Loop count:")
-      StringGadget(#LoopCount, 530, 290, 50, 20, "")
+      TextGadget(#Text_23, 265, 245, 40, 30, "Loop count:")
+      StringGadget(#LoopCount, 315, 245, 50, 20, "")
       DisableGadget(#LoopCount, 1)
-      CheckBoxGadget(#LoopEnable, 610, 290, 40, 20, "Loop")
+      CheckBoxGadget(#LoopEnable, 395, 245, 40, 20, "Loop")
       
       ;540
-      TextGadget(#Text_14, 480, 230, 40, 20, "Volume:")
-      TrackBarGadget(#VolumeSlider, 540, 230, 190, 30, 0, 1000)
-      StringGadget(#CueVolume, 750, 230, 50, 20, "", #PB_String_ReadOnly)
-      TextGadget(#Text_15, 480, 260, 40, 20, "Pan:")
-      TrackBarGadget(#PanSlider, 540, 260, 190, 30, 0, 2000)
-      StringGadget(#CuePan, 750, 260, 50, 20, "", #PB_String_ReadOnly)
+      TextGadget(#Text_14, 265, 185, 40, 20, "Volume:")
+      TrackBarGadget(#VolumeSlider, 325, 185, 190, 30, 0, 1000)
+      StringGadget(#CueVolume, 535, 185, 50, 20, "", #PB_String_ReadOnly)
+      TextGadget(#Text_15, 265, 215, 40, 20, "Pan:")
+      TrackBarGadget(#PanSlider, 325, 215, 190, 30, 0, 2000)
+      StringGadget(#CuePan, 535, 215, 50, 20, "", #PB_String_ReadOnly)
       
-      TextGadget(#Text_8, 220, 200, 60, 20, "Start mode:")
-      ComboBoxGadget(#ModeSelect, 290, 200, 140, 20)
+      TextGadget(#Text_8, 5, 155, 60, 20, "Start mode:")
+      ComboBoxGadget(#ModeSelect, 75, 155, 140, 20)
       AddGadgetItem(#ModeSelect,0,"Manual")
       SetGadgetItemData(#ModeSelect,0,#START_MANUAL)
       AddGadgetItem(#ModeSelect,1,"After start of cue")
@@ -246,40 +253,44 @@ Procedure Open_EditorWindow()
       AddGadgetItem(#ModeSelect,3,"Hotkey")
       SetGadgetItemData(#ModeSelect,3,#START_HOTKEY)
       
-      TextGadget(#Text_16, 450, 200, 40, 20, "Cue:")
-      ComboBoxGadget(#CueSelect, 490, 200, 200, 20)
+      TextGadget(#Text_16, 235, 155, 40, 20, "Cue:")
+      ComboBoxGadget(#CueSelect, 275, 155, 200, 20)
       
-      TextGadget(#Text_17, 710, 200, 40, 20, "Delay:")
-      StringGadget(#StartDelay, 750, 200, 50, 20, "")
+      TextGadget(#Text_17, 495, 155, 40, 20, "Delay:")
+      StringGadget(#StartDelay, 535, 155, 50, 20, "")
       
-      ImageGadget(#WaveImg, 220, 380, #WAVEFORM_W, 120, 0)
+      ImageGadget(#WaveImg, 5, 335, #WAVEFORM_W, 120, 0)
 
-      ButtonImageGadget(#EditorPlay, 220, 505, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorPause, 255, 505, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorStop, 290, 505, 30, 30, ImageID(#StopImg))
+      ButtonImageGadget(#EditorPlay, 5, 460, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorPause, 40, 460, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorStop, 75, 460, 30, 30, ImageID(#StopImg))
       
-      TextGadget(#Text_24, 220 +#WAVEFORM_W - 95, 505, 40, 20, "Position:")
-      StringGadget(#Position, 220 + #WAVEFORM_W - 50, 505, 50, 20, "", #PB_String_ReadOnly)
+      TextGadget(#Text_24, 5 +#WAVEFORM_W - 95, 460, 40, 20, "Position:")
+      StringGadget(#Position, 5 + #WAVEFORM_W - 50, 460, 50, 20, "", #PB_String_ReadOnly)
       
       ;Event cue
-      TextGadget(#Text_18, 220, 260, 40, 20, "Cue:")
-      TextGadget(#Text_19, 490, 260, 40, 20, "Action:")
+      TextGadget(#Text_18, 5, 245, 40, 20, "Cue:")
+      TextGadget(#Text_19, 275, 245, 40, 20, "Action:")
       For i = 0 To 5
-      	eventCueSelect(i) = ComboBoxGadget(#PB_Any, 260, 260 + (i * 40), 200, 20)
-      	eventActionSelect(i) = ComboBoxGadget(#PB_Any, 530, 260 + (i * 40), 200, 20)
+      	eventCueSelect(i) = ComboBoxGadget(#PB_Any, 45, 245 + (i * 40), 200, 20)
+      	eventActionSelect(i) = ComboBoxGadget(#PB_Any, 315, 245 + (i * 40), 200, 20)
       Next i
       
       ;Change cue
-      TextGadget(#Text_20, 220, 230, 100, 20, "Change duration:")
-      StringGadget(#ChangeDur, 320, 230, 40, 20, "")
+      TextGadget(#Text_20, 5, 185, 100, 20, "Change duration:")
+      StringGadget(#ChangeDur, 105, 185, 40, 20, "")
       
+      ;Efektivälilehti
+      AddGadgetItem(#EditorTabs, 1, "Effects")
+      
+      ButtonGadget(#AddEffect, 5, 5, 100, 30, "Add effect")
     ;EndIf
   EndIf
 EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 173
-; FirstLine = 142
+; CursorPosition = 285
+; FirstLine = 230
 ; Folding = -
 ; EnableXP
