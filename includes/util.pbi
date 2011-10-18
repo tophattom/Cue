@@ -369,7 +369,22 @@ Procedure LoadCueList(path.s)
 				
 				\filePath = ReadString(0)
 				If \cueType = #TYPE_AUDIO
-					LoadCueStream(@cueList(),\filePath)
+					If FileSize(\filePath) = -1
+						result = MessageRequester("File not found","File " + \filePath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+						
+						If result = #PB_MessageRequester_Yes
+				    		pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
+				    		
+				    		path.s = OpenFileRequester("Select file","",pattern,0)
+				    		
+				    		If path
+				    			\filePath = path
+				    			LoadCueStream(@cueList(),\filePath)
+				    		EndIf
+				    	EndIf
+				    Else
+				    	LoadCueStream(@cueList(),\filePath)
+				    EndIf
 				EndIf
 				
 				\startMode = ReadByte(0)
@@ -467,7 +482,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 356
-; FirstLine = 113
-; Folding = wI-
+; CursorPosition = 381
+; FirstLine = 187
+; Folding = CI-
 ; EnableXP
