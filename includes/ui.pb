@@ -24,6 +24,10 @@ Enumeration
   #MenuPref
   #MenuExit
   #MenuAbout
+  
+  #PlaySc
+  
+  #DeleteSc
 EndEnumeration
 
 ;- Gadget Constants
@@ -133,6 +137,8 @@ Procedure Open_MainWindow()
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_S,#MenuSave)
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_Alt | #PB_Shortcut_N,#MenuSaveAs)
       
+      AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Space,#PlaySc)
+      
     EndIf
 
       ;If CreateGadgetList(WindowID(#MainWindow))
@@ -164,6 +170,8 @@ EndProcedure
 Procedure Open_EditorWindow()
   If OpenWindow(#EditorWindow, 533, 221, 910, 710, "Cue - Editor",  #PB_Window_SystemMenu | #PB_Window_Invisible | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
   	;If CreateGadgetList(WindowID(#EditorWindow))
+  	
+  	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Delete,#DeleteSc)
   	
     ListViewGadget(#EditorList, 10, 50, 200, 605)
     
@@ -271,7 +279,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 103
-; FirstLine = 100
-; Folding = +
+; CursorPosition = 173
+; FirstLine = 142
+; Folding = -
 ; EnableXP

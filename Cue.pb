@@ -108,7 +108,14 @@ Repeat ; Start of the event loop
 			End
 		ElseIf MenuID = #MenuAbout
 			Debug "GadgetID: #MenuAbout"      
+		ElseIf MenuID = #PlaySc ;---Pikan‰pp‰imet
+			Event = #PB_Event_Gadget
+			GadgetID = #PlayButton
+		ElseIf MenuID = #DeleteSc
+			Event = #PB_Event_Gadget
+			GadgetID = #DeleteButton
 		EndIf
+			
 	EndIf
 	
 	;- P‰‰ikkuna
@@ -878,7 +885,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 127
-; FirstLine = 94
+; CursorPosition = 115
+; FirstLine = 62
 ; Folding = Yk-
 ; EnableXP
