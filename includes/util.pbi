@@ -1,6 +1,11 @@
 Structure Effect
 	handle.l
 	*params
+	
+	type.i
+	priority.i
+	
+	gadgets.l[8]
 EndStructure
 
 Structure Cue
@@ -84,6 +89,14 @@ EndEnumeration
 #FORMAT_VERSION = 2.0
 
 #WAVEFORM_W = 660
+
+;Efektien s‰‰timet
+Enumeration
+	#EGADGET_FRAME
+	#EGADGET_UP
+	#EGADGET_DOWN
+	#EGADGET_DELETE
+EndEnumeration
 
 
 Global NewList cueList.Cue()
@@ -486,9 +499,39 @@ Procedure CreateProjectFolder(path.s)
 	EndIf
 EndProcedure
 
-
+Procedure AddCueEffect(*cue.Cue,eType.i)
+	If *cue\stream <> 0
+		amount = ListSize(*cue\effects())
+		If amount > 0
+			ForEach *cue\effects()
+				*cue\effects()\priority + 1
+				BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
+				BASS_ChannelSetFX(*cue\stream,*cue\effects()\type,*cue\effects()\priority)
+				BASS_FXSetParameters(*cue\effects()\handle,*cue\effects()\params)
+			Next
+		EndIf
+				
+				
+		AddElement(*cue\effects())
+		amount + 1
+		
+		*cue\effects()\priority = 0
+		*cue\effects()\type = eType
+		*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
+		
+		;S‰‰timet
+		Select eType
+			Case #BASS_FX_DX8_REVERB
+				text.s = "Reverb"
+		EndSelect
+		
+		tmpY = 5 + (amount - 1) * 105
+		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,660,100,text)
+	EndIf
+EndProcedure
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 48
+; CursorPosition = 530
+; FirstLine = 111
 ; Folding = AA-
 ; EnableXP

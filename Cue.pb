@@ -352,6 +352,10 @@ Repeat ; Start of the event loop
 			*gCurrentCue\loopEnd = StringToSeconds(GetGadgetText(#LoopEnd))
 		ElseIf GadgetID = #LoopCount
 			*gCurrentCue\loopCount = Val(GetGadgetText(#LoopCount))
+		ElseIf GadgetID = #EditorTabs ;---Efektien asetukset
+			UpdateCueControls()
+		ElseIf GadgetID = #EffectType
+			UpdateCueControls()
 		EndIf
 		     
 	EndIf
@@ -652,10 +656,14 @@ Procedure UpdateCueControls()
 	UpdatePosField()
 	
 	If *gCurrentCue\cueType = #TYPE_AUDIO
-		DisableGadget(#AddEffect, 0)
+		If GetGadgetState(#EffectType) > -1
+			DisableGadget(#AddEffect, 0)
+		Else
+			DisableGadget(#AddEffect, 1)
+		EndIf
 	Else
 		DisableGadget(#AddEffect, 1)
-	endif
+	EndIf
 
 EndProcedure
 
@@ -894,7 +902,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 657
-; FirstLine = 455
-; Folding = Yk-
+; CursorPosition = 354
+; FirstLine = 311
+; Folding = IA-
 ; EnableXP

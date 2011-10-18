@@ -110,6 +110,8 @@ Enumeration
   #EditorTabs
   
   #AddEffect
+  #Text_25
+  #EffectType
 EndEnumeration
 
 Global Dim eventCueSelect(5)
@@ -283,14 +285,20 @@ Procedure Open_EditorWindow()
       ;Efektivälilehti
       AddGadgetItem(#EditorTabs, 1, "Effects")
       
-      ButtonGadget(#AddEffect, 5, 5, 100, 30, "Add effect")
+      TextGadget(#Text_25,5,12,60,20,"Effect type:")
+      
+      ComboBoxGadget(#EffectType, 65, 10, 120, 20)
+      AddGadgetItem(#EffectType, 0, "Reverb")
+      SetGadgetItemData(#EffectType, 0, #BASS_FX_DX8_REVERB)
+      
+      ButtonGadget(#AddEffect, 195, 5, 100, 30, "Add effect")
     ;EndIf
   EndIf
 EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 285
-; FirstLine = 230
-; Folding = -
+; CursorPosition = 293
+; FirstLine = 187
+; Folding = +
 ; EnableXP
