@@ -353,11 +353,29 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #LoopCount
 			*gCurrentCue\loopCount = Val(GetGadgetText(#LoopCount))
 		ElseIf GadgetID = #EditorTabs ;---Efektien asetukset
-			UpdateCueControls()
+			If *gCurrentCue <> 0
+				UpdateCueControls()
+			EndIf
 		ElseIf GadgetID = #EffectType
+			If *gCurrentCue <> 0
+				UpdateCueControls()
+			EndIf
+		ElseIf GadgetID = #AddEffect
+			AddCueEffect(*gCurrentCue,GetGadgetItemData(#EffectType,GetGadgetState(#EffectType)))
 			UpdateCueControls()
 		EndIf
-		     
+		
+		;Efektien s‰‰timet
+		If *gCurrentCue <> 0 And ListSize(*gCurrentCue\effects()) > 0
+			ForEach *gCurrentCue\effects()
+				With *gCurrentCue\effects()
+					If GadgetID = \gadgets[#EGADGET_DELETE]
+						DeleteCueEffect(*gCurrentCue,@*gCurrentCue\effects())
+					EndIf
+				EndWith
+			Next
+		EndIf
+
 	EndIf
 	
 	For i = 0 To 5
@@ -369,8 +387,7 @@ Repeat ; Start of the event loop
 			*gCurrentCue\actions[i] = GetGadgetItemData(eventActionSelect(i),GetGadgetState(eventActionSelect(i)))
 		EndIf
 	Next i
-	
-	
+
 	If Event = #PB_Event_CloseWindow
 		If EventWindow() = #EditorWindow
 			gEditor = #False
@@ -902,7 +919,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 354
-; FirstLine = 311
+; CursorPosition = 389
+; FirstLine = 348
 ; Folding = IA-
 ; EnableXP

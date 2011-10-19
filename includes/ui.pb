@@ -78,9 +78,6 @@ Enumeration
   #UpButton
   #DownButton
   #DeleteButton
-  #DeleteImg
-  #UpImg
-  #DownImg
   #Text_16
   #CueSelect
   #Text_17
@@ -90,9 +87,6 @@ Enumeration
   #Text_19
   #Text_20
   #ChangeDur
-  #PlayImg
-  #PauseImg
-  #StopImg
   #EditorPlay
   #EditorPause
   #EditorStop
@@ -113,6 +107,8 @@ Enumeration
   #Text_25
   #EffectType
 EndEnumeration
+
+#WAVEFORM_W = 660
 
 Global Dim eventCueSelect(5)
 Global Dim eventActionSelect(5)
@@ -290,6 +286,8 @@ Procedure Open_EditorWindow()
       ComboBoxGadget(#EffectType, 65, 10, 120, 20)
       AddGadgetItem(#EffectType, 0, "Reverb")
       SetGadgetItemData(#EffectType, 0, #BASS_FX_DX8_REVERB)
+      AddGadgetItem(#EffectType, 1, "Parametric EQ")
+      SetGadgetItemData(#EffectType, 1, #BASS_FX_DX8_PARAMEQ)
       
       ButtonGadget(#AddEffect, 195, 5, 100, 30, "Add effect")
     ;EndIf
@@ -298,7 +296,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 293
-; FirstLine = 187
+; CursorPosition = 288
+; FirstLine = 184
 ; Folding = +
 ; EnableXP

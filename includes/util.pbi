@@ -88,7 +88,6 @@ EndEnumeration
 
 #FORMAT_VERSION = 2.0
 
-#WAVEFORM_W = 660
 
 ;Efektien säätimet
 Enumeration
@@ -97,6 +96,18 @@ Enumeration
 	#EGADGET_DOWN
 	#EGADGET_DELETE
 EndEnumeration
+
+;Kuvien vakiot
+Enumeration
+	#DeleteImg
+	#UpImg
+	#DownImg
+	#PlayImg
+	#PauseImg
+	#StopImg
+EndEnumeration
+
+#WAVEFORM_W = 660
 
 
 Global NewList cueList.Cue()
@@ -505,6 +516,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i)
 		If amount > 0
 			ForEach *cue\effects()
 				*cue\effects()\priority + 1
+				
 				BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
 				BASS_ChannelSetFX(*cue\stream,*cue\effects()\type,*cue\effects()\priority)
 				BASS_FXSetParameters(*cue\effects()\handle,*cue\effects()\params)
@@ -523,15 +535,50 @@ Procedure AddCueEffect(*cue.Cue,eType.i)
 		Select eType
 			Case #BASS_FX_DX8_REVERB
 				text.s = "Reverb"
+			Case #BASS_FX_DX8_PARAMEQ
+				text.s = "Parametic EQ"
 		EndSelect
 		
-		tmpY = 5 + (amount - 1) * 105
-		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,660,100,text)
+		tmpY = 40 + (amount - 1) * 115
+		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,660,115,text)
+		*cue\effects()\gadgets[#EGADGET_UP] = ButtonImageGadget(#PB_Any,625,tmpY + 10,30,30,ImageID(#UpImg))
+		*cue\effects()\gadgets[#EGADGET_DOWN] = ButtonImageGadget(#PB_Any,625,tmpY + 45,30,30,ImageID(#DownImg))
+		*cue\effects()\gadgets[#EGADGET_DELETE] = ButtonImageGadget(#PB_Any,625,tmpy + 80,30,30,ImageID(#DeleteImg))
 	EndIf
 EndProcedure
 
+Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
+	amount = ListSize(*cue\effects()) - 2
+	
+	ChangeCurrentElement(*cue\effects(),*effect)
+	
+	While NextElement(*cue\effects()) <> 0
+		*cue\effects()\priority = *cue\effects()\priority - 1
+		tmpY = 40 + (amount - *cue\effects()\priority - 1) * 115
+		
+		ResizeGadget(*cue\effects()\gadgets[#EGADGET_FRAME],#PB_Ignore,tmpY,#PB_Ignore,#PB_Ignore)
+		ResizeGadget(*cue\effects()\gadgets[#EGADGET_UP],#PB_Ignore,tmpY + 10,#PB_Ignore,#PB_Ignore)
+		ResizeGadget(*cue\effects()\gadgets[#EGADGET_DOWN],#PB_Ignore,tmpY + 45,#PB_Ignore,#PB_Ignore)
+		ResizeGadget(*cue\effects()\gadgets[#EGADGET_DELETE],#PB_Ignore,tmpY + 80,#PB_Ignore,#PB_Ignore)
+	Wend
+	
+	ForEach *cue\effects()
+		If *effect = @*cue\effects()
+			BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
+			For i = 0 To 5
+				FreeGadget(*cue\effects()\gadgets[i])
+			Next i
+			
+			DeleteElement(*cue\effects())
+			Break
+		EndIf
+	Next
+EndProcedure
+
+
+
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 530
-; FirstLine = 111
+; CursorPosition = 536
+; FirstLine = 150
 ; Folding = AA-
 ; EnableXP
