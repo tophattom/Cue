@@ -352,7 +352,7 @@ Repeat ; Start of the event loop
 			*gCurrentCue\loopEnd = StringToSeconds(GetGadgetText(#LoopEnd))
 		ElseIf GadgetID = #LoopCount
 			*gCurrentCue\loopCount = Val(GetGadgetText(#LoopCount))
-		ElseIf GadgetID = #EditorTabs ;---Efektien asetukset
+		ElseIf GadgetID = #EditorTabs ;--- Efektien asetukset
 			If *gCurrentCue <> 0
 				UpdateCueControls()
 			EndIf
@@ -365,16 +365,55 @@ Repeat ; Start of the event loop
 			UpdateCueControls()
 		EndIf
 		
-		;Efektien s‰‰timet
+		;----- Efektien s‰‰timet
 		If *gCurrentCue <> 0 And ListSize(*gCurrentCue\effects()) > 0
 			ForEach *gCurrentCue\effects()
 				With *gCurrentCue\effects()
+					Select \type
+						Case #BASS_FX_DX8_REVERB ;------- Reverb
+							If GadgetID = \gadgets[5]
+								value.f = (GetGadgetState(\gadgets[5]) - 960) / 10.0
+								\revParam\fInGain = value
+								
+								SetGadgetText(\gadgets[9],StrF(value,1))
+								
+								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\revParam)
+							ElseIf GadgetID = \gadgets[6]
+								value.f = (GetGadgetState(\gadgets[6]) - 960) / 10.0
+								\revParam\fReverbMix = value
+								
+								SetGadgetText(\gadgets[10],StrF(value,1))
+								
+								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\revParam)
+							ElseIf GadgetID = \gadgets[7]
+								value.f = GetGadgetState(\gadgets[7])
+								\revParam\fReverbTime = value
+								
+								SetGadgetText(\gadgets[11],Str(value))
+								
+								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\revParam)
+							ElseIf GadgetID = \gadgets[8]
+								value.f = GetGadgetState(\gadgets[8]) / 1000.0
+								\revParam\fHighFreqRTRatio = value
+								
+								SetGadgetText(\gadgets[12],StrF(value,3))
+								
+								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\revParam)
+							EndIf
+					EndSelect
+					
 					If GadgetID = \gadgets[#EGADGET_DELETE]
 						DeleteCueEffect(*gCurrentCue,@*gCurrentCue\effects())
 					ElseIf GadgetID = \gadgets[#EGADGET_ACTIVE]
-						DisableCueEffect(*gCurrentCue,@*gCurrentCue\effects(),GetGadgetState(\gadgets[#EGADGET_ACTIVE]))
+						state = GetGadgetState(\gadgets[#EGADGET_ACTIVE])
+						DisableCueEffect(*gCurrentCue,@*gCurrentCue\effects(),state)
+						
+						For i = 5 To 16
+							If \gadgets[i] <> 0
+								DisableGadget(\gadgets[i],OnOff(state))
+							EndIf
+						Next i
 					EndIf
-
 				EndWith
 			Next
 		EndIf
@@ -494,7 +533,7 @@ Procedure HideCueControls()
 	ForEach cueList()
 		If ListSize(cueList()\effects()) > 0
 			ForEach cueList()\effects()
-				For i = 0 To 8
+				For i = 0 To 16
 					If cueList()\effects()\gadgets[i] <> 0
 						HideGadget(cueList()\effects()\gadgets[i],1)
 					EndIf
@@ -557,10 +596,10 @@ Procedure ShowCueControls()
 				
 				If ListSize(*gCurrentCue\effects()) > 0
 					ForEach *gCurrentCue\effects()
-						For i = 0 To 8
+						For i = 0 To 16
 							If *gCurrentCue\effects()\gadgets[i] <> 0
 								HideGadget(*gCurrentCue\effects()\gadgets[i],0)
-							endif
+							EndIf
 						Next i
 					Next
 				EndIf
@@ -945,7 +984,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 497
-; FirstLine = 432
-; Folding = GA-
+; CursorPosition = 388
+; FirstLine = 347
+; Folding = AA-
 ; EnableXP

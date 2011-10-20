@@ -1,11 +1,15 @@
 Structure Effect
 	handle.l
-	*params
+	StructureUnion
+		revParam.BASS_DX8_REVERB
+		eqParam.BASS_DX8_PARAMEQ
+	EndStructureUnion
+	
 	
 	type.i
 	priority.i
 	
-	gadgets.l[9]
+	gadgets.l[17]
 	
 	active.i
 EndStructure
@@ -522,7 +526,15 @@ Procedure AddCueEffect(*cue.Cue,eType.i)
 				
 				BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
 				*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,*cue\effects()\type,*cue\effects()\priority)
-				BASS_FXSetParameters(*cue\effects()\handle,*cue\effects()\params)
+				
+				Select *cue\effects()\type
+					Case #BASS_FX_DX8_REVERB
+						*params = @*cue\effects()\revParam
+					Case #BASS_FX_DX8_PARAMEQ
+						*params = @*cue\effects()\eqParam
+				EndSelect
+						
+				BASS_FXSetParameters(*cue\effects()\handle,*params)
 			Next
 		EndIf
 				
@@ -536,14 +548,37 @@ Procedure AddCueEffect(*cue.Cue,eType.i)
 		*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
 		
 		;S‰‰timet
+		tmpY = 40 + (amount - 1) * 115
 		Select eType
 			Case #BASS_FX_DX8_REVERB
 				text.s = "Reverb"
+				
+				*cue\effects()\gadgets[5] = TrackBarGadget(#PB_Any,75, tmpY + 40,170,30,0,960)		;Input gain [-96.0,0.0]
+				*cue\effects()\gadgets[6] = TrackBarGadget(#PB_Any,75, tmpY + 75,170,30,0,960) 		;Reverb mix [-96.0,0.0]
+				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,390, tmpY + 40,170,30,1,3000) 	;Reverb time [1,3000]
+				*cue\effects()\gadgets[8] = TrackBarGadget(#PB_Any,390, tmpY + 75,170,30,1,999)		;High freq rvrb time [0.001,0.999]
+				
+				*cue\effects()\gadgets[9] = StringGadget(#PB_Any,250,tmpY + 40,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[10] = StringGadget(#PB_Any,250,tmpY + 75,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,565,tmpY + 40,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[12] = StringGadget(#PB_Any,565,tmpY + 75,40,20,"",#PB_String_ReadOnly)
+				
+				*cue\effects()\gadgets[13] = TextGadget(#PB_Any,10,tmpY + 40,60,30,"Input gain (dB):")
+				*cue\effects()\gadgets[14] = TextGadget(#PB_Any,10,tmpY + 75,60,30,"Reverb mix (dB):")
+				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,330,tmpY + 40,60,30,"Reverb time (ms):")
+				*cue\effects()\gadgets[16] = TextGadget(#PB_Any,330,tmpY + 75,60,30,"High freq time ratio:")
+				
+				BASS_FXSetParameters(*cue\effects()\handle,@*cue\effects()\revParam)
+				
+				SetGadgetState(*cue\effects()\gadgets[5],*cue\effects()\revParam\fInGain * 10 + 960)
+				SetGadgetState(*cue\effects()\gadgets[6],*cue\effects()\revParam\fReverbMix * 10 + 960)
+				SetGadgetState(*cue\effects()\gadgets[7],*cue\effects()\revParam\fReverbTime)
+				SetGadgetState(*cue\effects()\gadgets[8],*cue\effects()\revParam\fHighFreqRTRatio * 1000)
+				
 			Case #BASS_FX_DX8_PARAMEQ
 				text.s = "Parametic EQ"
 		EndSelect
 		
-		tmpY = 40 + (amount - 1) * 115
 		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,660,115,text)
 		*cue\effects()\gadgets[#EGADGET_UP] = ButtonImageGadget(#PB_Any,625,tmpY + 10,30,30,ImageID(#UpImg))
 		*cue\effects()\gadgets[#EGADGET_DOWN] = ButtonImageGadget(#PB_Any,625,tmpY + 45,30,30,ImageID(#DownImg))
@@ -560,18 +595,18 @@ Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
 	
 	While NextElement(*cue\effects()) <> 0
 		*cue\effects()\priority = *cue\effects()\priority - 1
-		tmpY = 40 + (amount - *cue\effects()\priority - 1) * 115
-		
-		ResizeGadget(*cue\effects()\gadgets[#EGADGET_FRAME],#PB_Ignore,tmpY,#PB_Ignore,#PB_Ignore)
-		ResizeGadget(*cue\effects()\gadgets[#EGADGET_UP],#PB_Ignore,tmpY + 10,#PB_Ignore,#PB_Ignore)
-		ResizeGadget(*cue\effects()\gadgets[#EGADGET_DOWN],#PB_Ignore,tmpY + 45,#PB_Ignore,#PB_Ignore)
-		ResizeGadget(*cue\effects()\gadgets[#EGADGET_DELETE],#PB_Ignore,tmpY + 80,#PB_Ignore,#PB_Ignore)
+
+		For i = 0 To 16
+			If *cue\effects()\gadgets[i] <> 0
+				ResizeGadget(*cue\effects()\gadgets[i],#PB_Ignore,GadgetY(*cue\effects()\gadgets[i]) - 115,#PB_Ignore,#PB_Ignore)
+			EndIf
+		Next i
 	Wend
 	
 	ForEach *cue\effects()
 		If *effect = @*cue\effects()
 			BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
-			For i = 0 To 8
+			For i = 0 To 16
 				FreeGadget(*cue\effects()\gadgets[i])
 			Next i
 			
@@ -589,7 +624,14 @@ Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
 	Else
 		If *effect\handle = 0
 			*effect\handle = BASS_ChannelSetFX(*cue\stream,*effect\type,*effect\priority)
-			BASS_FXSetParameters(*effect\handle,*effect\params)
+			
+			Select *effect\type
+				Case #BASS_FX_DX8_REVERB
+					*params = @*effect\revParam
+				Case #BASS_FX_DX8_PARAMEQ
+					*params = @*effect\eqParam
+			EndSelect
+			BASS_FXSetParameters(*effect\handle,*params)
 		EndIf
 	EndIf
 EndProcedure
@@ -598,7 +640,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 589
-; FirstLine = 179
+; CursorPosition = 570
+; FirstLine = 175
 ; Folding = AA-
 ; EnableXP

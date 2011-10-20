@@ -290,13 +290,14 @@ Procedure Open_EditorWindow()
       SetGadgetItemData(#EffectType, 1, #BASS_FX_DX8_PARAMEQ)
       
       ButtonGadget(#AddEffect, 195, 5, 100, 30, "Add effect")
+      
     ;EndIf
   EndIf
 EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 34
-; FirstLine = 15
+; CursorPosition = 292
+; FirstLine = 236
 ; Folding = -
 ; EnableXP
