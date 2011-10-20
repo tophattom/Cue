@@ -263,6 +263,14 @@ Procedure OnOff(value)
 	EndIf
 EndProcedure
 
+Procedure Min(a,b)
+	If a - b <= 0
+		ProcedureReturn a
+	Else
+		ProcedureReturn b
+	EndIf
+EndProcedure
+
 Procedure SaveCueList(path.s,check=1)
 	If GetExtensionPart(path) = ""
 		path = path + ".clf"
@@ -568,6 +576,8 @@ Procedure AddCueEffect(*cue.Cue,eType.i)
 				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,330,tmpY + 40,60,30,"Reverb time (ms):")
 				*cue\effects()\gadgets[16] = TextGadget(#PB_Any,330,tmpY + 75,60,30,"High freq time ratio:")
 				
+				*cue\effects()\revParam\fReverbTime = 1000
+				*cue\effects()\revParam\fHighFreqRTRatio = 0.001
 				BASS_FXSetParameters(*cue\effects()\handle,@*cue\effects()\revParam)
 				
 				SetGadgetState(*cue\effects()\gadgets[5],*cue\effects()\revParam\fInGain * 10 + 960)
@@ -575,8 +585,41 @@ Procedure AddCueEffect(*cue.Cue,eType.i)
 				SetGadgetState(*cue\effects()\gadgets[7],*cue\effects()\revParam\fReverbTime)
 				SetGadgetState(*cue\effects()\gadgets[8],*cue\effects()\revParam\fHighFreqRTRatio * 1000)
 				
+				SetGadgetText(*cue\effects()\gadgets[9],StrF(*cue\effects()\revParam\fInGain,1))
+				SetGadgetText(*cue\effects()\gadgets[10],StrF(*cue\effects()\revParam\fReverbMix,1))
+				SetGadgetText(*cue\effects()\gadgets[11],Str(*cue\effects()\revParam\fReverbTime))
+				SetGadgetText(*cue\effects()\gadgets[12],StrF(*cue\effects()\revParam\fHighFreqRTRatio,3))
+				
 			Case #BASS_FX_DX8_PARAMEQ
 				text.s = "Parametic EQ"
+				
+				info.BASS_CHANNELINFO
+				BASS_ChannelGetInfo(*cue\stream,@info.BASS_CHANNELINFO)
+				
+				*cue\effects()\gadgets[5] = TrackBarGadget(#PB_Any,75, tmpY + 40,170,30,80,Min(16000,info\freq / 3))	;Center
+				*cue\effects()\gadgets[6] = TrackBarGadget(#PB_Any,75, tmpY + 75,170,30,1,36) 							;Bandwidth [1,36]
+				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,390, tmpY + 40,170,30,0,300) 							;Gain [-15,15]
+				
+				*cue\effects()\gadgets[9] = StringGadget(#PB_Any,250,tmpY + 40,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[10] = StringGadget(#PB_Any,250,tmpY + 75,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,565,tmpY + 40,40,20,"",#PB_String_ReadOnly)
+				
+				*cue\effects()\gadgets[13] = TextGadget(#PB_Any,10,tmpY + 40,60,30,"Center (Hz):")
+				*cue\effects()\gadgets[14] = TextGadget(#PB_Any,10,tmpY + 75,60,30,"Bandwidth (semitones):")
+				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,330,tmpY + 40,60,30,"Gain (dB):")
+				
+				*cue\effects()\eqParam\fBandwidth = 12
+				*cue\effects()\eqParam\fCenter = 80
+				*cue\effects()\eqParam\fGain = 0
+				BASS_FXSetParameters(*cue\effects()\handle,@*cue\effects()\eqParam)
+				
+				SetGadgetState(*cue\effects()\gadgets[5],*cue\effects()\eqParam\fCenter)
+				SetGadgetState(*cue\effects()\gadgets[6],*cue\effects()\eqParam\fBandwidth)
+				SetGadgetState(*cue\effects()\gadgets[7],*cue\effects()\eqParam\fGain * 10 + 150)
+				
+				SetGadgetText(*cue\effects()\gadgets[9],Str(*cue\effects()\eqParam\fCenter))
+				SetGadgetText(*cue\effects()\gadgets[10],Str(*cue\effects()\eqParam\fBandwidth))
+				SetGadgetText(*cue\effects()\gadgets[11],StrF(*cue\effects()\eqParam\fGain,1))
 		EndSelect
 		
 		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,660,115,text)
@@ -640,7 +683,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 570
-; FirstLine = 175
-; Folding = AA-
+; CursorPosition = 578
+; FirstLine = 195
+; Folding = AA+
 ; EnableXP

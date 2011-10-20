@@ -8,6 +8,8 @@ IncludeFile "includes\ui.pb"
 Declare UpdateEditorList()
 Declare HideCueControls()
 Declare ShowCueControls()
+Declare HideEffectControls()
+Declare ShowEffectControls()
 Declare UpdateCueControls()
 Declare PlayCue(*cue.Cue)
 Declare PauseCue(*cue.Cue)
@@ -400,6 +402,29 @@ Repeat ; Start of the event loop
 								
 								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\revParam)
 							EndIf
+						Case #BASS_FX_DX8_PARAMEQ ;------- EQ
+							If GadgetID = \gadgets[5]
+								value.f = GetGadgetState(\gadgets[5])
+								\eqParam\fCenter = value
+								
+								SetGadgetText(\gadgets[9],Str(value))
+								
+								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\eqParam)
+							ElseIf GadgetID = \gadgets[6]
+								value.f = GetGadgetState(\gadgets[6])
+								\eqParam\fBandwidth = Int(value)
+								
+								SetGadgetText(\gadgets[10],Str(value))
+								
+								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\eqParam)
+							ElseIf GadgetID = \gadgets[7]
+								value.f = (GetGadgetState(\gadgets[7]) - 150) / 10.0
+								\eqParam\fGain = value
+								
+								SetGadgetText(\gadgets[11],StrF(value,1))
+								
+								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\eqParam)
+							EndIf
 					EndSelect
 					
 					If GadgetID = \gadgets[#EGADGET_DELETE]
@@ -530,17 +555,7 @@ Procedure HideCueControls()
 		HideGadget(eventActionSelect(i),1)
 	Next i
 	
-	ForEach cueList()
-		If ListSize(cueList()\effects()) > 0
-			ForEach cueList()\effects()
-				For i = 0 To 16
-					If cueList()\effects()\gadgets[i] <> 0
-						HideGadget(cueList()\effects()\gadgets[i],1)
-					EndIf
-				Next i
-			Next
-		EndIf
-	Next
+	HideEffectControls()
 EndProcedure
 
 Procedure ShowCueControls()
@@ -594,16 +609,7 @@ Procedure ShowCueControls()
 				HideGadget(#Text_24, 0)
 				HideGadget(#Position, 0)
 				
-				If ListSize(*gCurrentCue\effects()) > 0
-					ForEach *gCurrentCue\effects()
-						For i = 0 To 16
-							If *gCurrentCue\effects()\gadgets[i] <> 0
-								HideGadget(*gCurrentCue\effects()\gadgets[i],0)
-							EndIf
-						Next i
-					Next
-				EndIf
-				
+				ShowEffectControls()
 			Case #TYPE_EVENT
 				HideGadget(#Text_18,0)
 				HideGadget(#Text_19,0)
@@ -624,6 +630,32 @@ Procedure ShowCueControls()
 				HideGadget(#Text_18,0)
 				HideGadget(eventCueSelect(0),0)
 		EndSelect
+	EndIf
+EndProcedure
+
+Procedure HideEffectControls()
+	ForEach cueList()
+		If ListSize(cueList()\effects()) > 0
+			ForEach cueList()\effects()
+				For i = 0 To 16
+					If cueList()\effects()\gadgets[i] <> 0
+						HideGadget(cueList()\effects()\gadgets[i],1)
+					EndIf
+				Next i
+			Next
+		EndIf
+	Next
+EndProcedure
+
+Procedure ShowEffectControls()
+	If ListSize(*gCurrentCue\effects()) > 0
+		ForEach *gCurrentCue\effects()
+			For i = 0 To 16
+				If *gCurrentCue\effects()\gadgets[i] <> 0
+					HideGadget(*gCurrentCue\effects()\gadgets[i],0)
+				EndIf
+			Next i
+		Next
 	EndIf
 EndProcedure
 
@@ -736,7 +768,7 @@ Procedure UpdateCueControls()
 	Next i
 	
 	UpdatePosField()
-	
+
 	If *gCurrentCue\cueType = #TYPE_AUDIO
 		If GetGadgetState(#EffectType) > -1 And *gCurrentCue\stream <> 0
 			DisableGadget(#AddEffect, 0)
@@ -746,6 +778,9 @@ Procedure UpdateCueControls()
 	Else
 		DisableGadget(#AddEffect, 1)
 	EndIf
+	
+	HideEffectControls()
+	ShowEffectControls()
 
 EndProcedure
 
@@ -984,7 +1019,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 388
-; FirstLine = 347
-; Folding = AA-
+; CursorPosition = 420
+; FirstLine = 418
+; Folding = AA9
 ; EnableXP
