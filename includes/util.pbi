@@ -5,7 +5,9 @@ Structure Effect
 	type.i
 	priority.i
 	
-	gadgets.l[8]
+	gadgets.l[9]
+	
+	active.i
 EndStructure
 
 Structure Cue
@@ -95,6 +97,7 @@ Enumeration
 	#EGADGET_UP
 	#EGADGET_DOWN
 	#EGADGET_DELETE
+	#EGADGET_ACTIVE
 EndEnumeration
 
 ;Kuvien vakiot
@@ -518,7 +521,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i)
 				*cue\effects()\priority + 1
 				
 				BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
-				BASS_ChannelSetFX(*cue\stream,*cue\effects()\type,*cue\effects()\priority)
+				*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,*cue\effects()\type,*cue\effects()\priority)
 				BASS_FXSetParameters(*cue\effects()\handle,*cue\effects()\params)
 			Next
 		EndIf
@@ -529,6 +532,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i)
 		
 		*cue\effects()\priority = 0
 		*cue\effects()\type = eType
+		*cue\effects()\active = #True
 		*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
 		
 		;S‰‰timet
@@ -544,6 +548,8 @@ Procedure AddCueEffect(*cue.Cue,eType.i)
 		*cue\effects()\gadgets[#EGADGET_UP] = ButtonImageGadget(#PB_Any,625,tmpY + 10,30,30,ImageID(#UpImg))
 		*cue\effects()\gadgets[#EGADGET_DOWN] = ButtonImageGadget(#PB_Any,625,tmpY + 45,30,30,ImageID(#DownImg))
 		*cue\effects()\gadgets[#EGADGET_DELETE] = ButtonImageGadget(#PB_Any,625,tmpy + 80,30,30,ImageID(#DeleteImg))
+		*cue\effects()\gadgets[#EGADGET_ACTIVE] = CheckBoxGadget(#PB_Any,10,tmpY + 15,60,20,"Active")
+		SetGadgetState(*cue\effects()\gadgets[#EGADGET_ACTIVE],1)
 	EndIf
 EndProcedure
 
@@ -565,7 +571,7 @@ Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
 	ForEach *cue\effects()
 		If *effect = @*cue\effects()
 			BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
-			For i = 0 To 5
+			For i = 0 To 8
 				FreeGadget(*cue\effects()\gadgets[i])
 			Next i
 			
@@ -575,10 +581,24 @@ Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
 	Next
 EndProcedure
 
+Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
+	If value = 0
+		BASS_ChannelRemoveFX(*cue\stream,*effect\handle)
+		*effect\handle = 0
+		*effect\active = #False
+	Else
+		If *effect\handle = 0
+			*effect\handle = BASS_ChannelSetFX(*cue\stream,*effect\type,*effect\priority)
+			BASS_FXSetParameters(*effect\handle,*effect\params)
+		EndIf
+	EndIf
+EndProcedure
+
+
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 536
-; FirstLine = 150
+; CursorPosition = 589
+; FirstLine = 179
 ; Folding = AA-
 ; EnableXP

@@ -32,7 +32,7 @@ EndEnumeration
 
 ;- Gadget Constants
 ;
-Enumeration
+Enumeration 1
   #Frame3D_0
   #PlayButton
   #PauseButton
@@ -296,7 +296,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 288
-; FirstLine = 184
-; Folding = +
+; CursorPosition = 34
+; FirstLine = 15
+; Folding = -
 ; EnableXP
