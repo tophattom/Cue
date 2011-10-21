@@ -93,7 +93,7 @@ Enumeration
 	#SETTING_RELATIVE
 EndEnumeration
 
-#FORMAT_VERSION = 3.0
+#FORMAT_VERSION = 3.5
 
 
 ;Efektien s‰‰timet
@@ -354,7 +354,7 @@ Procedure Min(a,b)
 	EndIf
 EndProcedure
 
-Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.BASS_DX8_PARAMEQ=0,active=1)
+Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.BASS_DX8_PARAMEQ=0,active=1,path.s="")
 	If *cue\stream <> 0
 		amount = ListSize(*cue\effects())
 		
@@ -362,27 +362,61 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 			ForEach *cue\effects()
 				*cue\effects()\priority + 1
 				
-				BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
-				*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,*cue\effects()\type,*cue\effects()\priority)
+				If *cue\effects()\type <> #EFFECT_VST
+					BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
+					*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,*cue\effects()\type,*cue\effects()\priority)
+					
+					Select *cue\effects()\type
+						Case #BASS_FX_DX8_REVERB
+							*params = @*cue\effects()\revParam
+						Case #BASS_FX_DX8_PARAMEQ
+							*params = @*cue\effects()\eqParam
+					EndSelect
+							
+					BASS_FXSetParameters(*cue\effects()\handle,*params)
+				Else
+					count = BASS_VST_GetParamCount(*cue\effects()\handle)
+					Dim tmp.f(count - 1)
+					For i = 0 To count - 1
+						tmp(i) = BASS_VST_GetParam(*cue\effects()\handle,i)
+					Next i
+					
+					BASS_VST_ChannelRemoveDSP(*cue\stream,*cue\effects()\handle)
+					*cue\effects()\handle = BASS_VST_ChannelSetDSP(*cue\stream,@*cue\effects()\pluginPath,0,*cue\effects()\priority)
+					BASS_VST_EmbedEditor(*cue\effects()\handle,WindowID(*cue\effects()\gadgets[5]))
+					
+					For i = 0 To count - 1
+						BASS_VST_SetParam(*cue\effects()\handle,i,tmp(i))
+					Next i
+					
+					FreeArray(tmp())
+				EndIf
 				
-				Select *cue\effects()\type
-					Case #BASS_FX_DX8_REVERB
-						*params = @*cue\effects()\revParam
-					Case #BASS_FX_DX8_PARAMEQ
-						*params = @*cue\effects()\eqParam
-				EndSelect
-						
-				BASS_FXSetParameters(*cue\effects()\handle,*params)
 			Next
 		EndIf
 				
 		
-		If eType = #EFFECT_VST
+		If eType = #EFFECT_VST And path = ""
 			path.s = OpenFileRequester("Select plugin file","","DLL files | *.dll",0)
 			If path = ""
 				ProcedureReturn #False
 			EndIf
+		ElseIf eType = #EFFECT_VST And path <> ""
+			If FileSize(path) = -1
+				result = MessageRequester("File not found","Plugin file " + path + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+				
+				If result = #PB_MessageRequester_Yes
+					path.s = OpenFileRequester("Select plugin file","","DLL files | *.dll",0)
+					If path = ""
+						ProcedureReturn #False
+					EndIf
+				Else
+					ProcedureReturn #False
+				EndIf
+			EndIf
 		EndIf
+		
+		
 			
 		AddElement(*cue\effects())
 		amount + 1
@@ -501,6 +535,10 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 		*cue\effects()\gadgets[#EGADGET_DELETE] = ButtonImageGadget(#PB_Any,625,tmpy + 80,30,30,ImageID(#DeleteImg))
 		*cue\effects()\gadgets[#EGADGET_ACTIVE] = CheckBoxGadget(#PB_Any,10,tmpY + 15,60,20,"Active")
 		SetGadgetState(*cue\effects()\gadgets[#EGADGET_ACTIVE],1)
+		
+		ProcedureReturn #True
+		
+		CloseGadgetList()
 	EndIf
 EndProcedure
 
@@ -656,10 +694,12 @@ Procedure SaveCueList(path.s,check=1)
 			
 			;Efektit
 			eAmount = ListSize(cueList()\effects())
+			Debug "Effect amount:" + Str(eAmount)
+			WriteInteger(0,eAmount)
 			If eAmount > 0
-				WriteInteger(0,eAmount)
 				ForEach cueList()\effects()
 					With cueList()\effects()
+						Debug "Effect type: " + Str(\type)
 						WriteByte(0,\type)
 						WriteByte(0,\active)
 						
@@ -672,6 +712,16 @@ Procedure SaveCueList(path.s,check=1)
 							WriteFloat(0,\eqParam\fCenter)
 							WriteFloat(0,\eqParam\fBandwidth)
 							WriteFloat(0,\eqParam\fGain)
+						ElseIf \type = #EFFECT_VST
+							WriteStringN(0,\pluginPath)
+							
+							pAmount = BASS_VST_GetParamCount(\handle)
+							Debug \handle
+							Debug "Param amount: " + Str(pAmount)
+							WriteInteger(0,pAmount)
+							For i = 0 To pAmount - 1
+								WriteFloat(0,BASS_VST_GetParam(\handle,i))
+							Next i
 						EndIf
 					EndWith
 				Next
@@ -738,7 +788,7 @@ Procedure LoadCueList(path.s)
 				\desc = ReadString(0)
 				
 				\filePath = ReadString(0)
-				If \cueType = #TYPE_AUDIO
+				If \cueType = #TYPE_AUDIO And \filePath <> ""
 					If FileSize(\filePath) = -1
 						result = MessageRequester("File not found","File " + \filePath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
 						
@@ -801,9 +851,11 @@ Procedure LoadCueList(path.s)
 				
 				;Efektit
 				eAmount = ReadInteger(0)
+				Debug "Effect amount: " + Str(eAmount)
 				If eAmount > 0
 					For i = 1 To eAmount
 						tmpType = ReadByte(0)
+						Debug "Effect type: " + Str(tmpType)
 						tmpActive = ReadByte(0)
 						
 						If tmpType = #BASS_FX_DX8_REVERB
@@ -821,10 +873,21 @@ Procedure LoadCueList(path.s)
 							eqParams\fGain = ReadFloat(0)
 							
 							AddCueEffect(@cueList(),tmpType,0,@eqParams,tmpActive)
+						ElseIf tmpType = #EFFECT_VST
+							tmpPath.s = ReadString(0)
+							result = AddCueEffect(@cueList(),tmpType,0,0,tmpActive,tmpPath)
+							
+							If result = #True
+								pAmount = ReadInteger(0)
+								For k = 0 To pAmount - 1
+									BASS_VST_SetParam(cueList()\effects()\handle,k,ReadFloat(0))
+								Next k
+							EndIf
+							
 						EndIf
 					Next i
 				EndIf
-				
+				ChangeCurrentElement(cueList(),*prev)
 						
 			EndWith
 		Next
@@ -883,7 +946,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 401
-; FirstLine = 172
-; Folding = AQg
+; CursorPosition = 95
+; FirstLine = 77
+; Folding = AAg
 ; EnableXP

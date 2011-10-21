@@ -623,6 +623,10 @@ Repeat ; Start of the event loop
 			End
 		Else
 			HideWindow(eWindow,1)
+			
+			If eWindow = #EditorWindow
+				gEditor = #False
+			endif
 		EndIf
 	EndIf
 	
@@ -1186,7 +1190,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 503
-; FirstLine = 310
-; Folding = AAw
+; CursorPosition = 628
+; FirstLine = 520
+; Folding = CAw
 ; EnableXP
