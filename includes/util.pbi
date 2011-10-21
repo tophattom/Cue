@@ -104,6 +104,9 @@ Enumeration
 	#EGADGET_ACTIVE
 EndEnumeration
 
+;Onko efekti VST plugin
+#EFFECT_VST = 9
+
 ;Kuvien vakiot
 Enumeration
 	#DeleteImg
@@ -113,6 +116,85 @@ Enumeration
 	#PauseImg
 	#StopImg
 EndEnumeration
+
+;- Gadget Constants
+;{
+Enumeration 1
+  #Frame3D_0
+  #PlayButton
+  #PauseButton
+  #StopButton
+  #Listview_1
+  #CueList
+  #Frame3D_2
+  #EditorButton
+  
+  #EditorList
+  #AddAudio
+  #AddChange
+  #AddEvent
+  #AddVideo
+  #MasterSlider
+  #Text_2
+  #CueNameField
+  #Text_3
+  #CueDescField
+  #Text_4
+  #CueFileField
+  #Text_6
+  #OpenCueFile
+  #Image_1
+  #ModeSelect
+  #Text_8
+  #Text_9
+  #LengthField
+  #StartPos
+  #EndPos
+  #Text_10
+  #Text_11
+  #Text_12
+  #Text_13
+  #FadeIn
+  #FadeOut
+  #Text_14
+  #Text_15
+  #VolumeSlider
+  #PanSlider
+  #CueVolume
+  #CuePan
+  #UpButton
+  #DownButton
+  #DeleteButton
+  #Text_16
+  #CueSelect
+  #Text_17
+  #StartDelay
+  #WaveImg
+  #Text_18
+  #Text_19
+  #Text_20
+  #ChangeDur
+  #EditorPlay
+  #EditorPause
+  #EditorStop
+  #BlankWave
+  #Text_21
+  #Text_22
+  #Text_23
+  #LoopStart
+  #LoopEnd
+  #LoopCount
+  #LoopEnable
+  #Position
+  #Text_24
+  
+  #EditorTabs
+  
+  #AddEffect
+  #Text_25
+  #EffectType
+EndEnumeration
+;}
 
 #WAVEFORM_W = 660
 
@@ -293,14 +375,26 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 			Next
 		EndIf
 				
-				
+		
+		If eType = #EFFECT_VST
+			path.s = OpenFileRequester("Select plugin file","","DLL files | *.dll",0)
+			If path = ""
+				ProcedureReturn #False
+			EndIf
+		EndIf
+			
 		AddElement(*cue\effects())
 		amount + 1
 		
 		*cue\effects()\priority = 0
 		*cue\effects()\type = eType
 		*cue\effects()\active = active
-		*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
+		If eType <> #EFFECT_VST
+			*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
+		Else
+			*cue\effects()\handle = BASS_VST_ChannelSetDSP(*cue\stream,@path,0,0)
+		EndIf
+		
 		
 		;S‰‰timet
 		tmpY = 40 + (amount - 1) * 115
@@ -382,6 +476,21 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				SetGadgetText(*cue\effects()\gadgets[9],Str(*cue\effects()\eqParam\fCenter))
 				SetGadgetText(*cue\effects()\gadgets[10],Str(*cue\effects()\eqParam\fBandwidth))
 				SetGadgetText(*cue\effects()\gadgets[11],StrF(*cue\effects()\eqParam\fGain,1))
+			Case #EFFECT_VST
+				vstInfo.BASS_VST_INFO
+				BASS_VST_GetInfo(*cue\effects()\handle,@vstInfo)
+				
+				text.s = vstInfo\effectName
+				
+				If vstInfo\hasEditor = 1
+					*cue\effects()\gadgets[5] = OpenWindow(#PB_Any,0,0,vstInfo\editorWidth,vstInfo\editorHeight,*cue\name + " - " + vstInfo\effectName,#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
+					BASS_VST_EmbedEditor(*cue\effects()\handle,WindowID(*cue\effects()\gadgets[5]))
+					
+					OpenGadgetList(#EditorTabs,1)
+					
+					*cue\effects()\gadgets[6] = ButtonGadget(#PB_Any,10,tmpY + 40,70,30,"Open editor")
+				EndIf
+				
 		EndSelect
 		
 		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,660,115,text)
@@ -403,7 +512,9 @@ Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
 
 		For i = 0 To 16
 			If *cue\effects()\gadgets[i] <> 0
-				ResizeGadget(*cue\effects()\gadgets[i],#PB_Ignore,GadgetY(*cue\effects()\gadgets[i]) - 115,#PB_Ignore,#PB_Ignore)
+				If Not IsWindow(*cue\effects()\gadgets[i])
+					ResizeGadget(*cue\effects()\gadgets[i],#PB_Ignore,GadgetY(*cue\effects()\gadgets[i]) - 115,#PB_Ignore,#PB_Ignore)
+				EndIf
 			EndIf
 		Next i
 	Wend
@@ -752,7 +863,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 298
-; FirstLine = 144
-; Folding = AIw
+; CursorPosition = 486
+; FirstLine = 251
+; Folding = Awg
 ; EnableXP

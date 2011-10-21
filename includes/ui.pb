@@ -30,83 +30,7 @@ Enumeration
   #DeleteSc
 EndEnumeration
 
-;- Gadget Constants
-;
-Enumeration 1
-  #Frame3D_0
-  #PlayButton
-  #PauseButton
-  #StopButton
-  #Listview_1
-  #CueList
-  #Frame3D_2
-  #EditorButton
-  
-  #EditorList
-  #AddAudio
-  #AddChange
-  #AddEvent
-  #AddVideo
-  #MasterSlider
-  #Text_2
-  #CueNameField
-  #Text_3
-  #CueDescField
-  #Text_4
-  #CueFileField
-  #Text_6
-  #OpenCueFile
-  #Image_1
-  #ModeSelect
-  #Text_8
-  #Text_9
-  #LengthField
-  #StartPos
-  #EndPos
-  #Text_10
-  #Text_11
-  #Text_12
-  #Text_13
-  #FadeIn
-  #FadeOut
-  #Text_14
-  #Text_15
-  #VolumeSlider
-  #PanSlider
-  #CueVolume
-  #CuePan
-  #UpButton
-  #DownButton
-  #DeleteButton
-  #Text_16
-  #CueSelect
-  #Text_17
-  #StartDelay
-  #WaveImg
-  #Text_18
-  #Text_19
-  #Text_20
-  #ChangeDur
-  #EditorPlay
-  #EditorPause
-  #EditorStop
-  #BlankWave
-  #Text_21
-  #Text_22
-  #Text_23
-  #LoopStart
-  #LoopEnd
-  #LoopCount
-  #LoopEnable
-  #Position
-  #Text_24
-  
-  #EditorTabs
-  
-  #AddEffect
-  #Text_25
-  #EffectType
-EndEnumeration
+
 
 #WAVEFORM_W = 660
 
@@ -288,6 +212,8 @@ Procedure Open_EditorWindow()
       SetGadgetItemData(#EffectType, 0, #BASS_FX_DX8_REVERB)
       AddGadgetItem(#EffectType, 1, "Parametric EQ")
       SetGadgetItemData(#EffectType, 1, #BASS_FX_DX8_PARAMEQ)
+      AddGadgetItem(#EffectType, 2, "VST plugin")
+      SetGadgetItemData(#EffectType , 2, #EFFECT_VST)
       
       ButtonGadget(#AddEffect, 195, 5, 100, 30, "Add effect")
       
@@ -297,7 +223,6 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 292
-; FirstLine = 236
+; CursorPosition = 32
 ; Folding = -
 ; EnableXP

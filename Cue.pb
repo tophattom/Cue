@@ -2,6 +2,7 @@
 
 
 IncludeFile "includes\bass.pbi"
+IncludeFile "includes\bassvst.pbi"
 IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
 
@@ -427,6 +428,10 @@ Repeat ; Start of the event loop
 								
 								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\eqParam)
 							EndIf
+						Case #EFFECT_VST ;------- VST
+							If GadgetID = \gadgets[6]
+								HideWindow(\gadgets[5],0)
+							EndIf
 					EndSelect
 					
 					If GadgetID = \gadgets[#EGADGET_DELETE]
@@ -437,7 +442,9 @@ Repeat ; Start of the event loop
 						
 						For i = 5 To 16
 							If \gadgets[i] <> 0
-								DisableGadget(\gadgets[i],OnOff(state))
+								If Not IsWindow(\gadgets[i])
+									DisableGadget(\gadgets[i],OnOff(state))
+								EndIf
 							EndIf
 						Next i
 					ElseIf GadgetID = \gadgets[#EGADGET_UP]
@@ -547,12 +554,12 @@ Repeat ; Start of the event loop
 	Next i
 
 	If Event = #PB_Event_CloseWindow
-		If EventWindow() = #EditorWindow
-			gEditor = #False
-			HideWindow(#EditorWindow,1)
-			UpdateMainCueList()
-		ElseIf EventWindow = #MainWindow
+		eWindow = EventWindow()
+
+		If eWindow = #MainWindow
 			End
+		Else
+			HideWindow(eWindow,1)
 		EndIf
 	EndIf
 	
@@ -730,7 +737,11 @@ Procedure HideEffectControls()
 			ForEach cueList()\effects()
 				For i = 0 To 16
 					If cueList()\effects()\gadgets[i] <> 0
-						HideGadget(cueList()\effects()\gadgets[i],1)
+						If IsWindow(cueList()\effects()\gadgets[i])
+							HideWindow(cueList()\effects()\gadgets[i],1)
+						Else
+							HideGadget(cueList()\effects()\gadgets[i],1)
+						EndIf
 					EndIf
 				Next i
 			Next
@@ -743,7 +754,9 @@ Procedure ShowEffectControls()
 		ForEach *gCurrentCue\effects()
 			For i = 0 To 16
 				If *gCurrentCue\effects()\gadgets[i] <> 0
-					HideGadget(*gCurrentCue\effects()\gadgets[i],0)
+					If Not IsWindow(*gCurrentCue\effects()\gadgets[i])
+						HideGadget(cueList()\effects()\gadgets[i],0)
+					EndIf
 				EndIf
 			Next i
 		Next
@@ -1110,7 +1123,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 741
-; FirstLine = 481
+; CursorPosition = 562
+; FirstLine = 450
 ; Folding = CBw
 ; EnableXP
