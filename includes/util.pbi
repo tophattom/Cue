@@ -5,11 +5,12 @@ Structure Effect
 		eqParam.BASS_DX8_PARAMEQ
 	EndStructureUnion
 	
-	
 	type.i
 	priority.i
 	
 	gadgets.l[17]
+	
+	pluginPath.s
 	
 	active.i
 EndStructure
@@ -393,10 +394,12 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 			*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
 		Else
 			*cue\effects()\handle = BASS_VST_ChannelSetDSP(*cue\stream,@path,0,0)
+			*cue\effects()\pluginPath = path
 		EndIf
 		
 		
 		;S‰‰timet
+		OpenGadgetList(#EditorTabs,1)
 		tmpY = 40 + (amount - 1) * 115
 		Select eType
 			Case #BASS_FX_DX8_REVERB
@@ -489,8 +492,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 					OpenGadgetList(#EditorTabs,1)
 					
 					*cue\effects()\gadgets[6] = ButtonGadget(#PB_Any,10,tmpY + 40,70,30,"Open editor")
-				EndIf
-				
+				EndIf		
 		EndSelect
 		
 		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,660,115,text)
@@ -521,9 +523,17 @@ Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
 	
 	ForEach *cue\effects()
 		If *effect = @*cue\effects()
-			BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
+			If *effect\type <> #EFFECT_VST
+				BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
+			Else
+				BASS_VST_ChannelRemoveDSP(*cue\stream,*cue\effects()\handle)
+				CloseWindow(*cue\effects()\gadgets[5])
+			EndIf
+			
 			For i = 0 To 16
-				FreeGadget(*cue\effects()\gadgets[i])
+				If Not IsWindow(*cue\effects()\gadgets[i])
+					FreeGadget(*cue\effects()\gadgets[i])
+				EndIf
 			Next i
 			
 			DeleteElement(*cue\effects())
@@ -534,8 +544,13 @@ EndProcedure
 
 Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
 	If value = 0
-		BASS_ChannelRemoveFX(*cue\stream,*effect\handle)
-		*effect\handle = 0
+		If *effect\type <> #EFFECT_VST
+			BASS_ChannelRemoveFX(*cue\stream,*effect\handle)
+			*effect\handle = 0
+		Else
+			BASS_VST_SetBypass(*effect\handle,1)
+		EndIf
+		
 		*effect\active = #False
 	Else
 		If *effect\handle = 0
@@ -549,6 +564,11 @@ Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
 			EndSelect
 			BASS_FXSetParameters(*effect\handle,*params)
 		EndIf
+		
+		If *effect\type = #EFFECT_VST
+			BASS_VST_SetBypass(*effect\handle,0)
+		EndIf
+		
 	EndIf
 EndProcedure
 
@@ -863,7 +883,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 486
-; FirstLine = 251
-; Folding = Awg
+; CursorPosition = 401
+; FirstLine = 172
+; Folding = AQg
 ; EnableXP

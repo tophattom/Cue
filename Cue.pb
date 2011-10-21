@@ -458,35 +458,66 @@ Repeat ; Start of the event loop
 							ChangeCurrentElement(*gCurrentCue\effects(),*currentEffect)
 							
 							For i = 0 To 16
-								If \gadgets[i] <> 0
+								If \gadgets[i] <> 0 And Not IsWindow(\gadgets[i])
 									ResizeGadget(\gadgets[i],#PB_Ignore,GadgetY(\gadgets[i]) - 115,#PB_Ignore,#PB_Ignore)
 								EndIf
 							Next i
 							
 							\priority + 1
 							
-							BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
-							\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
-							If \type = #BASS_FX_DX8_REVERB
-								BASS_FXSetParameters(\handle,\revParam)
-							ElseIf \type = #BASS_FX_DX8_PARAMEQ
-								BASS_FXSetParameters(\handle,\eqParam)
+							If \type <> #EFFECT_VST
+								BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
+								\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
+								If \type = #BASS_FX_DX8_REVERB
+									BASS_FXSetParameters(\handle,\revParam)
+								ElseIf \type = #BASS_FX_DX8_PARAMEQ
+									BASS_FXSetParameters(\handle,\eqParam)
+								EndIf
+							Else
+								count = BASS_VST_GetParamCount(\handle)
+								Dim tmp.f(count - 1)
+								For i = 0 To count - 1
+									tmp(i) = BASS_VST_GetParam(\handle,i)
+								Next i
+								
+								BASS_VST_ChannelRemoveDSP(*gCurrentCue\stream,\handle)
+								\handle = BASS_VST_ChannelSetDSP(*gCurrentCue\stream,@\pluginPath,0,\priority)
+								For i = 0 To count - 1
+									BASS_VST_SetParam(\handle,i,tmp(i))
+								Next i
+								BASS_VST_EmbedEditor(\handle,WindowID(\gadgets[5]))
+								FreeArray(tmp())
 							EndIf
 							
-							
-							
+	
 							*prevEffect\priority - 1
 							
-							BASS_ChannelRemoveFX(*gCurrentCue\stream,*prevEffect\handle)
-							*prevEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*prevEffect\type,*prevEffect\priority)
-							If *prevEffect\type = #BASS_FX_DX8_REVERB
-								BASS_FXSetParameters(*prevEffect\handle,*prevEffect\revParam)
-							ElseIf *prevEffect\type = #BASS_FX_DX8_PARAMEQ
-								BASS_FXSetParameters(*prevEffect\handle,*prevEffect\eqParam)
+							If *prevEffect\type <> #EFFECT_VST
+								BASS_ChannelRemoveFX(*gCurrentCue\stream,*prevEffect\handle)
+								*prevEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*prevEffect\type,*prevEffect\priority)
+								If *prevEffect\type = #BASS_FX_DX8_REVERB
+									BASS_FXSetParameters(*prevEffect\handle,*prevEffect\revParam)
+								ElseIf *prevEffect\type = #BASS_FX_DX8_PARAMEQ
+									BASS_FXSetParameters(*prevEffect\handle,*prevEffect\eqParam)
+								EndIf
+							Else
+								count = BASS_VST_GetParamCount(*prevEffect\handle)
+								Dim tmp.f(count - 1)
+								For i = 0 To count - 1
+									tmp(i) = BASS_VST_GetParam(*prevEffect\handle,i)
+								Next i
+								
+								BASS_VST_ChannelRemoveDSP(*gCurrentCue\stream,*prevEffect\handle)
+								*prevEffect\handle = BASS_VST_ChannelSetDSP(*gCurrentCue\stream,@*prevEffect\pluginPath,0,*prevEffect\priority)
+								For i = 0 To count - 1
+									BASS_VST_SetParam(*prevEffect\handle,i,tmp(i))
+								Next i
+								BASS_VST_EmbedEditor(*prevEffect\handle,WindowID(*prevEffect\gadgets[5]))
+								FreeArray(tmp())
 							EndIf
 							
-							For i = 0 To 16
-								If *prevEffect\gadgets[i] <> 0
+							For i = 0 To 16 
+								If *prevEffect\gadgets[i] <> 0 And Not IsWindow(*prevEffect\gadgets[i])
 									ResizeGadget(*prevEffect\gadgets[i],#PB_Ignore,GadgetY(*prevEffect\gadgets[i]) + 115,#PB_Ignore,#PB_Ignore)
 								EndIf
 							Next i
@@ -502,33 +533,65 @@ Repeat ; Start of the event loop
 							ChangeCurrentElement(*gCurrentCue\effects(),*currentEffect)
 							
 							For i = 0 To 16
-								If \gadgets[i] <> 0
+								If \gadgets[i] <> 0 And Not IsWindow(\gadgets[i])
 									ResizeGadget(\gadgets[i],#PB_Ignore,GadgetY(\gadgets[i]) + 115,#PB_Ignore,#PB_Ignore)
 								EndIf
 							Next i
 							
 							\priority - 1
 							
-							BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
-							\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
-							If \type = #BASS_FX_DX8_REVERB
-								BASS_FXSetParameters(\handle,\revParam)
-							ElseIf \type = #BASS_FX_DX8_PARAMEQ
-								BASS_FXSetParameters(\handle,\eqParam)
+							If \type <> #EFFECT_VST
+								BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
+								\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
+								If \type = #BASS_FX_DX8_REVERB
+									BASS_FXSetParameters(\handle,\revParam)
+								ElseIf \type = #BASS_FX_DX8_PARAMEQ
+									BASS_FXSetParameters(\handle,\eqParam)
+								EndIf
+							Else
+								count = BASS_VST_GetParamCount(\handle)
+								Dim tmp.f(count - 1)
+								For i = 0 To count - 1
+									tmp(i) = BASS_VST_GetParam(\handle,i)
+								Next i
+								
+								BASS_VST_ChannelRemoveDSP(*gCurrentCue\stream,\handle)
+								\handle = BASS_VST_ChannelSetDSP(*gCurrentCue\stream,@\pluginPath,0,\priority)
+								For i = 0 To count - 1
+									BASS_VST_SetParam(\handle,i,tmp(i))
+								Next i
+								BASS_VST_EmbedEditor(\handle,WindowID(\gadgets[5]))
+								FreeArray(tmp())
 							EndIf
 							
 							*nextEffect\priority + 1
 							
-							BASS_ChannelRemoveFX(*gCurrentCue\stream,*nextEffect\handle)
-							*nextEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*nextEffect\type,*nextEffect\priority)
-							If *nextEffect\type = #BASS_FX_DX8_REVERB
-								BASS_FXSetParameters(*nextEffect\handle,*nextEffect\revParam)
-							ElseIf *nextEffect\type = #BASS_FX_DX8_PARAMEQ
-								BASS_FXSetParameters(*nextEffect\handle,*nextEffect\eqParam)
+							If *nextEffect\type <> #EFFECT_VST
+								BASS_ChannelRemoveFX(*gCurrentCue\stream,*nextEffect\handle)
+								*nextEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*nextEffect\type,*nextEffect\priority)
+								If *nextEffect\type = #BASS_FX_DX8_REVERB
+									BASS_FXSetParameters(*nextEffect\handle,*nextEffect\revParam)
+								ElseIf *nextEffect\type = #BASS_FX_DX8_PARAMEQ
+									BASS_FXSetParameters(*nextEffect\handle,*nextEffect\eqParam)
+								EndIf
+							Else
+								count = BASS_VST_GetParamCount(*nextEffect\handle)
+								Dim tmp.f(count - 1)
+								For i = 0 To count - 1
+									tmp(i) = BASS_VST_GetParam(*nextEffect\handle,i)
+								Next i
+								
+								BASS_VST_ChannelRemoveDSP(*gCurrentCue\stream,*nextEffect\handle)
+								*nextEffect\handle = BASS_VST_ChannelSetDSP(*gCurrentCue\stream,@*nextEffect\pluginPath,0,*nextEffect\priority)
+								For i = 0 To count - 1
+									BASS_VST_SetParam(*nextEffect\handle,i,tmp(i))
+								Next i
+								BASS_VST_EmbedEditor(*nextEffect\handle,WindowID(*nextEffect\gadgets[5]))
+								FreeArray(tmp())
 							EndIf
 							
 							For i = 0 To 16
-								If *nextEffect\gadgets[i] <> 0
+								If *nextEffect\gadgets[i] <> 0 And Not IsWindow(*nextEffect\gadgets[i])
 									ResizeGadget(*nextEffect\gadgets[i],#PB_Ignore,GadgetY(*nextEffect\gadgets[i]) - 115,#PB_Ignore,#PB_Ignore)
 								EndIf
 							Next i
@@ -755,7 +818,7 @@ Procedure ShowEffectControls()
 			For i = 0 To 16
 				If *gCurrentCue\effects()\gadgets[i] <> 0
 					If Not IsWindow(*gCurrentCue\effects()\gadgets[i])
-						HideGadget(cueList()\effects()\gadgets[i],0)
+						HideGadget(*gCurrentCue\effects()\gadgets[i],0)
 					EndIf
 				EndIf
 			Next i
@@ -1123,7 +1186,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 562
-; FirstLine = 450
-; Folding = CBw
+; CursorPosition = 503
+; FirstLine = 310
+; Folding = AAw
 ; EnableXP
