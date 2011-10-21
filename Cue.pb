@@ -63,6 +63,7 @@ Repeat ; Start of the event loop
 	;You can place code here, and use the result as parameters for the procedures
 	
 	;- Valikot
+	;{
 	If Event = #PB_Event_Menu
 		MenuID = EventMenu()
 		   
@@ -119,9 +120,9 @@ Repeat ; Start of the event loop
       			*gCurrentCue = 0
       			UpdateEditorList()
       		EndIf
-		EndIf
-			
+		EndIf	
 	EndIf
+	;}
 	
 	;- P‰‰ikkuna
 	If Event = #PB_Event_Gadget
@@ -368,6 +369,7 @@ Repeat ; Start of the event loop
 		EndIf
 		
 		;----- Efektien s‰‰timet
+		;{
 		If *gCurrentCue <> 0 And ListSize(*gCurrentCue\effects()) > 0
 			ForEach *gCurrentCue\effects()
 				With *gCurrentCue\effects()
@@ -438,10 +440,99 @@ Repeat ; Start of the event loop
 								DisableGadget(\gadgets[i],OnOff(state))
 							EndIf
 						Next i
+					ElseIf GadgetID = \gadgets[#EGADGET_UP]
+						*currentEffect.Effect = @*gCurrentCue\effects()
+						
+						If *currentEffect <> FirstElement(*gCurrentCue\effects())
+							ChangeCurrentElement(*gCurrentCue\effects(),*currentEffect)
+							*prevEffect.Effect = PreviousElement(*gCurrentCue\effects())
+
+							SwapElements(*gCurrentCue\effects(),*currentEffect,*prevEffect)
+							ChangeCurrentElement(*gCurrentCue\effects(),*currentEffect)
+							
+							For i = 0 To 16
+								If \gadgets[i] <> 0
+									ResizeGadget(\gadgets[i],#PB_Ignore,GadgetY(\gadgets[i]) - 115,#PB_Ignore,#PB_Ignore)
+								EndIf
+							Next i
+							
+							\priority + 1
+							
+							BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
+							\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
+							If \type = #BASS_FX_DX8_REVERB
+								BASS_FXSetParameters(\handle,\revParam)
+							ElseIf \type = #BASS_FX_DX8_PARAMEQ
+								BASS_FXSetParameters(\handle,\eqParam)
+							EndIf
+							
+							
+							
+							*prevEffect\priority - 1
+							
+							BASS_ChannelRemoveFX(*gCurrentCue\stream,*prevEffect\handle)
+							*prevEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*prevEffect\type,*prevEffect\priority)
+							If *prevEffect\type = #BASS_FX_DX8_REVERB
+								BASS_FXSetParameters(*prevEffect\handle,*prevEffect\revParam)
+							ElseIf *prevEffect\type = #BASS_FX_DX8_PARAMEQ
+								BASS_FXSetParameters(*prevEffect\handle,*prevEffect\eqParam)
+							EndIf
+							
+							For i = 0 To 16
+								If *prevEffect\gadgets[i] <> 0
+									ResizeGadget(*prevEffect\gadgets[i],#PB_Ignore,GadgetY(*prevEffect\gadgets[i]) + 115,#PB_Ignore,#PB_Ignore)
+								EndIf
+							Next i
+						EndIf
+					ElseIf GadgetID = \gadgets[#EGADGET_DOWN]
+						*currentEffect.Effect = @*gCurrentCue\effects()
+						
+						If *currentEffect <> LastElement(*gCurrentCue\effects())
+							ChangeCurrentElement(*gCurrentCue\effects(),*currentEffect)
+							*nextEffect.Effect = NextElement(*gCurrentCue\effects())
+							
+							SwapElements(*gCurrentCue\effects(),*currentEffect,*nextEffect)
+							ChangeCurrentElement(*gCurrentCue\effects(),*currentEffect)
+							
+							For i = 0 To 16
+								If \gadgets[i] <> 0
+									ResizeGadget(\gadgets[i],#PB_Ignore,GadgetY(\gadgets[i]) + 115,#PB_Ignore,#PB_Ignore)
+								EndIf
+							Next i
+							
+							\priority - 1
+							
+							BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
+							\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
+							If \type = #BASS_FX_DX8_REVERB
+								BASS_FXSetParameters(\handle,\revParam)
+							ElseIf \type = #BASS_FX_DX8_PARAMEQ
+								BASS_FXSetParameters(\handle,\eqParam)
+							EndIf
+							
+							*nextEffect\priority + 1
+							
+							BASS_ChannelRemoveFX(*gCurrentCue\stream,*nextEffect\handle)
+							*nextEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*nextEffect\type,*nextEffect\priority)
+							If *nextEffect\type = #BASS_FX_DX8_REVERB
+								BASS_FXSetParameters(*nextEffect\handle,*nextEffect\revParam)
+							ElseIf *nextEffect\type = #BASS_FX_DX8_PARAMEQ
+								BASS_FXSetParameters(*nextEffect\handle,*nextEffect\eqParam)
+							EndIf
+							
+							For i = 0 To 16
+								If *nextEffect\gadgets[i] <> 0
+									ResizeGadget(*nextEffect\gadgets[i],#PB_Ignore,GadgetY(*nextEffect\gadgets[i]) - 115,#PB_Ignore,#PB_Ignore)
+								EndIf
+							Next i
+						EndIf
+						
 					EndIf
+						
 				EndWith
 			Next
 		EndIf
+		;}
 
 	EndIf
 	
@@ -1019,7 +1110,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 420
-; FirstLine = 418
-; Folding = AA9
+; CursorPosition = 741
+; FirstLine = 481
+; Folding = CBw
 ; EnableXP

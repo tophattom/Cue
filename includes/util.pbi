@@ -275,7 +275,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 	If *cue\stream <> 0
 		amount = ListSize(*cue\effects())
 		
-		If priority = -1 And amount > 0
+		If amount > 0
 			ForEach *cue\effects()
 				*cue\effects()\priority + 1
 				
@@ -297,9 +297,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 		AddElement(*cue\effects())
 		amount + 1
 		
-
-			*cue\effects()\priority = 0
-		
+		*cue\effects()\priority = 0
 		*cue\effects()\type = eType
 		*cue\effects()\active = active
 		*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
@@ -754,7 +752,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 94
-; FirstLine = 78
-; Folding = AAw
+; CursorPosition = 298
+; FirstLine = 144
+; Folding = AIw
 ; EnableXP
