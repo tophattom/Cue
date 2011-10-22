@@ -217,6 +217,8 @@ Global gLastType = 0
 Global gSavePath.s = ""
 
 
+Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
+
 Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 	LastElement(cueList())
 	AddElement(cueList())
@@ -259,7 +261,7 @@ Procedure LoadCueStream(*cue.Cue,path.s)
     *cue\stream = BASS_StreamCreateFile(0,@path,0,0,0)
     
     *cue\length = BASS_ChannelBytes2Seconds(*cue\stream,BASS_ChannelGetLength(*cue\stream,#BASS_POS_BYTE))
-    
+	
     *cue\startPos = 0
     *cue\endPos = *cue\length
     
@@ -333,6 +335,12 @@ Procedure.f StringToSeconds(text.s)
 EndProcedure
 
 Procedure DeleteCue(*cue.Cue)
+	If ListSize(*cue\effects()) > 0
+		ForEach *cue\effects()
+			DeleteCueEffect(*cue,@*cue\effects())
+		Next
+	EndIf
+	
 	GetCueListIndex(*cue)
 	DeleteElement(cueList())
 	gCueAmount - 1
@@ -549,6 +557,36 @@ Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
 	
 	While NextElement(*cue\effects()) <> 0
 		*cue\effects()\priority = *cue\effects()\priority - 1
+		
+		If *cue\effects()\type <> #EFFECT_VST
+			BASS_ChannelRemoveFX(*cue\stream,*cue\effects()\handle)
+			*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,*cue\effects()\type,*cue\effects()\priority)
+			
+			Select *cue\effects()\type
+				Case #BASS_FX_DX8_REVERB
+					*params = @*cue\effects()\revParam
+				Case #BASS_FX_DX8_PARAMEQ
+					*params = @*cue\effects()\eqParam
+			EndSelect
+							
+			BASS_FXSetParameters(*cue\effects()\handle,*params)
+		Else
+			count = BASS_VST_GetParamCount(*cue\effects()\handle)
+			Dim tmp.f(count - 1)
+			For i = 0 To count - 1
+				tmp(i) = BASS_VST_GetParam(*cue\effects()\handle,i)
+			Next i
+				
+			BASS_VST_ChannelRemoveDSP(*cue\stream,*cue\effects()\handle)
+			*cue\effects()\handle = BASS_VST_ChannelSetDSP(*cue\stream,@*cue\effects()\pluginPath,0,*cue\effects()\priority)
+			BASS_VST_EmbedEditor(*cue\effects()\handle,WindowID(*cue\effects()\gadgets[5]))
+				
+			For i = 0 To count - 1
+				BASS_VST_SetParam(*cue\effects()\handle,i,tmp(i))
+			Next i
+			
+			FreeArray(tmp())
+		EndIf
 
 		For i = 0 To 16
 			If *cue\effects()\gadgets[i] <> 0
@@ -581,7 +619,7 @@ Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
 EndProcedure
 
 Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
-	If value = 0
+	If value = 1
 		If *effect\type <> #EFFECT_VST
 			BASS_ChannelRemoveFX(*cue\stream,*effect\handle)
 			*effect\handle = 0
@@ -607,6 +645,7 @@ Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
 			BASS_VST_SetBypass(*effect\handle,0)
 		EndIf
 		
+		*effect\active = #True
 	EndIf
 EndProcedure
 
@@ -946,7 +985,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 95
-; FirstLine = 77
-; Folding = AAg
+; CursorPosition = 260
+; FirstLine = 121
+; Folding = EAg
 ; EnableXP

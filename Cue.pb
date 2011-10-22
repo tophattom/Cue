@@ -438,7 +438,7 @@ Repeat ; Start of the event loop
 						DeleteCueEffect(*gCurrentCue,@*gCurrentCue\effects())
 					ElseIf GadgetID = \gadgets[#EGADGET_ACTIVE]
 						state = GetGadgetState(\gadgets[#EGADGET_ACTIVE])
-						DisableCueEffect(*gCurrentCue,@*gCurrentCue\effects(),state)
+						DisableCueEffect(*gCurrentCue,@*gCurrentCue\effects(),OnOff(state))
 						
 						For i = 5 To 16
 							If \gadgets[i] <> 0
@@ -626,7 +626,7 @@ Repeat ; Start of the event loop
 			
 			If eWindow = #EditorWindow
 				gEditor = #False
-			endif
+			EndIf
 		EndIf
 	EndIf
 	
@@ -1190,7 +1190,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 628
-; FirstLine = 520
+; CursorPosition = 440
+; FirstLine = 343
 ; Folding = CAw
 ; EnableXP
