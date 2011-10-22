@@ -2,12 +2,7 @@
 ; PureBasic Visual Designer v3.95 build 1485 (PB4Code)
 
 
-;- Window Constants
-;
-Enumeration
-  #MainWindow
-  #EditorWindow
-EndEnumeration
+
 
 ;- MenuBar Constants
 ;
@@ -120,7 +115,7 @@ Procedure Open_EditorWindow()
     ButtonGadget(#AddAudio, 10, 10, 130, 30, "Add audio cue")
     ButtonGadget(#AddChange, 290, 10, 130, 30, "Add level change cue")
     ButtonGadget(#AddEvent, 430, 10, 130, 30, "Add event cue")
-    ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
+    ButtonGadget(#AddVideo, 150, 10, 130, 30, "Add video cue")
     
     PanelGadget(#EditorTabs, 220, 50, 680, 650)
     AddGadgetItem(#EditorTabs, 0, "Basic")

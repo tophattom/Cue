@@ -3,6 +3,7 @@
 
 IncludeFile "includes\bass.pbi"
 IncludeFile "includes\bassvst.pbi"
+IncludeFile "includes\bass_dshow.pbi"
 IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
 
@@ -28,6 +29,7 @@ HideWindow(#EditorWindow, 1)
 HideCueControls()
 
 BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
+xVideo_Init(WindowID(#MainWindow),0)
 
 BASS_PluginLoad("basswma.dll",0)
 BASS_PluginLoad("bassflac.dll",0)
@@ -211,7 +213,9 @@ Repeat ; Start of the event loop
 			UpdateEditorList()
 			UpdateCueControls()
 		ElseIf GadgetID = #AddVideo
-		      
+			*gCurrentCue = AddCue(#TYPE_VIDEO)
+			UpdateEditorList()
+			UpdateCueControls()
 		ElseIf GadgetID = #MasterSlider
 			BASS_SetVolume(GetGadgetState(#MasterSlider) / 100)
 		ElseIf GadgetID = #CueNameField 
@@ -224,6 +228,8 @@ Repeat ; Start of the event loop
     		Select *gCurrentCue\cueType
     			Case #TYPE_AUDIO
     				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff,*.wma,*.flac) |*.mp3;*.wav;*.ogg;*.aiff;*.wma;*.flac"
+    			Case #TYPE_VIDEO
+    				pattern.s = "Video files (*.avi) |*.avi"
     		EndSelect
     		
     		path.s = OpenFileRequester("Select file","",pattern,0)
@@ -232,7 +238,7 @@ Repeat ; Start of the event loop
     			*gCurrentCue\filePath = path
     			
     			Select *gCurrentCue\cueType
-    				Case #TYPE_AUDIO
+    				Case #TYPE_AUDIO, #TYPE_VIDEO
     					LoadCueStream(*gCurrentCue,path)
     			EndSelect
     			
@@ -749,7 +755,7 @@ Procedure ShowCueControls()
 		HideGadget(#StartDelay,0)
 		
 		Select *gCurrentCue\cueType
-			Case #TYPE_AUDIO
+			Case #TYPE_AUDIO, #TYPE_VIDEO
 				HideGadget(#CueFileField,0)
 				HideGadget(#OpenCueFile,0)
 				HideGadget(#LengthField,0)
@@ -769,7 +775,9 @@ Procedure ShowCueControls()
 				HideGadget(#CuePan,0)
 				HideGadget(#VolumeSlider,0)
 				HideGadget(#PanSlider,0)
-				HideGadget(#WaveImg,0)
+				If *gCurrentCue\cueType = #TYPE_AUDIO
+					HideGadget(#WaveImg,0)
+				EndIf
 				HideGadget(#EditorPlay,0)
 				HideGadget(#EditorPause,0)
 				HideGadget(#EditorStop,0)
@@ -972,23 +980,31 @@ Procedure PlayCue(*cue.Cue)
 		Else
 			*cue\state = #STATE_PLAYING
 			*cue\startTime = ElapsedMilliseconds()
-			BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
+			
 			BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume)
 			BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_PAN,*cue\pan)
 			
-			If *cue\looped = #True
-				If *cue\loopHandle <> 0
-					BASS_ChannelRemoveSync(*cue\stream,*cue\loopHandle)
-					*cue\loopHandle = 0
+			If *cue\cueType = #TYPE_AUDIO
+				BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
+				
+				If *cue\looped = #True
+					If *cue\loopHandle <> 0
+						BASS_ChannelRemoveSync(*cue\stream,*cue\loopHandle)
+						*cue\loopHandle = 0
+					EndIf
+					*cue\loopHandle = BASS_ChannelSetSync(*cue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\loopEnd),@LoopProc(),*cue)
 				EndIf
-				*cue\loopHandle = BASS_ChannelSetSync(*cue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\loopEnd),@LoopProc(),*cue)
+				BASS_ChannelPlay(*cue\stream,0)
+				
+				If *cue\fadeIn > 0
+					BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,0)
+					BASS_ChannelSlideAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
+				EndIf
+			ElseIf *cue\cueType = #TYPE_VIDEO
+				xVideo_ChannelSetPosition(*cue\stream,*cue\startPos,#xVideo_POS_SEC)
+				xVideo_ChannelPlay(*cue\stream)
 			EndIf
-			BASS_ChannelPlay(*cue\stream,0)
 			
-			If *cue\fadeIn > 0
-				BASS_ChannelSetAttribute(*cue\stream,#BASS_ATTRIB_VOL,0)
-				BASS_ChannelSlideAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
-			EndIf
 			
 			ForEach *cue\followCues()
 				If *cue\followCues()\startMode = #START_AFTER_START
@@ -1008,8 +1024,15 @@ EndProcedure
 Procedure StopCue(*cue.Cue)
 	If *cue\stream <> 0
 		*cue\state = #STATE_STOPPED
-		BASS_ChannelStop(*cue\stream)
-		BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
+		
+		If *cue\cueType = #TYPE_AUDIO
+			BASS_ChannelStop(*cue\stream)
+			BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
+		ElseIf *cue\cueType = #TYPE_VIDEO
+			xVideo_ChannelStop(*cue\stream)
+			xVideo_ChannelSetPosition(*cue\stream,*cue\startPos,#xVideo_POS_SEC)
+		EndIf
+		
 		
 		If gEditor = #False
 			ForEach *cue\followCues()
@@ -1035,12 +1058,23 @@ Procedure PauseCue(*cue.Cue)
 		If *cue\state = #STATE_PLAYING
 			*cue\state = #STATE_PAUSED
 			*cue\pauseTime = ElapsedMilliseconds()
-			BASS_ChannelPause(*cue\stream)
+			
+			If *cue\cueType = #TYPE_AUDIO
+				BASS_ChannelPause(*cue\stream)
+			ElseIf *cue\cueType = #TYPE_VIDEO
+				xVideo_ChannelPause(*cue\stream)
+			EndIf
 			
 			ProcedureReturn #True
 		ElseIf *cue\state = #STATE_PAUSED
 			*cue\state = #STATE_PLAYING
-			BASS_ChannelPlay(*cue\stream,0)
+			
+			If *cue\cueType = #TYPE_AUDIO
+				BASS_ChannelPlay(*cue\stream,0)
+			ElseIf *cue\cueType = #TYPE_VIDEO
+				xVideo_ChannelPlay(*cue\stream)
+			EndIf
+			
 			
 			ProcedureReturn #True
 		EndIf
@@ -1193,6 +1227,11 @@ Procedure UpdateMainCueList()
 EndProcedure
 
 Procedure UpdatePosField()
-	pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
+	If *gCurrentCue\cueType = #TYPE_AUDIO
+		pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
+	ElseIf *gCurrentCue\cueType = #TYPE_VIDEO
+		pos.f = xVideo_ChannelGetPosition(*gCurrentCue\stream,#xVideo_POS_MILISEC) / 1000.0
+	EndIf
+	
 	SetGadgetText(#Position, SecondsToString(pos))
 EndProcedure
