@@ -987,15 +987,3 @@ Procedure CreateProjectFolder(path.s)
 		SaveCueList(gSavePath)
 	EndIf
 EndProcedure
-
-
-; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 521
-; FirstLine = 265
-; Folding = AQg
-; EnableXP
-; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 990
-; FirstLine = 936
-; Folding = ----
-; EnableXP

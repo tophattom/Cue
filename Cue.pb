@@ -29,6 +29,9 @@ HideCueControls()
 
 BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
 
+BASS_PluginLoad("basswma.dll",0)
+BASS_PluginLoad("bassflac.dll",0)
+
 Repeat ; Start of the event loop
 	Event = WindowEvent() ; This line waits until an event is received from Windows
 	WindowID = EventWindow() ; The Window where the event is generated, can be used in the gadget procedures
@@ -220,7 +223,7 @@ Repeat ; Start of the event loop
     	ElseIf GadgetID = #OpenCueFile
     		Select *gCurrentCue\cueType
     			Case #TYPE_AUDIO
-    				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
+    				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff,*.wma,*.flac) |*.mp3;*.wav;*.ogg;*.aiff;*.wma;*.flac"
     		EndSelect
     		
     		path.s = OpenFileRequester("Select file","",pattern,0)
@@ -1193,15 +1196,3 @@ Procedure UpdatePosField()
 	pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
 	SetGadgetText(#Position, SecondsToString(pos))
 EndProcedure
-
-
-; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 419
-; FirstLine = 360
-; Folding = CAw
-; EnableXP
-; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 1197
-; FirstLine = 1142
-; Folding = ---
-; EnableXP

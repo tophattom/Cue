@@ -221,15 +221,3 @@ Procedure Open_EditorWindow()
     ;EndIf
   EndIf
 EndProcedure
-
-
-; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 218
-; FirstLine = 164
-; Folding = -
-; EnableXP
-; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 225
-; FirstLine = 170
-; Folding = -
-; EnableXP
