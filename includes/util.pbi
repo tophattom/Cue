@@ -491,7 +491,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				BASS_ChannelGetInfo(*cue\stream,@info.BASS_CHANNELINFO)
 				
 				*cue\effects()\gadgets[5] = TrackBarGadget(#PB_Any,75, tmpY + 40,170,30,80,Min(16000,info\freq / 3))	;Center
-				*cue\effects()\gadgets[6] = TrackBarGadget(#PB_Any,75, tmpY + 75,170,30,1,36) 							;Bandwidth [1,36]
+				*cue\effects()\gadgets[6] = TrackBarGadget(#PB_Any,75, tmpY + 75,170,30,1,360) 							;Bandwidth [1,36]
 				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,390, tmpY + 40,170,30,0,300) 							;Gain [-15,15]
 				
 				*cue\effects()\gadgets[9] = StringGadget(#PB_Any,250,tmpY + 40,40,20,"",#PB_String_ReadOnly)
@@ -503,7 +503,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,330,tmpY + 40,60,30,"Gain (dB):")
 				
 				If *eqParams = 0
-					*cue\effects()\eqParam\fBandwidth = 12
+					*cue\effects()\eqParam\fBandwidth = 12.0
 					*cue\effects()\eqParam\fCenter = 80
 					*cue\effects()\eqParam\fGain = 0
 				Else
@@ -515,11 +515,11 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				BASS_FXSetParameters(*cue\effects()\handle,@*cue\effects()\eqParam)
 				
 				SetGadgetState(*cue\effects()\gadgets[5],*cue\effects()\eqParam\fCenter)
-				SetGadgetState(*cue\effects()\gadgets[6],*cue\effects()\eqParam\fBandwidth)
+				SetGadgetState(*cue\effects()\gadgets[6],*cue\effects()\eqParam\fBandwidth * 10)
 				SetGadgetState(*cue\effects()\gadgets[7],*cue\effects()\eqParam\fGain * 10 + 150)
 				
 				SetGadgetText(*cue\effects()\gadgets[9],Str(*cue\effects()\eqParam\fCenter))
-				SetGadgetText(*cue\effects()\gadgets[10],Str(*cue\effects()\eqParam\fBandwidth))
+				SetGadgetText(*cue\effects()\gadgets[10],StrF(*cue\effects()\eqParam\fBandwidth,1))
 				SetGadgetText(*cue\effects()\gadgets[11],StrF(*cue\effects()\eqParam\fGain,1))
 			Case #EFFECT_VST
 				vstInfo.BASS_VST_INFO
@@ -985,7 +985,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 260
-; FirstLine = 121
-; Folding = EAg
+; CursorPosition = 521
+; FirstLine = 265
+; Folding = AQg
 ; EnableXP

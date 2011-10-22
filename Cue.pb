@@ -414,10 +414,10 @@ Repeat ; Start of the event loop
 								
 								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\eqParam)
 							ElseIf GadgetID = \gadgets[6]
-								value.f = GetGadgetState(\gadgets[6])
-								\eqParam\fBandwidth = Int(value)
+								value.f = GetGadgetState(\gadgets[6]) / 10.0
+								\eqParam\fBandwidth = value
 								
-								SetGadgetText(\gadgets[10],Str(value))
+								SetGadgetText(\gadgets[10],StrF(value,1))
 								
 								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\eqParam)
 							ElseIf GadgetID = \gadgets[7]
@@ -1190,7 +1190,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 440
-; FirstLine = 343
+; CursorPosition = 419
+; FirstLine = 360
 ; Folding = CAw
 ; EnableXP
