@@ -957,7 +957,7 @@ Procedure UpdateCueControls()
 	
 	UpdatePosField()
 
-	If *gCurrentCue\cueType = #TYPE_AUDIO
+	If *gCurrentCue\cueType = #TYPE_AUDIO Or *gCurrentCue\cueType = #TYPE_VIDEO
 		If GetGadgetState(#EffectType) > -1 And *gCurrentCue\stream <> 0
 			DisableGadget(#AddEffect, 0)
 		Else
@@ -1001,6 +1001,11 @@ Procedure PlayCue(*cue.Cue)
 					BASS_ChannelSlideAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
 				EndIf
 			ElseIf *cue\cueType = #TYPE_VIDEO
+				If gEditor = #True
+					FirstElement(*cue\outputs())
+					HideWindow(*cue\outputs()\window,0)
+				EndIf
+				BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
 				xVideo_ChannelSetPosition(*cue\stream,*cue\startPos,#xVideo_POS_SEC)
 				xVideo_ChannelPlay(*cue\stream)
 			EndIf
@@ -1031,6 +1036,7 @@ Procedure StopCue(*cue.Cue)
 		ElseIf *cue\cueType = #TYPE_VIDEO
 			xVideo_ChannelStop(*cue\stream)
 			xVideo_ChannelSetPosition(*cue\stream,*cue\startPos,#xVideo_POS_SEC)
+			BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
 		EndIf
 		
 		

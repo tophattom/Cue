@@ -19,6 +19,9 @@ Structure VideoWindow
 	window.l
 	handle.l
 	
+	name.s
+	borderless.i
+	
 	x.i
 	y.i
 	
@@ -335,7 +338,7 @@ Procedure LoadCueStream(*cue.Cue,path.s)
 		If *cue\stream = 0
 			MessageRequester("Error","File " + path + " couldn't be loaded!")
 			ProcedureReturn #False
-		endif
+		EndIf
 		
 		*cue\length = xVideo_ChannelGetLength(*cue\stream,#xVideo_POS_SEC)
 		
@@ -345,9 +348,11 @@ Procedure LoadCueStream(*cue.Cue,path.s)
 		;**** Esikatseluikkuna
 		AddElement(*cue\outputs())
 		
-		*cue\outputs()\window = #EditorWindow
+		*cue\outputs()\name = "Preview"
+		*cue\outputs()\borderless = 0
+		*cue\outputs()\window = OpenWindow(#PB_Any,0,0,400,300,*cue\name + " - " + *cue\outputs()\name,#PB_Window_Tool | #PB_Window_SystemMenu)
 		*cue\outputs()\handle = xVideo_ChannelAddWindow(*cue\stream,WindowID(*cue\outputs()\window))
-		xVideo_ChannelResizeWindow(*cue\stream,*cue\outputs()\handle,230,365,213,160)
+		StickyWindow(*cue\outputs()\window,1)
 	EndIf
 	
 EndProcedure
