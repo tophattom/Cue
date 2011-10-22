@@ -2,6 +2,7 @@
 
 
 IncludeFile "includes\bass.pbi"
+IncludeFile "includes\bassvst.pbi"
 IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
 
@@ -419,10 +420,10 @@ Repeat ; Start of the event loop
 								
 								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\eqParam)
 							ElseIf GadgetID = \gadgets[6]
-								value.f = GetGadgetState(\gadgets[6])
-								\eqParam\fBandwidth = Int(value)
+								value.f = GetGadgetState(\gadgets[6]) / 10.0
+								\eqParam\fBandwidth = value
 								
-								SetGadgetText(\gadgets[10],Str(value))
+								SetGadgetText(\gadgets[10],StrF(value,1))
 								
 								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\eqParam)
 							ElseIf GadgetID = \gadgets[7]
@@ -433,17 +434,23 @@ Repeat ; Start of the event loop
 								
 								BASS_FXSetParameters(*gCurrentCue\effects()\handle,@\eqParam)
 							EndIf
+						Case #EFFECT_VST ;------- VST
+							If GadgetID = \gadgets[6]
+								HideWindow(\gadgets[5],0)
+							EndIf
 					EndSelect
 					
 					If GadgetID = \gadgets[#EGADGET_DELETE]
 						DeleteCueEffect(*gCurrentCue,@*gCurrentCue\effects())
 					ElseIf GadgetID = \gadgets[#EGADGET_ACTIVE]
 						state = GetGadgetState(\gadgets[#EGADGET_ACTIVE])
-						DisableCueEffect(*gCurrentCue,@*gCurrentCue\effects(),state)
+						DisableCueEffect(*gCurrentCue,@*gCurrentCue\effects(),OnOff(state))
 						
 						For i = 5 To 16
 							If \gadgets[i] <> 0
-								DisableGadget(\gadgets[i],OnOff(state))
+								If Not IsWindow(\gadgets[i])
+									DisableGadget(\gadgets[i],OnOff(state))
+								EndIf
 							EndIf
 						Next i
 					ElseIf GadgetID = \gadgets[#EGADGET_UP]
@@ -457,35 +464,66 @@ Repeat ; Start of the event loop
 							ChangeCurrentElement(*gCurrentCue\effects(),*currentEffect)
 							
 							For i = 0 To 16
-								If \gadgets[i] <> 0
+								If \gadgets[i] <> 0 And Not IsWindow(\gadgets[i])
 									ResizeGadget(\gadgets[i],#PB_Ignore,GadgetY(\gadgets[i]) - 115,#PB_Ignore,#PB_Ignore)
 								EndIf
 							Next i
 							
 							\priority + 1
 							
-							BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
-							\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
-							If \type = #BASS_FX_DX8_REVERB
-								BASS_FXSetParameters(\handle,\revParam)
-							ElseIf \type = #BASS_FX_DX8_PARAMEQ
-								BASS_FXSetParameters(\handle,\eqParam)
+							If \type <> #EFFECT_VST
+								BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
+								\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
+								If \type = #BASS_FX_DX8_REVERB
+									BASS_FXSetParameters(\handle,\revParam)
+								ElseIf \type = #BASS_FX_DX8_PARAMEQ
+									BASS_FXSetParameters(\handle,\eqParam)
+								EndIf
+							Else
+								count = BASS_VST_GetParamCount(\handle)
+								Dim tmp.f(count - 1)
+								For i = 0 To count - 1
+									tmp(i) = BASS_VST_GetParam(\handle,i)
+								Next i
+								
+								BASS_VST_ChannelRemoveDSP(*gCurrentCue\stream,\handle)
+								\handle = BASS_VST_ChannelSetDSP(*gCurrentCue\stream,@\pluginPath,0,\priority)
+								For i = 0 To count - 1
+									BASS_VST_SetParam(\handle,i,tmp(i))
+								Next i
+								BASS_VST_EmbedEditor(\handle,WindowID(\gadgets[5]))
+								FreeArray(tmp())
 							EndIf
 							
-							
-							
+	
 							*prevEffect\priority - 1
 							
-							BASS_ChannelRemoveFX(*gCurrentCue\stream,*prevEffect\handle)
-							*prevEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*prevEffect\type,*prevEffect\priority)
-							If *prevEffect\type = #BASS_FX_DX8_REVERB
-								BASS_FXSetParameters(*prevEffect\handle,*prevEffect\revParam)
-							ElseIf *prevEffect\type = #BASS_FX_DX8_PARAMEQ
-								BASS_FXSetParameters(*prevEffect\handle,*prevEffect\eqParam)
+							If *prevEffect\type <> #EFFECT_VST
+								BASS_ChannelRemoveFX(*gCurrentCue\stream,*prevEffect\handle)
+								*prevEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*prevEffect\type,*prevEffect\priority)
+								If *prevEffect\type = #BASS_FX_DX8_REVERB
+									BASS_FXSetParameters(*prevEffect\handle,*prevEffect\revParam)
+								ElseIf *prevEffect\type = #BASS_FX_DX8_PARAMEQ
+									BASS_FXSetParameters(*prevEffect\handle,*prevEffect\eqParam)
+								EndIf
+							Else
+								count = BASS_VST_GetParamCount(*prevEffect\handle)
+								Dim tmp.f(count - 1)
+								For i = 0 To count - 1
+									tmp(i) = BASS_VST_GetParam(*prevEffect\handle,i)
+								Next i
+								
+								BASS_VST_ChannelRemoveDSP(*gCurrentCue\stream,*prevEffect\handle)
+								*prevEffect\handle = BASS_VST_ChannelSetDSP(*gCurrentCue\stream,@*prevEffect\pluginPath,0,*prevEffect\priority)
+								For i = 0 To count - 1
+									BASS_VST_SetParam(*prevEffect\handle,i,tmp(i))
+								Next i
+								BASS_VST_EmbedEditor(*prevEffect\handle,WindowID(*prevEffect\gadgets[5]))
+								FreeArray(tmp())
 							EndIf
 							
-							For i = 0 To 16
-								If *prevEffect\gadgets[i] <> 0
+							For i = 0 To 16 
+								If *prevEffect\gadgets[i] <> 0 And Not IsWindow(*prevEffect\gadgets[i])
 									ResizeGadget(*prevEffect\gadgets[i],#PB_Ignore,GadgetY(*prevEffect\gadgets[i]) + 115,#PB_Ignore,#PB_Ignore)
 								EndIf
 							Next i
@@ -501,33 +539,65 @@ Repeat ; Start of the event loop
 							ChangeCurrentElement(*gCurrentCue\effects(),*currentEffect)
 							
 							For i = 0 To 16
-								If \gadgets[i] <> 0
+								If \gadgets[i] <> 0 And Not IsWindow(\gadgets[i])
 									ResizeGadget(\gadgets[i],#PB_Ignore,GadgetY(\gadgets[i]) + 115,#PB_Ignore,#PB_Ignore)
 								EndIf
 							Next i
 							
 							\priority - 1
 							
-							BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
-							\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
-							If \type = #BASS_FX_DX8_REVERB
-								BASS_FXSetParameters(\handle,\revParam)
-							ElseIf \type = #BASS_FX_DX8_PARAMEQ
-								BASS_FXSetParameters(\handle,\eqParam)
+							If \type <> #EFFECT_VST
+								BASS_ChannelRemoveFX(*gCurrentCue\stream,\handle)
+								\handle = BASS_ChannelSetFX(*gCurrentCue\stream,\type,\priority)
+								If \type = #BASS_FX_DX8_REVERB
+									BASS_FXSetParameters(\handle,\revParam)
+								ElseIf \type = #BASS_FX_DX8_PARAMEQ
+									BASS_FXSetParameters(\handle,\eqParam)
+								EndIf
+							Else
+								count = BASS_VST_GetParamCount(\handle)
+								Dim tmp.f(count - 1)
+								For i = 0 To count - 1
+									tmp(i) = BASS_VST_GetParam(\handle,i)
+								Next i
+								
+								BASS_VST_ChannelRemoveDSP(*gCurrentCue\stream,\handle)
+								\handle = BASS_VST_ChannelSetDSP(*gCurrentCue\stream,@\pluginPath,0,\priority)
+								For i = 0 To count - 1
+									BASS_VST_SetParam(\handle,i,tmp(i))
+								Next i
+								BASS_VST_EmbedEditor(\handle,WindowID(\gadgets[5]))
+								FreeArray(tmp())
 							EndIf
 							
 							*nextEffect\priority + 1
 							
-							BASS_ChannelRemoveFX(*gCurrentCue\stream,*nextEffect\handle)
-							*nextEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*nextEffect\type,*nextEffect\priority)
-							If *nextEffect\type = #BASS_FX_DX8_REVERB
-								BASS_FXSetParameters(*nextEffect\handle,*nextEffect\revParam)
-							ElseIf *nextEffect\type = #BASS_FX_DX8_PARAMEQ
-								BASS_FXSetParameters(*nextEffect\handle,*nextEffect\eqParam)
+							If *nextEffect\type <> #EFFECT_VST
+								BASS_ChannelRemoveFX(*gCurrentCue\stream,*nextEffect\handle)
+								*nextEffect\handle = BASS_ChannelSetFX(*gCurrentCue\stream,*nextEffect\type,*nextEffect\priority)
+								If *nextEffect\type = #BASS_FX_DX8_REVERB
+									BASS_FXSetParameters(*nextEffect\handle,*nextEffect\revParam)
+								ElseIf *nextEffect\type = #BASS_FX_DX8_PARAMEQ
+									BASS_FXSetParameters(*nextEffect\handle,*nextEffect\eqParam)
+								EndIf
+							Else
+								count = BASS_VST_GetParamCount(*nextEffect\handle)
+								Dim tmp.f(count - 1)
+								For i = 0 To count - 1
+									tmp(i) = BASS_VST_GetParam(*nextEffect\handle,i)
+								Next i
+								
+								BASS_VST_ChannelRemoveDSP(*gCurrentCue\stream,*nextEffect\handle)
+								*nextEffect\handle = BASS_VST_ChannelSetDSP(*gCurrentCue\stream,@*nextEffect\pluginPath,0,*nextEffect\priority)
+								For i = 0 To count - 1
+									BASS_VST_SetParam(*nextEffect\handle,i,tmp(i))
+								Next i
+								BASS_VST_EmbedEditor(*nextEffect\handle,WindowID(*nextEffect\gadgets[5]))
+								FreeArray(tmp())
 							EndIf
 							
 							For i = 0 To 16
-								If *nextEffect\gadgets[i] <> 0
+								If *nextEffect\gadgets[i] <> 0 And Not IsWindow(*nextEffect\gadgets[i])
 									ResizeGadget(*nextEffect\gadgets[i],#PB_Ignore,GadgetY(*nextEffect\gadgets[i]) - 115,#PB_Ignore,#PB_Ignore)
 								EndIf
 							Next i
@@ -553,12 +623,16 @@ Repeat ; Start of the event loop
 	Next i
 
 	If Event = #PB_Event_CloseWindow
-		If EventWindow() = #EditorWindow
-			gEditor = #False
-			HideWindow(#EditorWindow,1)
-			UpdateMainCueList()
-		ElseIf EventWindow = #MainWindow
+		eWindow = EventWindow()
+
+		If eWindow = #MainWindow
 			End
+		Else
+			HideWindow(eWindow,1)
+			
+			If eWindow = #EditorWindow
+				gEditor = #False
+			EndIf
 		EndIf
 	EndIf
 	
@@ -736,7 +810,11 @@ Procedure HideEffectControls()
 			ForEach cueList()\effects()
 				For i = 0 To 16
 					If cueList()\effects()\gadgets[i] <> 0
-						HideGadget(cueList()\effects()\gadgets[i],1)
+						If IsWindow(cueList()\effects()\gadgets[i])
+							HideWindow(cueList()\effects()\gadgets[i],1)
+						Else
+							HideGadget(cueList()\effects()\gadgets[i],1)
+						EndIf
 					EndIf
 				Next i
 			Next
@@ -749,7 +827,9 @@ Procedure ShowEffectControls()
 		ForEach *gCurrentCue\effects()
 			For i = 0 To 16
 				If *gCurrentCue\effects()\gadgets[i] <> 0
-					HideGadget(*gCurrentCue\effects()\gadgets[i],0)
+					If Not IsWindow(*gCurrentCue\effects()\gadgets[i])
+						HideGadget(*gCurrentCue\effects()\gadgets[i],0)
+					EndIf
 				EndIf
 			Next i
 		Next
@@ -1116,7 +1196,12 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 291
-; FirstLine = 211
-; Folding = CCw
+; CursorPosition = 419
+; FirstLine = 360
+; Folding = CAw
+; EnableXP
+; IDE Options = PureBasic 4.50 (Windows - x86)
+; CursorPosition = 1197
+; FirstLine = 1142
+; Folding = ---
 ; EnableXP
