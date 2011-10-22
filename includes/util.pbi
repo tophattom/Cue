@@ -263,11 +263,19 @@ Procedure OnOff(value)
 	EndIf
 EndProcedure
 
-Procedure Min(a,b)
+Procedure Min(a.f,b.f)
 	If a - b <= 0
 		ProcedureReturn a
 	Else
 		ProcedureReturn b
+	EndIf
+EndProcedure
+
+Procedure Max(a.f,b.f)
+	If a - b <= 0
+		ProcedureReturn b
+	Else
+		ProcedureReturn a
 	EndIf
 EndProcedure
 
@@ -752,7 +760,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 298
-; FirstLine = 144
-; Folding = AIw
+; CursorPosition = 273
+; FirstLine = 138
+; Folding = Acg
 ; EnableXP

@@ -281,10 +281,16 @@ Repeat ; Start of the event loop
       		*gCurrentCue\fadeOut = ValF(GetGadgetText(#FadeOut))
       	ElseIf GadgetID = #VolumeSlider
       		*gCurrentCue\volume = GetGadgetState(#VolumeSlider) / 1000.0
-      		UpdateCueControls()
+      		SetGadgetText(#CueVolume,StrF(*gCurrentCue\volume * 100.0,1))
       	ElseIf GadgetID = #PanSlider
       		*gCurrentCue\pan = (GetGadgetState(#PanSlider) - 1000) / 1000.0
-      		UpdateCueControls()
+      		SetGadgetText(#CuePan,StrF(*gCurrentCue\pan * 100.0,1))
+      	ElseIf GadgetID = #CueVolume
+      		*gCurrentCue\volume = Max(0,Min(100.0,ValF(GetGadgetText(#CueVolume)))) / 100.0
+      		SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 1000)
+      	ElseIf GadgetID = #CuePan
+      		*gCurrentCue\pan = Max(-100.0,Min(100.0,ValF(GetGadgetText(#CuePan)))) / 100.0
+			SetGadgetState(#PanSlider,*gCurrentCue\pan * 1000 + 1000)
       	ElseIf GadgetID = #DeleteButton ;--- Listan käsittely
       		If *gCurrentCue <> 0
       			DeleteCue(*gCurrentCue)
@@ -1110,7 +1116,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 741
-; FirstLine = 481
-; Folding = CBw
+; CursorPosition = 291
+; FirstLine = 211
+; Folding = CCw
 ; EnableXP

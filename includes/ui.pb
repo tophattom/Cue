@@ -235,10 +235,10 @@ Procedure Open_EditorWindow()
       ;540
       TextGadget(#Text_14, 265, 185, 40, 20, "Volume:")
       TrackBarGadget(#VolumeSlider, 325, 185, 190, 30, 0, 1000)
-      StringGadget(#CueVolume, 535, 185, 50, 20, "", #PB_String_ReadOnly)
+      StringGadget(#CueVolume, 535, 185, 50, 20, "")
       TextGadget(#Text_15, 265, 215, 40, 20, "Pan:")
       TrackBarGadget(#PanSlider, 325, 215, 190, 30, 0, 2000)
-      StringGadget(#CuePan, 535, 215, 50, 20, "", #PB_String_ReadOnly)
+      StringGadget(#CuePan, 535, 215, 50, 20, "")
       
       TextGadget(#Text_8, 5, 155, 60, 20, "Start mode:")
       ComboBoxGadget(#ModeSelect, 75, 155, 140, 20)
@@ -297,7 +297,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 292
-; FirstLine = 236
+; CursorPosition = 240
+; FirstLine = 200
 ; Folding = -
 ; EnableXP
