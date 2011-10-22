@@ -229,7 +229,7 @@ Repeat ; Start of the event loop
     			Case #TYPE_AUDIO
     				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff,*.wma,*.flac) |*.mp3;*.wav;*.ogg;*.aiff;*.wma;*.flac"
     			Case #TYPE_VIDEO
-    				pattern.s = "Video files (*.avi) |*.avi"
+    				pattern.s = "Video files |*.*"
     		EndSelect
     		
     		path.s = OpenFileRequester("Select file","",pattern,0)

@@ -332,6 +332,10 @@ Procedure LoadCueStream(*cue.Cue,path.s)
 		EndIf
 		
 		*cue\stream = xVideo_StreamCreateFile(@path,0,0,0)
+		If *cue\stream = 0
+			MessageRequester("Error","File " + path + " couldn't be loaded!")
+			ProcedureReturn #False
+		endif
 		
 		*cue\length = xVideo_ChannelGetLength(*cue\stream,#xVideo_POS_SEC)
 		
