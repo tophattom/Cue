@@ -44,8 +44,8 @@ Enumeration 1
 	#xVideo_NULLVideo
 EndEnumeration
 
-#xVideo_WindowLessStreams = $1002
-#xVideo_WindowLessHandle = $1001
+#xVideo_CONFIG_WindowLessStreams = $1002
+#xVideo_CONFIG_WindowLessHandle = $1001
 
 ;-Color controls flags
 #xVideo_ControlBrightness = $00000001
@@ -87,6 +87,13 @@ EndStructure
 ;-xVideo_ChannelGetData
 #xVideo_DATA_END = $80000000
 
+;-xVideo_CallbackItemByIndex
+Enumeration 1
+	#xVideo_CALLBACK_AC
+	#xVideo_CALLBACK_VC
+	#xVideo_CALLBACK_AR
+EndEnumeration
+
 ;-For xVideo_ChannelGetInfo()
 Structure xVideo_ChannelInfo
 	AvgTimePerFrame.d
@@ -115,8 +122,16 @@ Structure xVideo_ColorsSet
 	Saturation.f
 EndStructure
 
+;-xVideo_PLUGININFO
+Structure xVideo_PLUGININFO
+	version.l
+	decoderType.l
+	*plgdescription.s
+EndStructure
+
+
 ;-xVideo error codes
-Enumeration
+Enumeration 0
 	#xVideo_OK
 	#xVideo_INVALIDCHAN 
 	#xVideo_UNKNOWN
@@ -187,6 +202,13 @@ Import "BASS_DSHOW.lib"
 	xVideo_ChannelSetDSP.l(chan.l,*proc,*user)
 	
 	xVideo_ChannelGetData.l(chan.l,*dat,size.l)
+	xVideo_ChannelRepaint.l(chan.l,handle.l,hDC.l)
+	xVideo_CallbackItemByIndex.l(type.l,index.l)
+	xVideo_LoadPlugin.l(*filename,flags.l)
+	xVideo_PluginGetInfo.l(plugin.l,*info.xVideo_PLUGININFO)
+	xVideo_RemovePlugin.l(plugin.l)
+	
+	xVideo_StreamCreateDVD.l(*dvd,win.l,flags.l)
 EndImport
 
 

@@ -20,7 +20,6 @@ Structure VideoWindow
 	handle.l
 	
 	name.s
-	borderless.i
 	
 	x.i
 	y.i
@@ -349,7 +348,6 @@ Procedure LoadCueStream(*cue.Cue,path.s)
 		AddElement(*cue\outputs())
 		
 		*cue\outputs()\name = "Preview"
-		*cue\outputs()\borderless = 0
 		*cue\outputs()\window = OpenWindow(#PB_Any,0,0,400,300,*cue\name + " - " + *cue\outputs()\name,#PB_Window_Tool | #PB_Window_SystemMenu)
 		*cue\outputs()\handle = xVideo_ChannelAddWindow(*cue\stream,WindowID(*cue\outputs()\window))
 		StickyWindow(*cue\outputs()\window,1)
@@ -401,6 +399,13 @@ Procedure DeleteCue(*cue.Cue)
 			DeleteCueEffect(*cue,@*cue\effects())
 		Next
 	EndIf
+	
+	If ListSize(*cue\outputs()) > 0
+		ForEach *cue\outputs()
+			CloseWindow(*cue\outputs()\window)
+		Next
+	EndIf
+	
 	
 	GetCueListIndex(*cue)
 	DeleteElement(cueList())
