@@ -987,3 +987,74 @@ Procedure CreateProjectFolder(path.s)
 		SaveCueList(gSavePath)
 	EndIf
 EndProcedure
+
+Procedure.s RelativePath(absolutePath.s,relativeTo.s)
+	absCount = CountString(absolutePath,"\") + 1
+	If Right(absolutePath,1) = "\"
+		absCount - 1
+	EndIf
+	
+	relCount = CountString(relativeTo,"\") + 1
+	If Right(relativeTo,1) = "\"
+		relCount - 1
+	EndIf
+	
+	Dim absoluteDirs.s(absCount - 1)
+	Dim relativeDirs.s(relCount - 1)
+	
+	For i = 0 To absCount - 1
+		absoluteDirs(i) = StringField(absolutePath,i + 1,"\")
+		Debug absoluteDirs(i)
+	Next i
+	
+	
+	For i = 0 To relCount - 1
+		relativeDirs(i) = StringField(relativeTo,i + 1,"\")
+		Debug relativeDirs(i)
+	Next i
+	
+	If absCount < relCount
+		length = absCount
+	Else
+		length = relCount
+	EndIf
+	
+	Define index, lastCommonRoot = -1
+	Define relPath.s
+	
+	;Find common root
+	For index = 0 To length - 1
+		If absoluteDirs(index) = relativeDirs(index)
+			lastCommonRoot = index
+		Else
+			Break
+		EndIf
+	Next index
+	
+	;No common prefix
+	If lastCommonRoot = -1
+		MessageRequester("Error","Paths do not have a common base!")
+		ProcedureReturn ""
+	EndIf
+	
+	;Build relativepath
+	For index = lastCommonRoot + 1 To absCount - 1
+		If Len(absoluteDirs(index)) > 0
+			relPath = relPath + "..\"
+		EndIf
+	Next index
+	
+	For index = lastCommonRoot + 1 To relativeDirs - 1
+		relPath = relPath + relativeDirs(index) + "\"
+	Next index
+	
+	relPath = "\" + relPath + relativeDirs(relCount - 1) + "\"
+	
+	ProcedureReturn relPath
+EndProcedure
+			
+	
+	
+	
+	
+	
