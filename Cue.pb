@@ -20,6 +20,7 @@ Declare StartEvents(*cue.Cue)
 Declare UpdateCues()
 Declare UpdateMainCueList()
 Declare UpdatePosField()
+Declare UpdateListSettings()
 
 Open_MainWindow()
 Open_EditorWindow()
@@ -192,6 +193,13 @@ Repeat ; Start of the event loop
 			EndIf
 			
 			gEditor = #True
+		ElseIf GadgetID = #SettingsButton
+			If Not IsWindow(#SettingsWindow)
+				Open_SettingsWindow()
+			Else
+				HideWindow(#SettingsWindow, 0)
+				UpdateListSettings()
+			EndIf
 		ElseIf GadgetID = #EditorList ;-Editori
 			*gCurrentCue = GetGadgetItemData(#EditorList,GetGadgetState(#EditorList))
 			
@@ -220,7 +228,7 @@ Repeat ; Start of the event loop
   		ElseIf GadgetID = #CueDescField
   			*gCurrentCue\desc = GetGadgetText(#CueDescField)
   			UpdateEditorList()
-    	ElseIf GadgetID = #OpenCueFile
+    	ElseIf GadgetID = #OpenCueFile ;--- Tiedoston lataus
     		Select *gCurrentCue\cueType
     			Case #TYPE_AUDIO
     				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff,*.wma,*.flac) |*.mp3;*.wav;*.ogg;*.aiff;*.wma;*.flac"
@@ -229,7 +237,11 @@ Repeat ; Start of the event loop
     		path.s = OpenFileRequester("Select file","",pattern,0)
     		
     		If path
-    			*gCurrentCue\filePath = path
+    			If gListSettings(#SETTING_RELATIVE) = 1
+    				*gCurrentCue\filePath = RelativePath(GetPathPart(gSavePath),GetPathPart(path)) + GetFilePart(path)
+    			Else
+    				*gCurrentCue\filePath = path
+    			EndIf
     			
     			Select *gCurrentCue\cueType
     				Case #TYPE_AUDIO
@@ -612,7 +624,23 @@ Repeat ; Start of the event loop
 			Next
 		EndIf
 		;}
-
+		
+		;- Listan asetukset
+		If GadgetID = #CheckRelative ;--- Suhteelliset polut
+			If gSavePath = ""
+				MessageRequester("Attention","You need to save your list before you can use relative paths!")
+				SetGadgetState(#CheckRelative, 0)
+			Else
+				gListSettings(#SETTING_RELATIVE) = GetGadgetState(#CheckRelative)
+				
+				If gListSettings(#SETTING_RELATIVE) = 1
+					ChangePathsToRelative()
+				EndIf
+				
+			EndIf
+		ElseIf GadgetID = #SettingsOK
+			HideWindow(#SettingsWindow, 1)
+		EndIf
 	EndIf
 	
 	For i = 0 To 5
@@ -1195,4 +1223,8 @@ EndProcedure
 Procedure UpdatePosField()
 	pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
 	SetGadgetText(#Position, SecondsToString(pos))
+EndProcedure
+
+Procedure UpdateListSettings()
+	SetGadgetState(#CheckRelative, gListSettings(#SETTING_RELATIVE))
 EndProcedure

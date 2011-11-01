@@ -93,7 +93,7 @@ Enumeration
 	#SETTING_RELATIVE
 EndEnumeration
 
-#FORMAT_VERSION = 3.5
+#FORMAT_VERSION = 3.6
 
 
 ;Efektien s‰‰timet
@@ -129,6 +129,7 @@ Enumeration 1
   #CueList
   #Frame3D_2
   #EditorButton
+  #SettingsButton
   
   #EditorList
   #AddAudio
@@ -194,6 +195,9 @@ Enumeration 1
   #AddEffect
   #Text_25
   #EffectType
+  
+  #CheckRelative
+  #SettingsOK
 EndEnumeration
 ;}
 
@@ -201,7 +205,7 @@ EndEnumeration
 
 
 Global NewList cueList.Cue()
-Global Dim gSettings(#SETTINGS - 1)
+Global Dim gListSettings(#SETTINGS - 1)
 
 Global gPlayState.i
 Global *gCurrentCue.Cue
@@ -218,6 +222,7 @@ Global gSavePath.s = ""
 
 
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
+Declare.s RelativePath(absolutePath.s,relativeTo.s)
 
 Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 	LastElement(cueList())
@@ -681,6 +686,12 @@ Procedure SaveCueList(path.s,check=1)
 		;Tiedostoformaatin versio
 		WriteFloat(0,#FORMAT_VERSION)
 		
+		;Listan asetukset
+		WriteInteger(0,#SETTINGS)
+		For i = 0 To #SETTINGS - 1
+			WriteInteger(0, gListSettings(i))
+		Next i
+		
 		;Cuejen lukum‰‰r‰
 		WriteInteger(0,gCueAmount)
 		
@@ -781,12 +792,12 @@ Procedure SaveCueList(path.s,check=1)
 	ProcedureReturn #True
 EndProcedure
 
-Procedure LoadCueList(path.s)
-	If GetExtensionPart(path) = ""
-		path = path + ".clf"
+Procedure LoadCueList(lPath.s)
+	If GetExtensionPart(lPath) = ""
+		lPath = lPath + ".clf"
 	EndIf
 	
-	If ReadFile(0,path)
+	If ReadFile(0,lPath)
 		;Onko oikea tiedostotunniste
 		tmp.s = Chr(ReadByte(0)) + Chr(ReadByte(0)) + Chr(ReadByte(0))
 		
@@ -798,6 +809,17 @@ Procedure LoadCueList(path.s)
 		
 		;Tiedostoformaatin versio
 		version.f = ReadFloat(0)
+		
+		;Asetukset
+		If version >= 3.6
+			sAmount = ReadInteger(0)
+			For i = 0 To sAmount - 1
+				gListSettings(i) = ReadInteger(0)
+				
+			Next i
+		EndIf
+		
+		Debug gListSettings(#SETTING_RELATIVE)
 		
 		;Cuejen m‰‰r‰
 		tmpAmount = ReadInteger(0)
@@ -836,8 +858,14 @@ Procedure LoadCueList(path.s)
 				
 				\filePath = ReadString(0)
 				If \cueType = #TYPE_AUDIO And \filePath <> ""
-					If FileSize(\filePath) = -1
-						result = MessageRequester("File not found","File " + \filePath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+					If gListSettings(#SETTING_RELATIVE) = 1
+						fPath.s = GetPathPart(lPath) + \filePath
+					Else
+						fPath = \filePath
+					EndIf
+					
+					If FileSize(fPath) = -1
+						result = MessageRequester("File not found","File " + fPath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
 						
 						If result = #PB_MessageRequester_Yes
 				    		pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
@@ -845,12 +873,17 @@ Procedure LoadCueList(path.s)
 				    		path.s = OpenFileRequester("Select file","",pattern,0)
 				    		
 				    		If path
-				    			\filePath = path
-				    			LoadCueStream(@cueList(),\filePath)
+				    			If gListSettings(#SETTING_RELATIVE) = 1
+				    				\filePath = RelativePath(GetPathPart(lPath),GetPathPart(path)) + GetFilePart(path)
+				    			Else
+				    				\filePath = path
+				    			EndIf
+				    			
+				    			LoadCueStream(@cueList(),path)
 				    		EndIf
 				    	EndIf
 				    Else
-				    	LoadCueStream(@cueList(),\filePath)
+				    	LoadCueStream(@cueList(),fPath)
 				    EndIf
 				EndIf
 				
@@ -1052,9 +1085,13 @@ Procedure.s RelativePath(absolutePath.s,relativeTo.s)
 	
 	ProcedureReturn relPath
 EndProcedure
-			
-	
-	
-	
-	
-	
+
+Procedure ChangePathsToRelative()
+	ForEach cueList()
+		cueList()\filePath = RelativePath(GetPathPart(gSavePath),GetPathPart(cueList()\filePath)) + GetFilePart(cueList()\filePath)
+	Next
+EndProcedure
+
+		
+		
+		

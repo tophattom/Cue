@@ -7,6 +7,7 @@
 Enumeration
   #MainWindow
   #EditorWindow
+  #SettingsWindow
 EndEnumeration
 
 ;- MenuBar Constants
@@ -83,6 +84,7 @@ Procedure Open_MainWindow()
         
         Frame3DGadget(#Frame3D_2, 310, 0, 190, 80, "Actions")
         ButtonGadget(#EditorButton, 320, 20, 80, 50, "Editor")
+        ButtonGadget(#SettingsButton, 410, 20, 80, 50, "Cue list " + Chr(10) + " settings",#PB_Button_MultiLine)
         TrackBarGadget(#MasterSlider, 730, 50, 290, 30, 0, 100)
         SetGadgetState(#MasterSlider,100)
         TextGadget(#Text_2, 730, 30, 210, 20, "Master volume")
@@ -221,3 +223,11 @@ Procedure Open_EditorWindow()
     ;EndIf
   EndIf
 EndProcedure
+
+Procedure Open_SettingsWindow()
+	If OpenWindow(#SettingsWindow, 0, 0, 200, 100, "Cue list settings", #PB_Window_ScreenCentered | #PB_Window_SystemMenu)
+		CheckBoxGadget(#CheckRelative, 5, 5, 120, 20, "Use relative paths")
+		ButtonGadget(#SettingsOK, 155, 65, 40, 30, "OK")
+	EndIf
+EndProcedure
+		
