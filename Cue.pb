@@ -237,10 +237,13 @@ Repeat ; Start of the event loop
     		path.s = OpenFileRequester("Select file","",pattern,0)
     		
     		If path
+    			*gCurrentCue\absolutePath = path
+    			
     			If gListSettings(#SETTING_RELATIVE) = 1
-    				*gCurrentCue\filePath = RelativePath(GetPathPart(gSavePath),GetPathPart(path)) + GetFilePart(path)
+    				*gCurrentCue\relativePath = RelativePath(GetPathPart(gSavePath),GetPathPart(path)) + GetFilePart(path)
+    				*gCurrentCue\filePath = *gCurrentCue\relativePath
     			Else
-    				*gCurrentCue\filePath = path
+    				*gCurrentCue\filePath = *gCurrentCue\absolutePath
     			EndIf
     			
     			Select *gCurrentCue\cueType

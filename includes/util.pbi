@@ -1,3 +1,5 @@
+;-Effect structure
+;{
 Structure Effect
 	handle.l
 	StructureUnion
@@ -14,7 +16,10 @@ Structure Effect
 	
 	active.i
 EndStructure
+;}
 
+;-Cue structure
+;{
 Structure Cue
 	cueType.i
 	
@@ -22,7 +27,11 @@ Structure Cue
 	desc.s
 	
 	stream.l
+	
 	filePath.s
+	absolutePath.s
+	relativePath.s
+	
 	waveform.i
 	length.i
 	
@@ -61,6 +70,7 @@ Structure Cue
 
 	id.l
 EndStructure
+;}
 
 Enumeration 1
 	#TYPE_AUDIO
@@ -874,7 +884,7 @@ Procedure LoadCueList(lPath.s)
 				    		
 				    		If path
 				    			If gListSettings(#SETTING_RELATIVE) = 1
-				    				\filePath = RelativePath(GetPathPart(lPath),GetPathPart(path)) + GetFilePart(path)
+				    				\filePath = RelativePath(GetPathPart(path),GetPathPart(lPath)) + GetFilePart(path)
 				    			Else
 				    				\filePath = path
 				    			EndIf
@@ -1046,49 +1056,39 @@ Procedure.s RelativePath(absolutePath.s,relativeTo.s)
 		Debug relativeDirs(i)
 	Next i
 	
-	If absCount < relCount
-		length = absCount
-	Else
-		length = relCount
+	Define sameCounter = 0
+	While sameCounter < relCount And sameCounter < absCount And relativeDirs(sameCounter) = absoluteDirs(sameCounter)
+		sameCounter + 1
+	Wend
+	
+	If sameCounter = 0
+		ProcedureReturn absolutePath ;No relative link
 	EndIf
 	
-	Define index, lastCommonRoot = -1
-	Define relPath.s
+	Dim relPath.s(0)
+	Define returnString.s
+	For i = sameCounter To relCount - 1
+		ReDim relPath(ArraySize(relPath()) + 1)
+		relPath(ArraySize(relPath())) = "..\"
+	Next i
 	
-	;Find common root
-	For index = 0 To length - 1
-		If absoluteDirs(index) = relativeDirs(index)
-			lastCommonRoot = index
-		Else
-			Break
-		EndIf
-	Next index
+	For i = sameCounter To absCount - 1
+		ReDim relPath(ArraySize(relPath()) + 1)
+		relPath(ArraySize(relPath())) = absoluteDirs(i) + "\"
+	Next i
 	
-	;No common prefix
-	If lastCommonRoot = -1
-		MessageRequester("Error","Paths do not have a common base!")
-		ProcedureReturn ""
-	EndIf
+	;ReDim relPath(ArraySize(relPath()) - 1)
 	
-	;Build relativepath
-	For index = lastCommonRoot + 1 To absCount - 1
-		If Len(absoluteDirs(index)) > 0
-			relPath = relPath + "..\"
-		EndIf
-	Next index
+	For i = 0 To ArraySize(relPath())
+		returnString = returnString + relPath(i)
+	Next i
 	
-	For index = lastCommonRoot + 1 To relativeDirs - 1
-		relPath = relPath + relativeDirs(index) + "\"
-	Next index
-	
-	relPath = "\" + relPath + relativeDirs(relCount - 1) + "\"
-	
-	ProcedureReturn relPath
+	ProcedureReturn returnString
 EndProcedure
 
 Procedure ChangePathsToRelative()
 	ForEach cueList()
-		cueList()\filePath = RelativePath(GetPathPart(gSavePath),GetPathPart(cueList()\filePath)) + GetFilePart(cueList()\filePath)
+		cueList()\filePath = RelativePath(GetPathPart(cueList()\filePath),GetPathPart(gSavePath)) + GetFilePart(cueList()\filePath)
 	Next
 EndProcedure
 
