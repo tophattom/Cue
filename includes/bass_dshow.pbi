@@ -4,7 +4,7 @@
 
 
 ;-Version info
-#xVideo_VERSION = $02040201
+#xVideo_VERSION = $02040202
 #xVideo_VERSIONTEXT$ = "2.4"
 
 
@@ -129,6 +129,33 @@ Structure xVideo_PLUGININFO
 	*plgdescription.s
 EndStructure
 
+;-// DVD function flags
+;-for xVideo_DVDGetProperty function
+#xVideo_CurentDVDTitle = $10010
+#xVideo_DVDTitles = $10020
+#xVideo_DVDTitleChapters = $10030
+#xVideo_DVDCurrentTitleDuration = 145
+#xVideo_DVDCurrentTitlePosition = 146
+
+;-for xVideo_DVDSetProperty function
+Enumeration 100
+	#xVideo_DVD_TITLEMENU
+	#xVideo_DVD_ROOT  
+	#xVideo_DVD_NEXTCHAPTER     
+	#xVideo_DVD_PREVCHAPTER   
+	#xVideo_DVD_TITLE   
+	#xVideo_DVD_TITLECHAPTER
+EndEnumeration
+
+;-for xVideo_DVDChannelMenu function
+Enumeration 21
+	#xVideo_DVDSelectAtPos
+	#xVideo_DVDActionAtPos
+	#xVideo_DVDActiveBut
+	#xVideo_DVDSelectButton
+EndEnumeration
+
+
 
 ;-xVideo error codes
 Enumeration 0
@@ -209,6 +236,11 @@ Import "BASS_DSHOW.lib"
 	xVideo_RemovePlugin.l(plugin.l)
 	
 	xVideo_StreamCreateDVD.l(*dvd,win.l,flags.l)
+	xVideo_DVDGetProperty.l(chan.l,prop.l,value.l)
+	xVideo_DVDSetProperty.l(chan.l,prop.l,value.l)
+	xVideo_DVDChannelMenu.l(chan.l,option.l,value1.i,value2.i)
+	xVideo_GetConfig.l(config.l)
+	xVideo_ChannelSetPositionVB.l(chan.l,pos.l,mode.l)
 EndImport
 
 
@@ -218,8 +250,3 @@ EndImport
 	
 
 
-
-; IDE Options = PureBasic 4.50 (Windows - x86)
-; CursorPosition = 137
-; FirstLine = 125
-; EnableXP

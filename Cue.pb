@@ -1005,7 +1005,7 @@ Procedure PlayCue(*cue.Cue)
 					FirstElement(*cue\outputs())
 					HideWindow(*cue\outputs()\window,0)
 				EndIf
-				xVideo_ChannelSetPosition(*cue\stream,*cue\startPos,#xVideo_POS_SEC)
+				xVideo_ChannelSetPosition(*cue\stream,*cue\startPos * 1000,#xVideo_POS_MILISEC)
 				xVideo_ChannelPlay(*cue\stream)
 			EndIf
 			
@@ -1034,7 +1034,7 @@ Procedure StopCue(*cue.Cue)
 			BASS_ChannelSetPosition(*cue\stream,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\startPos),#BASS_POS_BYTE)
 		ElseIf *cue\cueType = #TYPE_VIDEO
 			xVideo_ChannelStop(*cue\stream)
-			xVideo_ChannelSetPosition(*cue\stream,*cue\startPos,#xVideo_POS_SEC)
+			xVideo_ChannelSetPosition(*cue\stream,*cue\startPos * 1000,#xVideo_POS_MILISEC)
 		EndIf
 		
 		
