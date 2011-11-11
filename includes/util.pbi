@@ -15,6 +15,9 @@ Structure Effect
 	pluginPath.s
 	
 	active.i
+	
+	name.s
+	id.i
 EndStructure
 ;}
 
@@ -65,6 +68,7 @@ Structure Cue
 	
 	*actionCues.Cue[6]
 	actions.i[6]
+	*actionEffects.Effect[6]
 	
 	List effects.Effect()
 
@@ -95,6 +99,7 @@ Enumeration 1
 	#EVENT_FADE_OUT
 	#EVENT_STOP
 	#EVENT_RELEASE
+	#EVENT_EFFECT
 EndEnumeration
 
 ;Asetusvakiot
@@ -199,6 +204,7 @@ Enumeration 1
   #LoopEnable
   #Position
   #Text_24
+  #Text_26
   
   #EditorTabs
   
@@ -222,6 +228,7 @@ Global *gCurrentCue.Cue
 Global gCueAmount.i
 
 Global gCueCounter.l
+Global gEffectCounter.i
 
 Global gEditor = #False
 
@@ -425,7 +432,6 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				
 			Next
 		EndIf
-				
 		
 		If eType = #EFFECT_VST And path = ""
 			path.s = OpenFileRequester("Select plugin file","","DLL files | *.dll",0)
@@ -451,10 +457,12 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 			
 		AddElement(*cue\effects())
 		amount + 1
+		gEffectCounter + 1
 		
 		*cue\effects()\priority = 0
 		*cue\effects()\type = eType
 		*cue\effects()\active = active
+		*cue\effects()\id = gEffectCounter
 		If eType <> #EFFECT_VST
 			*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
 		Else
@@ -468,7 +476,8 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 		tmpY = 40 + (amount - 1) * 115
 		Select eType
 			Case #BASS_FX_DX8_REVERB
-				text.s = "Reverb"
+				*cue\effects()\name = "Reverb"
+				text.s = "Reverb " + Str(gEffectCounter)
 				
 				*cue\effects()\gadgets[5] = TrackBarGadget(#PB_Any,75, tmpY + 40,170,30,0,960)		;Input gain [-96.0,0.0]
 				*cue\effects()\gadgets[6] = TrackBarGadget(#PB_Any,75, tmpY + 75,170,30,0,960) 		;Reverb mix [-96.0,0.0]
@@ -508,7 +517,8 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				SetGadgetText(*cue\effects()\gadgets[12],StrF(*cue\effects()\revParam\fHighFreqRTRatio,3))
 				
 			Case #BASS_FX_DX8_PARAMEQ
-				text.s = "Parametic EQ"
+				*cue\effects()\name = "Parametric EQ"
+				text.s = "Parametic EQ " + Str(gEffectCounter)
 				
 				info.BASS_CHANNELINFO
 				BASS_ChannelGetInfo(*cue\stream,@info.BASS_CHANNELINFO)
@@ -548,7 +558,8 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				vstInfo.BASS_VST_INFO
 				BASS_VST_GetInfo(*cue\effects()\handle,@vstInfo)
 				
-				text.s = vstInfo\effectName
+				*cue\effects()\name = vstInfo\effectName
+				text.s = vstInfo\effectName + " " + Str(gEffectCounter)
 				
 				If vstInfo\hasEditor = 1
 					*cue\effects()\gadgets[5] = OpenWindow(#PB_Any,0,0,vstInfo\editorWidth,vstInfo\editorHeight,*cue\name + " - " + vstInfo\effectName,#PB_Window_ScreenCentered | #PB_Window_SystemMenu)

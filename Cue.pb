@@ -653,6 +653,14 @@ Repeat ; Start of the event loop
 		
 		If GadgetID = eventActionSelect(i)
 			*gCurrentCue\actions[i] = GetGadgetItemData(eventActionSelect(i),GetGadgetState(eventActionSelect(i)))
+			
+			If *gCurrentCue\actions[i] = #EVENT_EFFECT
+				UpdateCueControls()
+			EndIf
+		EndIf
+		
+		If GadgetID = eventEffectSelect(i)
+			*gCurrentCue\actionEffects[i] = GetGadgetItemData(eventEffectSelect(i),GetGadgetState(eventEffectSelect(i)))
 		EndIf
 	Next i
 
@@ -754,10 +762,12 @@ Procedure HideCueControls()
 	HideGadget(#Text_23, 1)
 	HideGadget(#Text_24, 1)
 	HideGadget(#Position, 1)
+	HideGadget(#Text_26, 1)
 	
 	For i = 0 To 5
 		HideGadget(eventCueSelect(i),1)
 		HideGadget(eventActionSelect(i),1)
+		HideGadget(eventEffectSelect(i),1)
 	Next i
 	
 	HideEffectControls()
@@ -818,10 +828,12 @@ Procedure ShowCueControls()
 			Case #TYPE_EVENT
 				HideGadget(#Text_18,0)
 				HideGadget(#Text_19,0)
+				HideGadget(#Text_26,0)
 				
 				For i = 0 To 5
 					HideGadget(eventCueSelect(i),0)
 					HideGadget(eventActionSelect(i),0)
+					HideGadget(eventEffectSelect(i),0)
 				Next i
 			Case #TYPE_CHANGE
 				HideGadget(#Text_14,0)
@@ -949,6 +961,8 @@ Procedure UpdateCueControls()
 	For i = 0 To 5
 		ClearGadgetItems(eventCueSelect(i))
 		ClearGadgetItems(eventActionSelect(i))
+		ClearGadgetItems(eventEffectSelect(i))
+		DisableGadget(eventEffectSelect(i),1)
 		
 		k = 0
 		ForEach cueList()
@@ -966,15 +980,38 @@ Procedure UpdateCueControls()
 		
 		AddGadgetItem(eventActionSelect(i), 0 , "Fade out")
 		SetGadgetItemData(eventActionSelect(i), 0, #EVENT_FADE_OUT)
+		
 		AddGadgetItem(eventActionSelect(i), 1, "Stop")
 		SetGadgetItemData(eventActionSelect(i), 1, #EVENT_STOP)
+		
 		AddGadgetItem(eventActionSelect(i), 2, "Release loop")
 		SetGadgetItemData(eventActionSelect(i), 2, #EVENT_RELEASE)
+		
+		AddGadgetItem(eventActionSelect(i), 3, "Switch effect")
+		SetGadgetItemData(eventActionSelect(i), 3, #EVENT_EFFECT)
 		
 		If *gCurrentCue\actions[i] = #EVENT_FADE_OUT
 			SetGadgetState(eventActionSelect(i), 0)
 		ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
 			SetGadgetState(eventActionSelect(i), 1)
+		ElseIf *gCurrentCue\actions[i] = #EVENT_EFFECT
+			SetGadgetState(eventActionSelect(i), 3)
+			DisableGadget(eventEffectSelect(i), 0)
+			
+			If *gCurrentCue\actionCues[i] <> 0
+				k = 0
+				ForEach *gCurrentCue\actionCues[i]\effects()
+					AddGadgetItem(eventEffectSelect(i),k,*gCurrentCue\actionCues[i]\effects()\name + " " + Str(*gCurrentCue\actionCues[i]\effects()\id))
+					SetGadgetItemData(eventEffectSelect(i),k,@*gCurrentCue\actionCues[i]\effects())
+					
+					If @*gCurrentCue\actionCues[i]\effects() = *gCurrentCue\actionEffects[i]
+						SetGadgetState(eventEffectSelect(i),k)
+					EndIf
+					
+					k + 1
+				Next
+			EndIf
+			
 		EndIf
 	Next i
 	
@@ -1110,6 +1147,10 @@ Procedure StartEvents(*cue.Cue)
 							BASS_ChannelRemoveSync(*cue\actionCues[i]\stream,*cue\actionCues[i]\loopHandle)
 							*cue\actionCues[i]\loopHandle = 0
 							*cue\actionCues[i]\loopsDone = 0
+						EndIf
+					Case #EVENT_EFFECT
+						If *cue\actionEffects[i] <> 0
+							DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],*cue\actionEffects[i]\active)
 						EndIf
 				EndSelect
 			EndIf

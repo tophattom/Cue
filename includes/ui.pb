@@ -37,6 +37,7 @@ EndEnumeration
 
 Global Dim eventCueSelect(5)
 Global Dim eventActionSelect(5)
+Global Dim eventEffectSelect(5)
 
 ;- Fonts
 Global FontID1
@@ -195,9 +196,12 @@ Procedure Open_EditorWindow()
       ;Event cue
       TextGadget(#Text_18, 5, 245, 40, 20, "Cue:")
       TextGadget(#Text_19, 275, 245, 40, 20, "Action:")
+      TextGadget(#Text_26, 445, 245, 40, 20, "Effect:")
       For i = 0 To 5
       	eventCueSelect(i) = ComboBoxGadget(#PB_Any, 45, 245 + (i * 40), 200, 20)
-      	eventActionSelect(i) = ComboBoxGadget(#PB_Any, 315, 245 + (i * 40), 200, 20)
+      	eventActionSelect(i) = ComboBoxGadget(#PB_Any, 315, 245 + (i * 40), 120, 20)
+      	eventEffectSelect(i) = ComboBoxGadget(#PB_Any, 485, 245 + (i * 40), 150, 20)
+      	DisableGadget(eventEffectSelect(i),1)
       Next i
       
       ;Change cue
