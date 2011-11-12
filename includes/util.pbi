@@ -15,6 +15,7 @@ Structure Effect
 	pluginPath.s
 	
 	active.i
+	defaultActive.i
 	
 	name.s
 	id.i
@@ -99,7 +100,8 @@ Enumeration 1
 	#EVENT_FADE_OUT
 	#EVENT_STOP
 	#EVENT_RELEASE
-	#EVENT_EFFECT
+	#EVENT_EFFECT_ON
+	#EVENT_EFFECT_OFF
 EndEnumeration
 
 ;Asetusvakiot
@@ -108,7 +110,7 @@ Enumeration
 	#SETTING_RELATIVE
 EndEnumeration
 
-#FORMAT_VERSION = 3.6
+#FORMAT_VERSION = 3.7
 
 
 ;Efektien s‰‰timet
@@ -392,7 +394,7 @@ Procedure Max(a.f,b.f)
 	EndIf
 EndProcedure
 
-Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.BASS_DX8_PARAMEQ=0,active=1,path.s="")
+Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.BASS_DX8_PARAMEQ=0,active=1,id=-1,path.s="")
 	If *cue\stream <> 0
 		amount = ListSize(*cue\effects())
 		
@@ -462,7 +464,11 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 		*cue\effects()\priority = 0
 		*cue\effects()\type = eType
 		*cue\effects()\active = active
-		*cue\effects()\id = gEffectCounter
+		If id = -1
+			*cue\effects()\id = gEffectCounter
+		Else
+			*cue\effects()\id = id
+		EndIf
 		If eType <> #EFFECT_VST
 			*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
 		Else
@@ -683,6 +689,16 @@ Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
 	EndIf
 EndProcedure
 
+Procedure GetEffectById(id.l)
+	ForEach cueList()
+		ForEach cueList()\effects()
+			If cueList()\effects()\id = id
+				ProcedureReturn @cueList()\effects()
+			EndIf
+		Next
+	Next
+EndProcedure
+
 Procedure SaveCueList(path.s,check=1)
 	If GetExtensionPart(path) = ""
 		path = path + ".clf"
@@ -781,6 +797,7 @@ Procedure SaveCueList(path.s,check=1)
 						Debug "Effect type: " + Str(\type)
 						WriteByte(0,\type)
 						WriteByte(0,\active)
+						WriteInteger(0,\id)
 						
 						If \type = #BASS_FX_DX8_REVERB
 							WriteFloat(0,\revParam\fInGain)
@@ -804,7 +821,17 @@ Procedure SaveCueList(path.s,check=1)
 						EndIf
 					EndWith
 				Next
-			EndIf			
+			EndIf
+			
+			;"Action efektit"
+			For i = 0 To 5
+				If cueList()\actionEffects[i] <> 0
+					WriteInteger(0,cueList()\actionEffects[i]\id)
+				Else
+					WriteInteger(0,0)
+				EndIf
+			Next i
+			
 		Next
 		
 		CloseFile(0)
@@ -835,8 +862,7 @@ Procedure LoadCueList(lPath.s)
 		If version >= 3.6
 			sAmount = ReadInteger(0)
 			For i = 0 To sAmount - 1
-				gListSettings(i) = ReadInteger(0)
-				
+				gListSettings(i) = ReadInteger(0)	
 			Next i
 		EndIf
 		
@@ -959,6 +985,12 @@ Procedure LoadCueList(lPath.s)
 						Debug "Effect type: " + Str(tmpType)
 						tmpActive = ReadByte(0)
 						
+						If version >= 3.7
+							tmpId = ReadInteger(0)
+						Else
+							tmpId = -1
+						endif
+						
 						If tmpType = #BASS_FX_DX8_REVERB
 							revParams.BASS_DX8_REVERB
 							revParams\fInGain = ReadFloat(0)
@@ -966,17 +998,17 @@ Procedure LoadCueList(lPath.s)
 							revParams\fReverbTime = ReadFloat(0)
 							revParams\fHighFreqRTRatio = ReadFloat(0)
 							
-							AddCueEffect(@cueList(),tmpType,@revParams,0,tmpActive)
+							AddCueEffect(@cueList(),tmpType,@revParams,0,tmpActive,tmpId)
 						ElseIf tmpType = #BASS_FX_DX8_PARAMEQ
 							eqParams.BASS_DX8_PARAMEQ
 							eqParams\fCenter = ReadFloat(0)
 							eqParams\fBandwidth = ReadFloat(0)
 							eqParams\fGain = ReadFloat(0)
 							
-							AddCueEffect(@cueList(),tmpType,0,@eqParams,tmpActive)
+							AddCueEffect(@cueList(),tmpType,0,@eqParams,tmpActive,tmpId)
 						ElseIf tmpType = #EFFECT_VST
 							tmpPath.s = ReadString(0)
-							result = AddCueEffect(@cueList(),tmpType,0,0,tmpActive,tmpPath)
+							result = AddCueEffect(@cueList(),tmpType,0,0,tmpActive,tmpId,tmpPath)
 							
 							If result = #True
 								pAmount = ReadInteger(0)
@@ -985,6 +1017,17 @@ Procedure LoadCueList(lPath.s)
 								Next k
 							EndIf
 							
+						EndIf
+					Next i
+				EndIf
+				ChangeCurrentElement(cueList(),*prev)
+				
+				;"action efektit"
+				If version >= 3.7
+					For i = 0 To 5
+						tmpId = ReadInteger(0)
+						If tmpId <> 0
+							*prev\actionEffects[i] = GetEffectById(tmpId)
 						EndIf
 					Next i
 				EndIf

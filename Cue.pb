@@ -463,6 +463,7 @@ Repeat ; Start of the event loop
 					ElseIf GadgetID = \gadgets[#EGADGET_ACTIVE]
 						state = GetGadgetState(\gadgets[#EGADGET_ACTIVE])
 						DisableCueEffect(*gCurrentCue,@*gCurrentCue\effects(),OnOff(state))
+						*gCurrentCue\effects()\defaultActive = state
 						
 						For i = 5 To 16
 							If \gadgets[i] <> 0
@@ -654,7 +655,7 @@ Repeat ; Start of the event loop
 		If GadgetID = eventActionSelect(i)
 			*gCurrentCue\actions[i] = GetGadgetItemData(eventActionSelect(i),GetGadgetState(eventActionSelect(i)))
 			
-			If *gCurrentCue\actions[i] = #EVENT_EFFECT
+			If *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
 				UpdateCueControls()
 			EndIf
 		EndIf
@@ -987,15 +988,23 @@ Procedure UpdateCueControls()
 		AddGadgetItem(eventActionSelect(i), 2, "Release loop")
 		SetGadgetItemData(eventActionSelect(i), 2, #EVENT_RELEASE)
 		
-		AddGadgetItem(eventActionSelect(i), 3, "Switch effect")
-		SetGadgetItemData(eventActionSelect(i), 3, #EVENT_EFFECT)
+		AddGadgetItem(eventActionSelect(i), 3, "Effect on")
+		SetGadgetItemData(eventActionSelect(i), 3, #EVENT_EFFECT_ON)
+		
+		AddGadgetItem(eventActionSelect(i), 4, "Effect off")
+		SetGadgetItemData(eventActionSelect(i), 4, #EVENT_EFFECT_OFF)
 		
 		If *gCurrentCue\actions[i] = #EVENT_FADE_OUT
 			SetGadgetState(eventActionSelect(i), 0)
 		ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
 			SetGadgetState(eventActionSelect(i), 1)
-		ElseIf *gCurrentCue\actions[i] = #EVENT_EFFECT
-			SetGadgetState(eventActionSelect(i), 3)
+		ElseIf *gCurrentCue\actions[i] = #EVENT_EFFECT_ON Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
+			If *gCurrentCue\actions[i] = #EVENT_EFFECT_ON
+				SetGadgetState(eventActionSelect(i), 3)
+			Else
+				SetGadgetState(eventActionSelect(i), 4)
+			EndIf
+			
 			DisableGadget(eventEffectSelect(i), 0)
 			
 			If *gCurrentCue\actionCues[i] <> 0
@@ -1092,6 +1101,10 @@ Procedure StopCue(*cue.Cue)
 		
 		*cue\loopsDone = 0
 		
+		ForEach *cue\effects()
+			DisableCueEffect(*cue,@*cue\effects(),OnOff(*cue\effects()\defaultActive))
+		Next
+		
 		ProcedureReturn #True
 	Else
 		ProcedureReturn #False
@@ -1148,9 +1161,13 @@ Procedure StartEvents(*cue.Cue)
 							*cue\actionCues[i]\loopHandle = 0
 							*cue\actionCues[i]\loopsDone = 0
 						EndIf
-					Case #EVENT_EFFECT
+					Case #EVENT_EFFECT_ON
 						If *cue\actionEffects[i] <> 0
-							DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],*cue\actionEffects[i]\active)
+							DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],0)
+						EndIf
+					Case #EVENT_EFFECT_OFF
+						If *cue\actionEffects[i] <> 0
+							DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],1)
 						EndIf
 				EndSelect
 			EndIf
