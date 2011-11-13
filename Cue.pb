@@ -180,6 +180,11 @@ Repeat ; Start of the event loop
 				
 			EndIf
 		ElseIf GadgetID = #EditorButton
+			ForEach cueList()
+				StopCue(@cueList())
+			Next
+			UpdateMainCueList()
+			
 			HideWindow(#EditorWindow,0)
 			
 			If *gCurrentCue = 0
@@ -207,14 +212,26 @@ Repeat ; Start of the event loop
 				UpdateCueControls()
 			EndIf
 		ElseIf GadgetID = #AddAudio ;--- Editorin napit
+			ForEach cueList()
+				StopCue(@cueList())
+			Next
+			
 			*gCurrentCue = AddCue(#TYPE_AUDIO)
 			UpdateEditorList()
 			UpdateCueControls()
 		ElseIf GadgetID = #AddChange
+			ForEach cueList()
+				StopCue(@cueList())
+			Next
+			
 			*gCurrentCue = AddCue(#TYPE_CHANGE)
 			UpdateEditorList()
 			UpdateCueControls()
 		ElseIf GadgetID = #AddEvent
+			ForEach cueList()
+				StopCue(@cueList())
+			Next
+			
 			*gCurrentCue = AddCue(#TYPE_EVENT)
 			UpdateEditorList()
 			UpdateCueControls()
