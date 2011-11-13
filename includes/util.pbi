@@ -75,7 +75,7 @@ Structure Cue
 	
 	List effects.Effect()
 	
-	List outputs.Videowindow()
+	List outputs.VideoWindow()
 
 	id.l
 EndStructure
@@ -212,6 +212,9 @@ Enumeration 1
   #AddEffect
   #Text_25
   #EffectType
+  
+  #OutputList
+  #Text_26
 EndEnumeration
 ;}
 

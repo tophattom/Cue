@@ -197,6 +197,10 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_20, 5, 185, 100, 20, "Change duration:")
       StringGadget(#ChangeDur, 105, 185, 40, 20, "")
       
+      ;Video cue
+      TextGadget(#Text_26, 5, 290, 50, 20, "Outputs:")
+      ListViewGadget(#OutputList, 5, 310, 100, 135)
+      
       ;Efektivälilehti
       AddGadgetItem(#EditorTabs, 1, "Effects")
       
