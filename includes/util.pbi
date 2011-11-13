@@ -464,6 +464,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 		*cue\effects()\priority = 0
 		*cue\effects()\type = eType
 		*cue\effects()\active = active
+		*cue\effects()\defaultActive = active
 		If id = -1
 			*cue\effects()\id = gEffectCounter
 		Else
@@ -989,7 +990,7 @@ Procedure LoadCueList(lPath.s)
 							tmpId = ReadInteger(0)
 						Else
 							tmpId = -1
-						endif
+						EndIf
 						
 						If tmpType = #BASS_FX_DX8_REVERB
 							revParams.BASS_DX8_REVERB

@@ -672,7 +672,7 @@ Repeat ; Start of the event loop
 		If GadgetID = eventActionSelect(i)
 			*gCurrentCue\actions[i] = GetGadgetItemData(eventActionSelect(i),GetGadgetState(eventActionSelect(i)))
 			
-			If *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
+			If *gCurrentCue\actions[i] = #EVENT_EFFECT_ON Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
 				UpdateCueControls()
 			EndIf
 		EndIf
@@ -1022,8 +1022,8 @@ Procedure UpdateCueControls()
 				SetGadgetState(eventActionSelect(i), 4)
 			EndIf
 			
-			DisableGadget(eventEffectSelect(i), 0)
-			
+			DisableGadget(eventEffectSelect(i),0)
+
 			If *gCurrentCue\actionCues[i] <> 0
 				k = 0
 				ForEach *gCurrentCue\actionCues[i]\effects()
