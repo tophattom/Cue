@@ -21,6 +21,7 @@ Declare StartEvents(*cue.Cue)
 Declare UpdateCues()
 Declare UpdateMainCueList()
 Declare UpdatePosField()
+Declare UpdateOutputList()
 
 Open_MainWindow()
 Open_EditorWindow()
@@ -249,6 +250,10 @@ Repeat ; Start of the event loop
     			
     			UpdateCueControls()
     			UpdateEditorList()
+    			
+    			If *gCurrentCue\cueType = #TYPE_VIDEO
+    				UpdateOutputList()
+    			EndIf
     		EndIf
     	ElseIf GadgetID = #Image_1
       
@@ -630,6 +635,11 @@ Repeat ; Start of the event loop
 			*gCurrentCue\actions[i] = GetGadgetItemData(eventActionSelect(i),GetGadgetState(eventActionSelect(i)))
 		EndIf
 	Next i
+	
+	;--- Videon ulostulojen asetukset
+	If GadgetID = #AddOutput
+		UpdateOutputList()
+	EndIf
 
 	If Event = #PB_Event_CloseWindow
 		eWindow = EventWindow()
@@ -729,6 +739,9 @@ Procedure HideCueControls()
 	HideGadget(#Text_23, 1)
 	HideGadget(#Text_24, 1)
 	HideGadget(#Position, 1)
+	HideGadget(#OutputList, 1)
+	HideGadget(#Text_26, 1)
+	HideGadget(#AddOutput, 1)
 	
 	For i = 0 To 5
 		HideGadget(eventCueSelect(i),1)
@@ -790,6 +803,13 @@ Procedure ShowCueControls()
 				HideGadget(#Text_23, 0)
 				HideGadget(#Text_24, 0)
 				HideGadget(#Position, 0)
+				
+				If *gCurrentCue\cueType = #TYPE_VIDEO
+					HideGadget(#OutputList, 0)
+					HideGadget(#Text_26, 0)
+					HideGadget(#AddOutput, 0)
+				EndIf
+				
 				
 				ShowEffectControls()
 			Case #TYPE_EVENT
@@ -969,7 +989,6 @@ Procedure UpdateCueControls()
 	
 	HideEffectControls()
 	ShowEffectControls()
-
 EndProcedure
 
 Procedure PlayCue(*cue.Cue)
@@ -1239,3 +1258,16 @@ Procedure UpdatePosField()
 	
 	SetGadgetText(#Position, SecondsToString(pos))
 EndProcedure
+
+Procedure UpdateOutputList()
+	ClearGadgetItems(#OutputList)
+	k = 0
+	
+	ForEach *gCurrentCue\outputs()
+		AddGadgetItem(#OutputList, k, *gCurrentCue\outputs()\name)
+		SetGadgetItemData(#OutputList, k, @*gCurrentCue\outputs())
+		
+		k + 1
+	Next
+EndProcedure
+

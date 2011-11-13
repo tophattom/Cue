@@ -215,6 +215,7 @@ Enumeration 1
   
   #OutputList
   #Text_26
+  #AddOutput
 EndEnumeration
 ;}
 
@@ -328,9 +329,6 @@ Procedure LoadCueStream(*cue.Cue,path.s)
 		If *cue\stream <> 0
 			ForEach *cue\outputs()
 				xVideo_ChannelRemoveWindow(*cue\stream,*cue\outputs()\handle)
-				If *cue\outputs()\window <> #EditorWindow
-					CloseWindow(*cue\outputs()\window)
-				EndIf
 			Next
 			
 			xVideo_StreamFree(*cue\stream)
@@ -348,12 +346,19 @@ Procedure LoadCueStream(*cue.Cue,path.s)
 		*cue\endPos = *cue\length
 		
 		;**** Esikatseluikkuna
-		AddElement(*cue\outputs())
+		If ListSize(*cue\outputs()) = 0
+			AddElement(*cue\outputs())
+			
+			*cue\outputs()\name = "Preview"
+			*cue\outputs()\window = OpenWindow(#PB_Any,0,0,400,300,*cue\name + " - " + *cue\outputs()\name,#PB_Window_Tool | #PB_Window_SystemMenu)
+			*cue\outputs()\handle = xVideo_ChannelAddWindow(*cue\stream,WindowID(*cue\outputs()\window))
+			StickyWindow(*cue\outputs()\window,1)
+		Else
+			ForEach *cue\outputs()
+				*cue\outputs()\handle = xVideo_ChannelAddWindow(*cue\stream,WindowID(*cue\outputs()\window))
+			Next
+		EndIf
 		
-		*cue\outputs()\name = "Preview"
-		*cue\outputs()\window = OpenWindow(#PB_Any,0,0,400,300,*cue\name + " - " + *cue\outputs()\name,#PB_Window_Tool | #PB_Window_SystemMenu)
-		*cue\outputs()\handle = xVideo_ChannelAddWindow(*cue\stream,WindowID(*cue\outputs()\window))
-		StickyWindow(*cue\outputs()\window,1)
 	EndIf
 	
 EndProcedure

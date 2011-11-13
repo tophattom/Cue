@@ -199,7 +199,8 @@ Procedure Open_EditorWindow()
       
       ;Video cue
       TextGadget(#Text_26, 5, 290, 50, 20, "Outputs:")
-      ListViewGadget(#OutputList, 5, 310, 100, 135)
+      ListViewGadget(#OutputList, 5, 310, 100, 100)
+      ButtonGadget(#AddOutput, 5, 415, 100, 30, "Add output")
       
       ;Efektivälilehti
       AddGadgetItem(#EditorTabs, 1, "Effects")
