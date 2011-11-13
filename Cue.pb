@@ -22,6 +22,8 @@ Declare UpdateCues()
 Declare UpdateMainCueList()
 Declare UpdatePosField()
 Declare UpdateOutputList()
+Declare ShowOutputControls()
+Declare HideOutputControls()
 
 Open_MainWindow()
 Open_EditorWindow()
@@ -623,7 +625,56 @@ Repeat ; Start of the event loop
 			Next
 		EndIf
 		;}
-
+		
+		;--- Videon ulostulojen asetukset
+		If GadgetID = #AddOutput
+			AddCueOutput(*gCurrentCue)
+			UpdateOutputList()
+		ElseIf GadgetID = #DeleteOutput
+			If *gCurrentOutput <> FirstElement(*gCurrentCue\outputs())
+				DeleteCueOutput(*gCurrentCue,GetGadgetItemData(#OutputList,GetGadgetState(#OutputList)))
+				UpdateOutputList()
+			EndIf
+		ElseIf GadgetID = #OutputList
+			*gCurrentOutput = GetGadgetItemData(#OutputList,GetGadgetState(#OutputList))
+			
+			If *gCurrentOutput = FirstElement(*gCurrentCue\outputs())
+				HideOutputControls()
+			Else
+				ShowOutputControls()
+			EndIf
+		ElseIf GadgetID = #OutputX
+			*gCurrentOutput\x = Val(GetGadgetText(#OutputX))
+			ResizeWindow(*gCurrentOutput\window,DesktopX(*gCurrentOutput\monitor) + *gCurrentOutput\x,#PB_Ignore,#PB_Ignore,#PB_Ignore)
+		ElseIf GadgetID = #OutputY
+			*gCurrentOutput\y = Val(GetGadgetText(#OutputY))
+			ResizeWindow(*gCurrentOutput\window,#PB_Ignore,DesktopY(*gCurrentOutput\monitor) + *gCurrentOutput\y,#PB_Ignore,#PB_Ignore)
+		ElseIf GadgetID = #OutputW
+			*gCurrentOutput\width = Val(GetGadgetText(#OutputW))
+			ResizeWindow(*gCurrentOutput\window,#PB_Ignore,#PB_Ignore,*gCurrentOutput\width,#PB_Ignore)
+			xVideo_ChannelResizeWindow(*gCurrentCue\stream,*gCurrentOutput\handle,0,0,*gCurrentOutput\width,*gCurrentOutput\height)
+		ElseIf GadgetID = #OutputH
+			*gCurrentOutput\height = Val(GetGadgetText(#OutputH))
+			ResizeWindow(*gCurrentOutput\window,#PB_Ignore,#PB_Ignore,#PB_Ignore,*gCurrentOutput\height)
+			xVideo_ChannelResizeWindow(*gCurrentCue\stream,*gCurrentOutput\handle,0,0,*gCurrentOutput\width,*gCurrentOutput\height)
+		ElseIf GadgetID = #OutputMonitor
+			*gCurrentOutput\monitor = GetGadgetState(#OutputMonitor)
+			ResizeWindow(*gCurrentOutput\window,DesktopX(*gCurrentOutput\monitor) + *gCurrentOutput\x,DesktopY(*gCurrentOutput\monitor) + *gCurrentOutput\y,#PB_Ignore,#PB_Ignore)
+		ElseIf GadgetID = #OutputActive
+			*gCurrentOutput\active = GetGadgetState(#OutputActive)
+			
+			If *gCurrentOutput\active = 0
+				xVideo_ChannelRemoveWindow(*gCurrentCue\stream,*gCurrentOutput\handle)
+				HideWindow(*gCurrentOutput\window,1)
+			Else
+				*gCurrentOutput\handle = xVideo_ChannelAddWindow(*gCurrentCue\stream,WindowID(*gCurrentOutput\window))
+				HideWindow(*gCurrentOutput\window,0)
+			EndIf
+		ElseIf GadgetID = #OutputName
+			*gCurrentOutput\name = GetGadgetText(#OutputName)
+			UpdateOutputList()
+		EndIf
+	
 	EndIf
 	
 	For i = 0 To 5
@@ -636,11 +687,6 @@ Repeat ; Start of the event loop
 		EndIf
 	Next i
 	
-	;--- Videon ulostulojen asetukset
-	If GadgetID = #AddOutput
-		UpdateOutputList()
-	EndIf
-
 	If Event = #PB_Event_CloseWindow
 		eWindow = EventWindow()
 
@@ -742,13 +788,15 @@ Procedure HideCueControls()
 	HideGadget(#OutputList, 1)
 	HideGadget(#Text_26, 1)
 	HideGadget(#AddOutput, 1)
-	
+	HideGadget(#DeleteOutput, 1)
+
 	For i = 0 To 5
 		HideGadget(eventCueSelect(i),1)
 		HideGadget(eventActionSelect(i),1)
 	Next i
 	
 	HideEffectControls()
+	HideOutputControls()
 EndProcedure
 
 Procedure ShowCueControls()
@@ -808,6 +856,14 @@ Procedure ShowCueControls()
 					HideGadget(#OutputList, 0)
 					HideGadget(#Text_26, 0)
 					HideGadget(#AddOutput, 0)
+					HideGadget(#DeleteOutput, 0)
+					
+					If *gCurrentOutput <> 0
+						ShowOutputControls()
+					Else
+						HideOutputControls()
+					EndIf
+					
 				EndIf
 				
 				
@@ -865,6 +921,47 @@ Procedure ShowEffectControls()
 			Next i
 		Next
 	EndIf
+EndProcedure
+
+Procedure HideOutputControls()
+	HideGadget(#Text_27, 1)
+	HideGadget(#Text_28, 1)
+	HideGadget(#Text_29, 1)
+	HideGadget(#Text_30, 1)
+	HideGadget(#Text_31, 1)
+	HideGadget(#Text_32, 1)
+	HideGadget(#OutputMonitor, 1)
+	HideGadget(#OutputX, 1)
+	HideGadget(#OutputY, 1)
+	HideGadget(#OutputW, 1)
+	HideGadget(#OutputH, 1)
+	HideGadget(#OutputActive, 1)
+	HideGadget(#OutputName, 1)
+EndProcedure
+
+Procedure ShowOutputControls()
+	HideGadget(#Text_27, 0)
+	HideGadget(#Text_28, 0)
+	HideGadget(#Text_29, 0)
+	HideGadget(#Text_30, 0)
+	HideGadget(#Text_31, 0)
+	HideGadget(#Text_32, 0)
+	HideGadget(#OutputMonitor, 0)
+	HideGadget(#OutputX, 0)
+	HideGadget(#OutputY, 0)
+	HideGadget(#OutputW, 0)
+	HideGadget(#OutputH, 0)
+	HideGadget(#OutputActive, 0)
+	HideGadget(#OutputName, 0)
+	
+	SetGadgetState(#OutputMonitor, *gCurrentOutput\monitor)
+	SetGadgetState(#OutputActive, *gCurrentOutput\active)
+	SetGadgetText(#OutputName, *gCurrentOutput\name)
+	SetGadgetText(#OutputX, Str(*gCurrentOutput\x))
+	SetGadgetText(#OutputY, Str(*gCurrentOutput\y))
+	SetGadgetText(#OutputW, Str(*gCurrentOutput\width))
+	SetGadgetText(#OutputH, Str(*gCurrentOutput\height))
+	
 EndProcedure
 
 Procedure UpdateCueControls()

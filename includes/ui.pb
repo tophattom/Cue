@@ -102,6 +102,7 @@ Procedure Open_EditorWindow()
     LoadImage(#PlayImg,"Images/eplay.ico")
     LoadImage(#PauseImg,"Images/epause.ico")
     LoadImage(#StopImg,"Images/estop.ico")
+    LoadImage(#AddImg, "Images/add.ico")
     
     CreateImage(#BlankWave, #WAVEFORM_W, 120)
     StartDrawing(ImageOutput(#BlankWave))
@@ -200,7 +201,32 @@ Procedure Open_EditorWindow()
       ;Video cue
       TextGadget(#Text_26, 5, 290, 50, 20, "Outputs:")
       ListViewGadget(#OutputList, 5, 310, 100, 100)
-      ButtonGadget(#AddOutput, 5, 415, 100, 30, "Add output")
+      
+      ButtonImageGadget(#AddOutput, 5, 415, 30, 30, ImageID(#AddImg))
+      ButtonImageGadget(#DeleteOutput, 75, 415, 30, 30, ImageID(#DeleteImg))
+      
+      TextGadget(#Text_27, 120, 310, 40, 20, "Monitor:")
+      ComboBoxGadget(#OutputMonitor, 165, 310, 125, 20)
+      For i = 0 To gDesktopAmount - 1
+      	AddGadgetItem(#OutputMonitor, i, DesktopName(i))
+      Next i
+      
+      
+      TextGadget(#Text_32, 120, 355, 40, 20, "Name:")
+      StringGadget(#OutputName, 160, 355, 130, 20, "")
+      
+      TextGadget(#Text_28, 140, 385, 20, 20, "X:")
+      StringGadget(#OutputX, 160, 385, 40, 20, "")
+      TextGadget(#Text_29, 230, 385, 20, 20, "Y:")
+      StringGadget(#OutputY, 250, 385, 40, 20, "")
+      
+      TextGadget(#Text_30, 120, 415, 40, 20, "Width:")
+      StringGadget(#OutputW, 160, 415, 40, 20, "")
+      TextGadget(#Text_31, 210, 415, 40, 20, "Height:")
+      StringGadget(#OutputH, 250, 415, 40, 20, "")
+      
+      CheckBoxGadget(#OutputActive, 310, 310, 60, 20, "Active")
+      
       
       ;Efektivälilehti
       AddGadgetItem(#EditorTabs, 1, "Effects")

@@ -21,6 +21,8 @@ Structure VideoWindow
 	
 	name.s
 	
+	monitor.i
+	
 	x.i
 	y.i
 	
@@ -134,6 +136,7 @@ Enumeration
 	#PlayImg
 	#PauseImg
 	#StopImg
+	#AddImg
 EndEnumeration
 
 ;- Gadget Constants
@@ -216,6 +219,20 @@ Enumeration 1
   #OutputList
   #Text_26
   #AddOutput
+  #DeleteOutput
+  #OutputMonitor
+  #OutputX
+  #OutputY
+  #OutputW
+  #OutputH
+  #OutputName
+  #OutputActive
+  #Text_27
+  #Text_28
+  #Text_29
+  #Text_30
+  #Text_31
+  #Text_32
 EndEnumeration
 ;}
 
@@ -237,6 +254,8 @@ Global gPlayState.i
 Global *gCurrentCue.Cue
 Global gCueAmount.i
 
+Global *gCurrentOutput.VideoWindow
+
 Global gCueCounter.l
 
 Global gEditor = #False
@@ -246,6 +265,7 @@ Global gLastType = 0
 
 Global gSavePath.s = ""
 
+Global gDesktopAmount = ExamineDesktops()
 
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 
@@ -730,6 +750,40 @@ Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
 		*effect\active = #True
 	EndIf
 EndProcedure
+
+Procedure AddCueOutput(*cue.Cue)
+	If *cue\cueType = #TYPE_VIDEO And *cue\stream <> 0
+		LastElement(*cue\outputs())
+		AddElement(*cue\outputs())
+		
+		With *cue\outputs()
+			\name = "Output " + Str(ListSize(*cue\outputs()))
+			\active = 1
+			
+			info.xVideo_ChannelInfo
+			xVideo_ChannelGetInfo(*cue\stream,@info)
+			
+			\width = info\Width
+			\height = info\Height
+			
+			\x = 0
+			\y = 0
+			
+			\window = OpenWindow(#PB_Any,\x,\y,\width,\height,"",#PB_Window_BorderLess)
+			\handle = xVideo_ChannelAddWindow(*cue\stream,WindowID(\window))
+		EndWith
+	EndIf
+EndProcedure
+
+Procedure DeleteCueOutput(*cue.Cue,*output.VideoWindow)
+	ChangeCurrentElement(*cue\outputs(),*output)
+	
+	xVideo_ChannelRemoveWindow(*cue\stream,*output\handle)
+	CloseWindow(*output\window)
+	
+	DeleteElement(*cue\outputs())
+EndProcedure
+
 
 Procedure SaveCueList(path.s,check=1)
 	If GetExtensionPart(path) = ""
