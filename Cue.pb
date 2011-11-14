@@ -37,6 +37,7 @@ xVideo_Init(WindowID(#MainWindow),0)
 BASS_PluginLoad("basswma.dll",0)
 BASS_PluginLoad("bassflac.dll",0)
 
+
 Repeat ; Start of the event loop
 	Event = WindowEvent() ; This line waits until an event is received from Windows
 	WindowID = EventWindow() ; The Window where the event is generated, can be used in the gadget procedures
@@ -627,6 +628,7 @@ Repeat ; Start of the event loop
 		;}
 		
 		;--- Videon ulostulojen asetukset
+		;{
 		If GadgetID = #AddOutput
 			AddCueOutput(*gCurrentCue)
 			UpdateOutputList()
@@ -634,14 +636,17 @@ Repeat ; Start of the event loop
 			If *gCurrentOutput <> FirstElement(*gCurrentCue\outputs())
 				DeleteCueOutput(*gCurrentCue,GetGadgetItemData(#OutputList,GetGadgetState(#OutputList)))
 				UpdateOutputList()
+				HideOutputControls()
 			EndIf
 		ElseIf GadgetID = #OutputList
 			*gCurrentOutput = GetGadgetItemData(#OutputList,GetGadgetState(#OutputList))
 			
-			If *gCurrentOutput = FirstElement(*gCurrentCue\outputs())
-				HideOutputControls()
-			Else
-				ShowOutputControls()
+			If *gCurrentOutput <> -1
+				If *gCurrentOutput = FirstElement(*gCurrentCue\outputs())
+					HideOutputControls()
+				Else
+					ShowOutputControls()
+				EndIf
 			EndIf
 		ElseIf GadgetID = #OutputX
 			*gCurrentOutput\x = Val(GetGadgetText(#OutputX))
@@ -651,11 +656,23 @@ Repeat ; Start of the event loop
 			ResizeWindow(*gCurrentOutput\window,#PB_Ignore,DesktopY(*gCurrentOutput\monitor) + *gCurrentOutput\y,#PB_Ignore,#PB_Ignore)
 		ElseIf GadgetID = #OutputW
 			*gCurrentOutput\width = Val(GetGadgetText(#OutputW))
-			ResizeWindow(*gCurrentOutput\window,#PB_Ignore,#PB_Ignore,*gCurrentOutput\width,#PB_Ignore)
+			
+			If GetGadgetState(#KeepRatio) = 1
+				*gCurrentOutput\height = *gCurrentOutput\width * Pow(ratio.f,-1)
+				SetGadgetText(#OutputH,Str(*gCurrentOutput\height))
+			EndIf
+			
+			ResizeWindow(*gCurrentOutput\window,#PB_Ignore,#PB_Ignore,*gCurrentOutput\width,*gCurrentOutput\height)
 			xVideo_ChannelResizeWindow(*gCurrentCue\stream,*gCurrentOutput\handle,0,0,*gCurrentOutput\width,*gCurrentOutput\height)
 		ElseIf GadgetID = #OutputH
 			*gCurrentOutput\height = Val(GetGadgetText(#OutputH))
-			ResizeWindow(*gCurrentOutput\window,#PB_Ignore,#PB_Ignore,#PB_Ignore,*gCurrentOutput\height)
+			
+			If GetGadgetState(#KeepRatio) = 1
+				*gCurrentOutput\width = *gCurrentOutput\height * ratio.f
+				SetGadgetText(#OutputW,Str(*gCurrentOutput\width))
+			EndIf
+			
+			ResizeWindow(*gCurrentOutput\window,#PB_Ignore,#PB_Ignore,*gCurrentOutput\width,*gCurrentOutput\height)
 			xVideo_ChannelResizeWindow(*gCurrentCue\stream,*gCurrentOutput\handle,0,0,*gCurrentOutput\width,*gCurrentOutput\height)
 		ElseIf GadgetID = #OutputMonitor
 			*gCurrentOutput\monitor = GetGadgetState(#OutputMonitor)
@@ -673,7 +690,22 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #OutputName
 			*gCurrentOutput\name = GetGadgetText(#OutputName)
 			UpdateOutputList()
+		ElseIf GadgetID = #KeepRatio
+			If GetGadgetState(#KeepRatio) = 1
+				ratio.f = *gCurrentOutput\width / *gCurrentOutput\height
+			EndIf
+		ElseIf GadgetID = #AlignHor
+			*gCurrentOutput\x = DesktopWidth(*gCurrentOutput\monitor) / 2 - *gCurrentOutput\width / 2
+			SetGadgetText(#OutputX,Str(*gCurrentOutput\x))
+			
+			ResizeWindow(*gCurrentOutput\window,DesktopX(*gCurrentOutput\monitor) + *gCurrentOutput\x,#PB_Ignore,#PB_Ignore,#PB_Ignore)
+		ElseIf GadgetID = #AlignVer
+			*gCurrentOutput\y = DesktopHeight(*gCurrentOutput\monitor) / 2 - *gCurrentOutput\height / 2
+			SetGadgetText(#OUtputY,Str(*gCurrentOutput\y))
+			
+			ResizeWindow(*gCurrentOutput\window,#PB_Ignore,DesktopY(*gCurrentOutput\monitor) + *gCurrentOutput\y,#PB_Ignore,#PB_Ignore)
 		EndIf
+		;}
 	
 	EndIf
 	
@@ -937,6 +969,9 @@ Procedure HideOutputControls()
 	HideGadget(#OutputH, 1)
 	HideGadget(#OutputActive, 1)
 	HideGadget(#OutputName, 1)
+	HideGadget(#KeepRatio, 1)
+	HideGadget(#AlignHor, 1)
+	HideGadget(#AlignVer, 1)
 EndProcedure
 
 Procedure ShowOutputControls()
@@ -953,6 +988,9 @@ Procedure ShowOutputControls()
 	HideGadget(#OutputH, 0)
 	HideGadget(#OutputActive, 0)
 	HideGadget(#OutputName, 0)
+	HideGadget(#KeepRatio, 0)
+	HideGadget(#AlignHor, 0)
+	HideGadget(#AlignVer, 0)
 	
 	SetGadgetState(#OutputMonitor, *gCurrentOutput\monitor)
 	SetGadgetState(#OutputActive, *gCurrentOutput\active)

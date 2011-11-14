@@ -207,8 +207,13 @@ Procedure Open_EditorWindow()
       
       TextGadget(#Text_27, 120, 310, 40, 20, "Monitor:")
       ComboBoxGadget(#OutputMonitor, 165, 310, 125, 20)
+      
+      info.DISPLAY_DEVICE
+      info\cb = SizeOf(info)
       For i = 0 To gDesktopAmount - 1
-      	AddGadgetItem(#OutputMonitor, i, DesktopName(i))
+      	EnumDisplayDevices_(0,i,@info,0)
+      	EnumDisplayDevices_(PeekS(@info\DeviceName),0,@info,0)
+      	AddGadgetItem(#OutputMonitor, i, PeekS(@info\DeviceString))
       Next i
       
       
@@ -219,11 +224,14 @@ Procedure Open_EditorWindow()
       StringGadget(#OutputX, 160, 385, 40, 20, "")
       TextGadget(#Text_29, 230, 385, 20, 20, "Y:")
       StringGadget(#OutputY, 250, 385, 40, 20, "")
+      ButtonGadget(#AlignHor, 300, 385, 20, 20, "|")
+      ButtonGadget(#AlignVer, 325, 385, 20, 20, "--")
       
       TextGadget(#Text_30, 120, 415, 40, 20, "Width:")
       StringGadget(#OutputW, 160, 415, 40, 20, "")
       TextGadget(#Text_31, 210, 415, 40, 20, "Height:")
       StringGadget(#OutputH, 250, 415, 40, 20, "")
+      CheckBoxGadget(#KeepRatio, 300, 415, 70, 20, "Keep ratio")
       
       CheckBoxGadget(#OutputActive, 310, 310, 60, 20, "Active")
       

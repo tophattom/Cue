@@ -227,6 +227,9 @@ Enumeration 1
   #OutputH
   #OutputName
   #OutputActive
+  #KeepRatio
+  #AlignHor
+  #AlignVer
   #Text_27
   #Text_28
   #Text_29
