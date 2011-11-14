@@ -138,7 +138,7 @@ Repeat ; Start of the event loop
 	If Event = #PB_Event_Gadget
 		If GadgetID = #PlayButton
 			If *gCurrentCue <> 0
-				If *gCurrentCue\cueType = #TYPE_AUDIO
+				If *gCurrentCue\cueType = #TYPE_AUDIO Or *gCurrentCue\cueType = #TYPE_VIDEO
 					PlayCue(*gCurrentCue)
 				ElseIf *gCurrentCue\cueType = #TYPE_EVENT Or *gCurrentCue\cueType = #TYPE_CHANGE
 					StartEvents(*gCurrentCue)
@@ -1330,6 +1330,7 @@ Procedure UpdateMainCueList()
 				color = RGB(0,200,200)
 			Case #TYPE_VIDEO
 				text.s = "Video"
+				color = RGB(200,100,100)
 			Case #TYPE_CHANGE
 				text.s = "Change"
 				color = RGB(200,0,200)
