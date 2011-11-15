@@ -685,10 +685,8 @@ Repeat ; Start of the event loop
 			*gCurrentOutput\active = GetGadgetState(#OutputActive)
 			
 			If *gCurrentOutput\active = 0
-				xVideo_ChannelRemoveWindow(*gCurrentCue\stream,*gCurrentOutput\handle)
 				HideWindow(*gCurrentOutput\window,1)
 			Else
-				*gCurrentOutput\handle = xVideo_ChannelAddWindow(*gCurrentCue\stream,WindowID(*gCurrentOutput\window))
 				HideWindow(*gCurrentOutput\window,0)
 			EndIf
 		ElseIf GadgetID = #OutputName

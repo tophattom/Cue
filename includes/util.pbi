@@ -137,6 +137,9 @@ Enumeration
 	#PauseImg
 	#StopImg
 	#AddImg
+	#FullImg
+	#HorImg
+	#VerImg
 EndEnumeration
 
 ;- Gadget Constants
