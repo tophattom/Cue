@@ -230,6 +230,7 @@ Enumeration 1
   #KeepRatio
   #AlignHor
   #AlignVer
+  #FullButton
   #Text_27
   #Text_28
   #Text_29

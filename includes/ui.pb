@@ -226,6 +226,7 @@ Procedure Open_EditorWindow()
       StringGadget(#OutputY, 250, 385, 40, 20, "")
       ButtonGadget(#AlignHor, 300, 385, 20, 20, "|")
       ButtonGadget(#AlignVer, 325, 385, 20, 20, "--")
+      ButtonGadget(#FullButton, 350, 385, 20, 20, "[<>]")
       
       TextGadget(#Text_30, 120, 415, 40, 20, "Width:")
       StringGadget(#OutputW, 160, 415, 40, 20, "")
