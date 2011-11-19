@@ -97,6 +97,7 @@ Repeat ; Start of the event loop
 				UpdateMainCueList()
 				UpdateEditorList()
 				UpdateCueControls()
+				UpdateOutputList()
 			EndIf		      
 		ElseIf MenuID = #MenuSave
 			If gSavePath = ""

@@ -113,7 +113,7 @@ Enumeration
 	#SETTING_RELATIVE
 EndEnumeration
 
-#FORMAT_VERSION = 3.5
+#FORMAT_VERSION = 3.8
 
 
 ;Efektien s‰‰timet
@@ -758,23 +758,40 @@ Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
 	EndIf
 EndProcedure
 
-Procedure AddCueOutput(*cue.Cue)
+Procedure AddCueOutput(*cue.Cue,name.s="",x=0,y=0,w=0,h=0,monitor=0,active=0)
 	If *cue\cueType = #TYPE_VIDEO And *cue\stream <> 0
 		LastElement(*cue\outputs())
 		AddElement(*cue\outputs())
 		
 		With *cue\outputs()
-			\name = "Output " + Str(ListSize(*cue\outputs()))
-			\active = 1
-			
-			info.xVideo_ChannelInfo
-			xVideo_ChannelGetInfo(*cue\stream,@info)
-			
-			\width = info\Width
-			\height = info\Height
-			
-			\x = 0
-			\y = 0
+			If name = ""
+				\name = "Output " + Str(ListSize(*cue\outputs()))
+				\active = 1
+				
+				info.xVideo_ChannelInfo
+				xVideo_ChannelGetInfo(*cue\stream,@info)
+				
+				\width = info\Width
+				\height = info\Height
+				
+				\x = 0
+				\y = 0
+			Else
+				\name = name
+				\active = active
+				
+				\width = w
+				\height = h
+				
+				If monitor <= gDesktopAmount - 1
+					\monitor = monitor
+					x + DesktopX(monitor)
+					y + DesktopY(monitor)
+				EndIf
+				
+				\x = x
+				\y = y
+			EndIf
 			
 			\window = OpenWindow(#PB_Any,\x,\y,\width,\height,"",#PB_Window_BorderLess)
 			\handle = xVideo_ChannelAddWindow(*cue\stream,WindowID(\window))
@@ -790,7 +807,6 @@ Procedure DeleteCueOutput(*cue.Cue,*output.VideoWindow)
 	
 	DeleteElement(*cue\outputs())
 EndProcedure
-
 
 Procedure SaveCueList(path.s,check=1)
 	If GetExtensionPart(path) = ""
@@ -907,7 +923,27 @@ Procedure SaveCueList(path.s,check=1)
 						EndIf
 					EndWith
 				Next
-			EndIf			
+			EndIf
+			
+			;Videon ulostulot
+			If cueList()\cueType = #TYPE_VIDEO
+				oAmount = ListSize(cueList()\outputs()) - 1
+				WriteInteger(0,oAmount)
+				*preview.VideoWindow = FirstElement(cueList()\outputs())
+				ForEach cueList()\outputs()
+					With cueList()\outputs()
+						If @cueList()\outputs() <> *preview
+							WriteStringN(0,\name)
+							WriteInteger(0,\x)
+							WriteInteger(0,\y)
+							WriteInteger(0,\width)
+							WriteInteger(0,\height)
+							WriteInteger(0,\monitor)
+							WriteInteger(0,\active)
+						EndIf
+					EndWith
+				Next
+			EndIf
 		Next
 		
 		CloseFile(0)
@@ -970,23 +1006,42 @@ Procedure LoadCueList(path.s)
 				\desc = ReadString(0)
 				
 				\filePath = ReadString(0)
-				If \cueType = #TYPE_AUDIO And \filePath <> ""
-					If FileSize(\filePath) = -1
-						result = MessageRequester("File not found","File " + \filePath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
-						
-						If result = #PB_MessageRequester_Yes
-				    		pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
-				    		
-				    		path.s = OpenFileRequester("Select file","",pattern,0)
-				    		
-				    		If path
-				    			\filePath = path
-				    			LoadCueStream(@cueList(),\filePath)
-				    		EndIf
-				    	EndIf
-				    Else
-				    	LoadCueStream(@cueList(),\filePath)
-				    EndIf
+				If \filePath <> ""
+					If \cueType = #TYPE_AUDIO
+						If FileSize(\filePath) = -1
+							result = MessageRequester("File not found","File " + \filePath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+							
+							If result = #PB_MessageRequester_Yes
+					    		pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
+					    		
+					    		path.s = OpenFileRequester("Select file","",pattern,0)
+					    		
+					    		If path
+					    			\filePath = path
+					    			LoadCueStream(@cueList(),\filePath)
+					    		EndIf
+					    	EndIf
+					    Else
+					    	LoadCueStream(@cueList(),\filePath)
+					    EndIf
+					ElseIf \cueType = #TYPE_VIDEO
+						If FileSize(\filePath) = -1
+							result = MessageRequester("File not found","File " + \filePath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+							
+							If result = #PB_MessageRequester_Yes
+					    		pattern.s = "Video files |*.*"
+					    		
+					    		path.s = OpenFileRequester("Select file","",pattern,0)
+					    		
+					    		If path
+					    			\filePath = path
+					    			LoadCueStream(@cueList(),\filePath)
+					    		EndIf
+					    	EndIf
+					    Else
+					    	LoadCueStream(@cueList(),\filePath)
+					    EndIf
+					EndIf
 				EndIf
 				
 				\startMode = ReadByte(0)
@@ -1070,7 +1125,26 @@ Procedure LoadCueList(path.s)
 					Next i
 				EndIf
 				ChangeCurrentElement(cueList(),*prev)
-						
+				
+				;Videon ulostulot
+				If \cueType = #TYPE_VIDEO And version >= 3.8
+					oAmount = ReadInteger(0)
+					If oAmount > 0
+						For i = 1 To oAmount
+							tmpName.s = ReadString(0)
+							tmpX = ReadInteger(0)
+							tmpY = ReadInteger(0)
+							tmpW = ReadInteger(0)
+							tmpH = ReadInteger(0)
+							tmpM = ReadInteger(0)
+							tmpA = ReadInteger(0)
+							
+							AddCueOutput(@cueList(),tmpName,tmpX,tmpY,tmpW,tmpH,tmpM,tmpA)
+						Next i
+					EndIf
+				EndIf
+				ChangeCurrentElement(cueList(),*prev)
+	
 			EndWith
 		Next
 		
