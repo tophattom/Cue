@@ -204,6 +204,7 @@ Repeat ; Start of the event loop
 			
 			If *gCurrentCue <> 0
 				UpdateCueControls()
+				UpdateOutputList()
 			EndIf
 		ElseIf GadgetID = #AddAudio ;--- Editorin napit
 			*gCurrentCue = AddCue(#TYPE_AUDIO)
@@ -1192,6 +1193,13 @@ Procedure PlayCue(*cue.Cue)
 					FirstElement(*cue\outputs())
 					HideWindow(*cue\outputs()\window,0)
 				EndIf
+				
+				ForEach *cue\outputs()
+					If *cue\outputs()\active = 1
+						HideWindow(*cue\outputs()\window, 0)
+					EndIf
+				Next
+				
 				xVideo_ChannelSetPosition(*cue\stream,*cue\startPos * 1000,#xVideo_POS_MILISEC)
 				xVideo_ChannelPlay(*cue\stream)
 			EndIf
@@ -1222,6 +1230,12 @@ Procedure StopCue(*cue.Cue)
 		ElseIf *cue\cueType = #TYPE_VIDEO
 			xVideo_ChannelStop(*cue\stream)
 			xVideo_ChannelSetPosition(*cue\stream,*cue\startPos * 1000,#xVideo_POS_MILISEC)
+			
+			If gEditor = #False
+				ForEach *cue\outputs()
+					HideWindow(*cue\outputs()\window, 1)
+				Next
+			EndIf
 		EndIf
 		
 		
