@@ -982,7 +982,11 @@ Procedure UpdateCueControls()
 		ClearGadgetItems(eventEffectSelect(i))
 		DisableGadget(eventEffectSelect(i),1)
 		
-		k = 0
+		
+		AddGadgetItem(eventCueSelect(i), 0, "")
+		SetGadgetItemData(eventCueSelect(i), 0, 0)
+		
+		k = 1
 		ForEach cueList()
 			If @cueList() <> *gCurrentCue
 				AddGadgetItem(eventCueSelect(i), k, cueList()\name + "  " + cueList()\desc)
@@ -996,20 +1000,23 @@ Procedure UpdateCueControls()
 			EndIf
 		Next
 		
-		AddGadgetItem(eventActionSelect(i), 0 , "Fade out")
-		SetGadgetItemData(eventActionSelect(i), 0, #EVENT_FADE_OUT)
+		AddGadgetItem(eventActionSelect(i), 0, "")
+		SetGadgetItemData(eventActionSelect(i), 0, 0)
 		
-		AddGadgetItem(eventActionSelect(i), 1, "Stop")
-		SetGadgetItemData(eventActionSelect(i), 1, #EVENT_STOP)
+		AddGadgetItem(eventActionSelect(i), 1 , "Fade out")
+		SetGadgetItemData(eventActionSelect(i), 1, #EVENT_FADE_OUT)
 		
-		AddGadgetItem(eventActionSelect(i), 2, "Release loop")
-		SetGadgetItemData(eventActionSelect(i), 2, #EVENT_RELEASE)
+		AddGadgetItem(eventActionSelect(i), 2, "Stop")
+		SetGadgetItemData(eventActionSelect(i), 2, #EVENT_STOP)
 		
-		AddGadgetItem(eventActionSelect(i), 3, "Effect on")
-		SetGadgetItemData(eventActionSelect(i), 3, #EVENT_EFFECT_ON)
+		AddGadgetItem(eventActionSelect(i), 3, "Release loop")
+		SetGadgetItemData(eventActionSelect(i), 4, #EVENT_RELEASE)
 		
-		AddGadgetItem(eventActionSelect(i), 4, "Effect off")
-		SetGadgetItemData(eventActionSelect(i), 4, #EVENT_EFFECT_OFF)
+		AddGadgetItem(eventActionSelect(i), 4, "Effect on")
+		SetGadgetItemData(eventActionSelect(i), 4, #EVENT_EFFECT_ON)
+		
+		AddGadgetItem(eventActionSelect(i), 5, "Effect off")
+		SetGadgetItemData(eventActionSelect(i), 5, #EVENT_EFFECT_OFF)
 		
 		If *gCurrentCue\actions[i] = #EVENT_FADE_OUT
 			SetGadgetState(eventActionSelect(i), 0)
@@ -1025,7 +1032,10 @@ Procedure UpdateCueControls()
 			DisableGadget(eventEffectSelect(i),0)
 
 			If *gCurrentCue\actionCues[i] <> 0
-				k = 0
+				AddGadgetItem(eventEffectSelect(i), 0, "")
+				SetGadgetItemData(eventEffectSelect(i), 0, 0)
+				
+				k = 1
 				ForEach *gCurrentCue\actionCues[i]\effects()
 					AddGadgetItem(eventEffectSelect(i),k,*gCurrentCue\actionCues[i]\effects()\name + " " + Str(*gCurrentCue\actionCues[i]\effects()\id))
 					SetGadgetItemData(eventEffectSelect(i),k,@*gCurrentCue\actionCues[i]\effects())
@@ -1171,7 +1181,7 @@ Procedure StartEvents(*cue.Cue)
 		*cue\state = #STATE_WAITING
 		*cue\startTime = ElapsedMilliseconds()
 	Else
-		*cue\state = #STATE_PLAYING
+		*cue\state = #STATE_STOPPED
 		*cue\startTime = ElapsedMilliseconds()
 		
 		If *cue\cueType = #TYPE_EVENT
