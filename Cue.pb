@@ -1086,7 +1086,11 @@ Procedure PlayCue(*cue.Cue)
 			
 			ForEach *cue\followCues()
 				If *cue\followCues()\startMode = #START_AFTER_START
-					PlayCue(*cue\followCues())
+					If *cue\followCues()\cueType = #TYPE_AUDIO
+						PlayCue(*cue\followCues())
+					ElseIf *cue\followCues()\cueType = #TYPE_EVENT Or *cue\followCues()\cueType = #TYPE_CHANGE
+						StartEvents(*cue\followCues())
+					EndIf
 				ElseIf *cue\followCues()\startMode = #START_AFTER_END
 					*cue\followCues()\state = #STATE_WAITING_END
 				EndIf
@@ -1163,44 +1167,57 @@ Procedure LoopProc(handle.l,channel.l,d,*user.Cue)
 EndProcedure
 	
 Procedure StartEvents(*cue.Cue)
-	If *cue\cueType = #TYPE_EVENT
-		For i = 0 To 5
-			If *cue\actionCues[i] <> 0
-				Select *cue\actions[i]
-					Case #EVENT_FADE_OUT
-						*cue\actionCues[i]\state = #STATE_FADING_OUT
-						BASS_ChannelSlideAttribute(*cue\actionCues[i]\stream,#BASS_ATTRIB_VOL,0,*cue\actionCues[i]\fadeOut * 1000)
-					Case #EVENT_STOP
-						StopCue(*cue\actionCues[i])
-					Case #EVENT_RELEASE
-						If *cue\actionCues[i]\loopHandle <> 0
-							BASS_ChannelRemoveSync(*cue\actionCues[i]\stream,*cue\actionCues[i]\loopHandle)
-							*cue\actionCues[i]\loopHandle = 0
-							*cue\actionCues[i]\loopsDone = 0
-						EndIf
-					Case #EVENT_EFFECT_ON
-						If *cue\actionEffects[i] <> 0
-							DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],0)
-						EndIf
-					Case #EVENT_EFFECT_OFF
-						If *cue\actionEffects[i] <> 0
-							DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],1)
-						EndIf
-				EndSelect
+	If *cue\delay > 0 And *cue\state = #STATE_STOPPED
+		*cue\state = #STATE_WAITING
+		*cue\startTime = ElapsedMilliseconds()
+	Else
+		*cue\state = #STATE_PLAYING
+		*cue\startTime = ElapsedMilliseconds()
+		
+		If *cue\cueType = #TYPE_EVENT
+			For i = 0 To 5
+				If *cue\actionCues[i] <> 0
+					Select *cue\actions[i]
+						Case #EVENT_FADE_OUT
+							*cue\actionCues[i]\state = #STATE_FADING_OUT
+							BASS_ChannelSlideAttribute(*cue\actionCues[i]\stream,#BASS_ATTRIB_VOL,0,*cue\actionCues[i]\fadeOut * 1000)
+						Case #EVENT_STOP
+							StopCue(*cue\actionCues[i])
+						Case #EVENT_RELEASE
+							If *cue\actionCues[i]\loopHandle <> 0
+								BASS_ChannelRemoveSync(*cue\actionCues[i]\stream,*cue\actionCues[i]\loopHandle)
+								*cue\actionCues[i]\loopHandle = 0
+								*cue\actionCues[i]\loopsDone = 0
+							EndIf
+						Case #EVENT_EFFECT_ON
+							If *cue\actionEffects[i] <> 0
+								DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],0)
+							EndIf
+						Case #EVENT_EFFECT_OFF
+							If *cue\actionEffects[i] <> 0
+								DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],1)
+							EndIf
+					EndSelect
+				EndIf
+			Next i
+		ElseIf *cue\cueType = #TYPE_CHANGE
+			If *cue\actionCues[0] <> 0
+				BASS_ChannelSlideAttribute(*cue\actionCues[0]\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
+				BASS_ChannelSlideAttribute(*cue\actionCues[0]\stream,#BASS_ATTRIB_PAN,*cue\pan,*cue\fadeIn * 1000)
 			EndIf
-		Next i
-	ElseIf *cue\cueType = #TYPE_CHANGE
-		If *cue\actionCues[0] <> 0
-			BASS_ChannelSlideAttribute(*cue\actionCues[0]\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
-			BASS_ChannelSlideAttribute(*cue\actionCues[0]\stream,#BASS_ATTRIB_PAN,*cue\pan,*cue\fadeIn * 1000)
 		EndIf
+		
+		ForEach *cue\followCues()
+			If *cue\followCues()\startMode = #START_AFTER_START Or *cue\followCues()\startMode = #START_AFTER_END
+				If *cue\followCues()\cueType = #TYPE_AUDIO
+					PlayCue(*cue\followCues())
+				ElseIf *cue\followCues()\cueType = #TYPE_EVENT Or *cue\followCues()\cueType = #TYPE_CHANGE
+					StartEvents(*cue\followCues())
+				EndIf
+			EndIf
+		Next
 	EndIf
 	
-	ForEach *cue\followCues()
-		If *cue\followCues()\startMode = #START_AFTER_START Or *cue\followCues()\startMode = #START_AFTER_END
-			PlayCue(*cue\followCues())
-		EndIf
-	Next
 	
 EndProcedure
 
@@ -1223,7 +1240,11 @@ Procedure UpdateCues()
 			EndIf
 		ElseIf cueList()\state = #STATE_WAITING
 			If ElapsedMilliseconds() >= (cueList()\startTime + cueList()\delay)
-				PlayCue(@cueList())
+				If cueList()\cueType = #TYPE_AUDIO
+					PlayCue(@cueList())
+				ElseIf cueList()\cueType = #TYPE_EVENT Or cueList()\cueType = #TYPE_CHANGE
+					StartEvents(@cueList())
+				EndIf
 			EndIf
 		ElseIf cueList()\state = #STATE_FADING_OUT And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
 			StopCue(@cueList())
@@ -1282,6 +1303,8 @@ Procedure UpdateMainCueList()
 				state.s = "Done"
 			Case #STATE_PAUSED
 				state.s = "Paused"
+			Case #STATE_FADING_OUT
+				state.s = "Fading out"
 		EndSelect
 		
 		secs.f = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
