@@ -1019,14 +1019,14 @@ Procedure UpdateCueControls()
 		SetGadgetItemData(eventActionSelect(i), 5, #EVENT_EFFECT_OFF)
 		
 		If *gCurrentCue\actions[i] = #EVENT_FADE_OUT
-			SetGadgetState(eventActionSelect(i), 0)
-		ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
 			SetGadgetState(eventActionSelect(i), 1)
+		ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
+			SetGadgetState(eventActionSelect(i), 2)
 		ElseIf *gCurrentCue\actions[i] = #EVENT_EFFECT_ON Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
 			If *gCurrentCue\actions[i] = #EVENT_EFFECT_ON
-				SetGadgetState(eventActionSelect(i), 3)
-			Else
 				SetGadgetState(eventActionSelect(i), 4)
+			Else
+				SetGadgetState(eventActionSelect(i), 5)
 			EndIf
 			
 			DisableGadget(eventEffectSelect(i),0)
