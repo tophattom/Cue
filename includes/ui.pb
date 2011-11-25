@@ -126,6 +126,7 @@ Procedure Open_EditorWindow()
     ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
     
     PanelGadget(#EditorTabs, 220, 50, 680, 650)
+    EnableGadgetDrop(#EditorTabs,#PB_Drop_Files,#PB_Drag_Copy)
     AddGadgetItem(#EditorTabs, 0, "Basic")
     
       StringGadget(#CueNameField, 75, 5, 300, 20, "")
