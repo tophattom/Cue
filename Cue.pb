@@ -281,7 +281,7 @@ Repeat ; Start of the event loop
     	ElseIf GadgetID = #ModeSelect ;--- Aloitustapa
     		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
     		UpdateCueControls()
-    	ElseIf GadgetID = #EditorPlay ;--- Esikuuntelu
+    	ElseIf GadgetID = #EditorPlay Or GadgetID = #EffectPlay ;--- Esikuuntelu
     		If *gCurrentCue\state = #STATE_PAUSED
     			PauseCue(*gCurrentCue)
     		ElseIf *gCurrentCue\state <> #STATE_PLAYING
@@ -290,21 +290,27 @@ Repeat ; Start of the event loop
     		
     		SetGadgetState(#EditorPause,0)
     		SetGadgetState(#EditorPlay,1)
-    	ElseIf GadgetID = #EditorPause
+    		SetGadgetState(#EffectPause,0)
+    		SetGadgetState(#EffectPlay,1)
+    	ElseIf GadgetID = #EditorPause Or GadgetID = #EffectPause
     		If *gCurrentCue\state <> #STATE_STOPPED
 	    		PauseCue(*gCurrentCue)
 	    		
 	    		If *gCurrentCue\state = #STATE_PAUSED
 	    			SetGadgetState(#EditorPlay,0)
+	    			SetGadgetState(#EffectPlay,0)
 	    		Else
 	    			SetGadgetState(#EditorPlay,1)
+	    			SetGadgetState(#EffectPlay,1)
 	    		EndIf
 	    	EndIf
-    	ElseIf GadgetID = #EditorStop
+    	ElseIf GadgetID = #EditorStop Or GadgetID = #EffectStop
     		StopCue(*gCurrentCue)
     		
     		SetGadgetState(#EditorPlay,0)
     		SetGadgetState(#EditorPause,0)
+    		SetGadgetState(#EffectPlay,0)
+    		SetGadgetState(#EffectPause,0)
     		
     		UpdatePosField()
       	ElseIf GadgetID = #StartPos ;--- Rajaus, fade, pan, volume
@@ -700,30 +706,39 @@ Repeat ; Start of the event loop
 	;{
 	If Event = #PB_Event_GadgetDrop
 		If GadgetID = #EditorTabs And *gCurrentCue <> 0 And *gCurrentCue\cueType = #TYPE_AUDIO
-			path.s = StringField(EventDropFiles(),1,Chr(10))
-			If path
-    			*gCurrentCue\absolutePath = path
-    			
-    			If gListSettings(#SETTING_RELATIVE) = 1
-    				*gCurrentCue\relativePath = RelativePath(GetPathPart(gSavePath),GetPathPart(path)) + GetFilePart(path)
-    				*gCurrentCue\filePath = *gCurrentCue\relativePath
-    			Else
-    				*gCurrentCue\filePath = *gCurrentCue\absolutePath
-    			EndIf
-    			
-    			Select *gCurrentCue\cueType
-    				Case #TYPE_AUDIO
-    					LoadCueStream(*gCurrentCue,path)
-    			EndSelect
-    			
-    			If *gCurrentCue\desc = ""
-    				file.s = GetFilePart(path)
-    				*gCurrentCue\desc = Mid(file,0,Len(file) - 4)
-    			EndIf
-    			
-    			UpdateCueControls()
-    			UpdateEditorList()
-    		EndIf
+			If GetGadgetState(#EditorTabs) = 0	;Ladataan ‰‰ni
+				path.s = StringField(EventDropFiles(),1,Chr(10))
+				If path
+	    			*gCurrentCue\absolutePath = path
+	    			
+	    			If gListSettings(#SETTING_RELATIVE) = 1
+	    				*gCurrentCue\relativePath = RelativePath(GetPathPart(gSavePath),GetPathPart(path)) + GetFilePart(path)
+	    				*gCurrentCue\filePath = *gCurrentCue\relativePath
+	    			Else
+	    				*gCurrentCue\filePath = *gCurrentCue\absolutePath
+	    			EndIf
+	    			
+	    			Select *gCurrentCue\cueType
+	    				Case #TYPE_AUDIO
+	    					LoadCueStream(*gCurrentCue,path)
+	    			EndSelect
+	    			
+	    			If *gCurrentCue\desc = ""
+	    				file.s = GetFilePart(path)
+	    				*gCurrentCue\desc = Mid(file,0,Len(file) - 4)
+	    			EndIf
+	    			
+	    			UpdateCueControls()
+	    			UpdateEditorList()
+	    		EndIf
+	    	ElseIf GetGadgetState(#EditorTabs) = 1 And *gCurrentCue\stream <> 0	;Ladataan VST
+	    		path.s = StringField(EventDropFiles(),1,Chr(10))
+	    		
+	    		If path <> "" And Right(path,4) = ".dll"
+	    			AddCueEffect(*gCurrentCue,#EFFECT_VST,0,0,1,-1,path)
+	    			UpdateCueControls()
+	    		EndIf
+	    	EndIf
 		EndIf
 	EndIf
 	;}

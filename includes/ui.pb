@@ -223,6 +223,10 @@ Procedure Open_EditorWindow()
       SetGadgetItemData(#EffectType , 2, #EFFECT_VST)
       
       ButtonGadget(#AddEffect, 195, 5, 100, 30, "Add effect")
+      
+      ButtonImageGadget(#EffectPlay, 565, 5, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EffectPause, 600, 5, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EffectStop, 635, 5, 30, 30, ImageID(#StopImg))
       CloseGadgetList()
       
     ;EndIf

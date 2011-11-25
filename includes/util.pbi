@@ -213,6 +213,9 @@ Enumeration 1
   #AddEffect
   #Text_25
   #EffectType
+  #EffectPlay
+  #EffectPause
+  #EffectStop
   
   #CheckRelative
   #SettingsOK
