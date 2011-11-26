@@ -124,6 +124,9 @@ Repeat ; Start of the event loop
       			*gCurrentCue = 0
       			UpdateEditorList()
       		EndIf
+      	ElseIf MenuID = #ExplorerSc
+      		Event = #PB_Event_Gadget
+      		GadgetID = #ExplorerButton
 		EndIf	
 	EndIf
 	;}
@@ -351,6 +354,10 @@ Repeat ; Start of the event loop
 			SetGadgetState(#PanSlider,*gCurrentCue\pan * 1000 + 1000)
       	ElseIf GadgetID = #DeleteButton ;--- Listan k‰sittely
       		If *gCurrentCue <> 0
+      			ForEach cueList()
+					StopCue(@cueList())
+				Next
+				
       			DeleteCue(*gCurrentCue)
       			*gCurrentCue = 0
       			UpdateEditorList()
@@ -732,10 +739,19 @@ Repeat ; Start of the event loop
 	;- Drag&drop lataus
 	;{
 	If Event = #PB_Event_GadgetDrop
-		If GadgetID = #EditorTabs And *gCurrentCue <> 0 And *gCurrentCue\cueType = #TYPE_AUDIO
+		If GadgetID = #EditorTabs
 			If GetGadgetState(#EditorTabs) = 0	;Ladataan ‰‰ni
+				If *gCurrentCue = 0	;Jos cuea ei ole auki, luodaan uusi
+					ForEach cueList()
+						StopCue(@cueList())
+					Next
+					
+					*gCurrentCue = AddCue(#TYPE_AUDIO)
+					UpdateEditorList()
+				EndIf
+				
 				path.s = StringField(EventDropFiles(),1,Chr(10))
-				If path
+				If path And *gCurrentCue\cueType = #TYPE_AUDIO
 	    			*gCurrentCue\absolutePath = path
 	    			
 	    			If gListSettings(#SETTING_RELATIVE) = 1
@@ -766,7 +782,40 @@ Repeat ; Start of the event loop
 	    			UpdateCueControls()
 	    		EndIf
 	    	EndIf
-		EndIf
+	    ElseIf GadgetID = #EditorList	;Luodaan uusi cue
+	    	ForEach cueList()
+				StopCue(@cueList())
+			Next
+			
+	    	*gCurrentCue = AddCue(#TYPE_AUDIO)
+			UpdateEditorList()
+			
+	    	path.s = StringField(EventDropFiles(),1,Chr(10))
+			If path
+	    		*gCurrentCue\absolutePath = path
+	    			
+	    		If gListSettings(#SETTING_RELATIVE) = 1
+	    			*gCurrentCue\relativePath = RelativePath(GetPathPart(gSavePath),GetPathPart(path)) + GetFilePart(path)
+	    			*gCurrentCue\filePath = *gCurrentCue\relativePath
+	    		Else
+	    			*gCurrentCue\filePath = *gCurrentCue\absolutePath
+	    		EndIf
+	    			
+	    		Select *gCurrentCue\cueType
+	    			Case #TYPE_AUDIO
+	    				LoadCueStream(*gCurrentCue,path)
+	    		EndSelect
+	    			
+	    		If *gCurrentCue\desc = ""
+	    			file.s = GetFilePart(path)
+	    			*gCurrentCue\desc = Mid(file,0,Len(file) - 4)
+	    		EndIf
+	    			
+	    		UpdateCueControls()
+	    		UpdateEditorList()
+	    	EndIf
+	    EndIf
+	    	
 	EndIf
 	;}
 			

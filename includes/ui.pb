@@ -30,6 +30,8 @@ Enumeration
   #PlaySc
   
   #DeleteSc
+  
+  #ExplorerSc
 EndEnumeration
 
 
@@ -102,8 +104,10 @@ Procedure Open_EditorWindow()
   	;If CreateGadgetList(WindowID(#EditorWindow))
   	
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_Delete,#DeleteSc)
+  	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_E,#ExplorerSc)
   	
-    ListViewGadget(#EditorList, 10, 50, 200, 605)
+  	ListViewGadget(#EditorList, 10, 50, 200, 605)
+  	EnableGadgetDrop(#EditorList,#PB_Drop_Files,#PB_Drag_Copy)
     
     LoadImage(#DeleteImg,"Images/delete.ico")
     LoadImage(#UpImg,"Images/up.ico")
