@@ -814,6 +814,19 @@ Repeat ; Start of the event loop
 	    		UpdateCueControls()
 	    		UpdateEditorList()
 	    	EndIf
+	    ElseIf GadgetID = #CueList
+	    	path.s = StringField(EventDropFiles(),1,Chr(10))
+	    	
+	    	If Right(path,4) = ".clf"
+	    		gSavePath = path
+				ClearCueList()
+				LoadCueList(path)
+				
+				*gCurrentCue = FirstElement(cueList())
+				UpdateMainCueList()
+				UpdateEditorList()
+				UpdateCueControls()
+	    	EndIf
 	    EndIf
 	    	
 	EndIf

@@ -85,6 +85,7 @@ Procedure Open_MainWindow()
         AddGadgetColumn(#CueList, 2, "Start mode", 100)
         AddGadgetColumn(#CueList, 3, "State", 100)
         AddGadgetColumn(#CueList, 4, "Time left", 100)
+        EnableGadgetDrop(#CueList,#PB_Drop_Files,#PB_Drag_Copy)
         
         Frame3DGadget(#Frame3D_2, 310, 0, 190, 80, "Actions")
         ButtonGadget(#EditorButton, 320, 20, 80, 50, "Editor")
