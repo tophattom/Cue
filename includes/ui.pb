@@ -246,7 +246,10 @@ EndProcedure
 
 Procedure Open_ExplorerWindow()
 	If OpenWindow(#ExplorerWindow, 0,0, 250, 400, "Explorer", #PB_Window_ScreenCentered | #PB_Window_Tool | #PB_Window_SizeGadget | #PB_Window_SystemMenu)
-		ExplorerTreeGadget(#FileBrowser, 0, 0, 250, 400, GetHomeDirectory(),#PB_Explorer_BorderLess)
+		*path = AllocateMemory(#MAX_PATH)
+		SHGetSpecialFolderPath_(0,*path,#CSIDL_PERSONAL,0)
+		ExplorerTreeGadget(#FileBrowser, 0, 0, 250, 400, PeekS(*path) + "\",#PB_Explorer_BorderLess)
+		FreeMemory(*path)
 	EndIf
 EndProcedure
 
