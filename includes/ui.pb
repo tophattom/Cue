@@ -8,6 +8,7 @@ Enumeration
   #MainWindow
   #EditorWindow
   #SettingsWindow
+  #ExplorerWindow
 EndEnumeration
 
 ;- MenuBar Constants
@@ -110,6 +111,7 @@ Procedure Open_EditorWindow()
     LoadImage(#PlayImg,"Images/eplay.ico")
     LoadImage(#PauseImg,"Images/epause.ico")
     LoadImage(#StopImg,"Images/estop.ico")
+    LoadImage(#ExplorerImg,"Images/explorer.ico")
     
     CreateImage(#BlankWave, #WAVEFORM_W, 120)
     StartDrawing(ImageOutput(#BlankWave))
@@ -124,6 +126,8 @@ Procedure Open_EditorWindow()
     ButtonGadget(#AddChange, 290, 10, 130, 30, "Add level change cue")
     ButtonGadget(#AddEvent, 430, 10, 130, 30, "Add event cue")
     ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
+    
+    ButtonImageGadget(#ExplorerButton, 870, 10, 30, 30, ImageID(#ExplorerImg))
     
     PanelGadget(#EditorTabs, 220, 50, 680, 650)
     EnableGadgetDrop(#EditorTabs,#PB_Drop_Files,#PB_Drag_Copy)
@@ -239,4 +243,10 @@ Procedure Open_SettingsWindow()
 		ButtonGadget(#SettingsOK, 155, 65, 40, 30, "OK")
 	EndIf
 EndProcedure
-		
+
+Procedure Open_ExplorerWindow()
+	If OpenWindow(#ExplorerWindow, 0,0, 250, 400, "Explorer", #PB_Window_ScreenCentered | #PB_Window_Tool | #PB_Window_SizeGadget | #PB_Window_SystemMenu)
+		ExplorerTreeGadget(#FileBrowser, 0, 0, 250, 400, GetHomeDirectory(),#PB_Explorer_BorderLess)
+	EndIf
+EndProcedure
+

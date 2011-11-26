@@ -133,6 +133,7 @@ Enumeration
 	#PlayImg
 	#PauseImg
 	#StopImg
+	#ExplorerImg
 EndEnumeration
 
 ;- Gadget Constants
@@ -153,6 +154,7 @@ Enumeration 1
   #AddChange
   #AddEvent
   #AddVideo
+  #ExplorerButton
   #MasterSlider
   #Text_2
   #CueNameField
@@ -219,6 +221,8 @@ Enumeration 1
   
   #CheckRelative
   #SettingsOK
+  
+  #FileBrowser
 EndEnumeration
 ;}
 

@@ -65,7 +65,6 @@ Repeat ; Start of the event loop
 		EndIf
 	EndIf
 	
-	;You can place code here, and use the result as parameters for the procedures
 	
 	;- Valikot
 	;{
@@ -126,6 +125,15 @@ Repeat ; Start of the event loop
       			UpdateEditorList()
       		EndIf
 		EndIf	
+	EndIf
+	;}
+	
+	;- Selaimen koko
+	;{
+	If Event = #PB_Event_SizeWindow
+		If WindowID = #ExplorerWindow
+			ResizeGadget(#FileBrowser,0,0,WindowWidth(#ExplorerWindow),WindowHeight(#ExplorerWindow))
+		EndIf
 	EndIf
 	;}
 	
@@ -236,7 +244,15 @@ Repeat ; Start of the event loop
 			UpdateEditorList()
 			UpdateCueControls()
 		ElseIf GadgetID = #AddVideo
-		      
+			
+		ElseIf GadgetID = #ExplorerButton
+			If Not IsWindow(#ExplorerWindow)
+				Open_ExplorerWindow()
+			Else
+				HideWindow(#ExplorerWindow, 0)
+				SetActiveWindow(#ExplorerWindow)
+			EndIf
+			
 		ElseIf GadgetID = #MasterSlider
 			BASS_SetVolume(GetGadgetState(#MasterSlider) / 100)
 		ElseIf GadgetID = #CueNameField 
@@ -668,6 +684,12 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #SettingsOK
 			HideWindow(#SettingsWindow, 1)
 		EndIf
+	
+		If GadgetID = #FileBrowser And EventType = #PB_EventType_DragStart
+			DragFiles(GetGadgetText(#FileBrowser) + GetGadgetItemText(#FileBrowser,GetGadgetState(#FileBrowser)))
+		EndIf
+		
+			
 	EndIf
 	
 	For i = 0 To 5
@@ -697,12 +719,17 @@ Repeat ; Start of the event loop
 			HideWindow(eWindow,1)
 			
 			If eWindow = #EditorWindow
+				ForEach cueList()
+					StopCue(@cueList())
+				Next
+				
 				gEditor = #False
+				HideWindow(#ExplorerWindow, 1)
 			EndIf
 		EndIf
 	EndIf
-	
-	;Drag&drop lataus
+
+	;- Drag&drop lataus
 	;{
 	If Event = #PB_Event_GadgetDrop
 		If GadgetID = #EditorTabs And *gCurrentCue <> 0 And *gCurrentCue\cueType = #TYPE_AUDIO
