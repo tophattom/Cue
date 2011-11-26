@@ -731,7 +731,9 @@ Repeat ; Start of the event loop
 				Next
 				
 				gEditor = #False
-				HideWindow(#ExplorerWindow, 1)
+				If IsWindow(#ExplorerWindow)
+					HideWindow(#ExplorerWindow, 1)
+				EndIf
 			EndIf
 		EndIf
 	EndIf

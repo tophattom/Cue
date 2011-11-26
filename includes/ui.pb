@@ -107,7 +107,7 @@ Procedure Open_EditorWindow()
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_Delete,#DeleteSc)
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_E,#ExplorerSc)
   	
-  	ListViewGadget(#EditorList, 10, 50, 200, 605)
+  	ListViewGadget(#EditorList, 10, 50, 200, 615)
   	EnableGadgetDrop(#EditorList,#PB_Drop_Files,#PB_Drag_Copy)
     
     LoadImage(#DeleteImg,"Images/delete.ico")
@@ -123,9 +123,9 @@ Procedure Open_EditorWindow()
     Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
     StopDrawing()
     
-    ButtonImageGadget(#DeleteButton, 180, 660, 30, 30, ImageID(#DeleteImg))
-    ButtonImageGadget(#UpButton, 10, 660, 30, 30, ImageID(#UpImg))
-    ButtonImageGadget(#DownButton, 45, 660, 30, 30, ImageID(#DownImg))
+    ButtonImageGadget(#DeleteButton, 180, 670, 30, 30, ImageID(#DeleteImg))
+    ButtonImageGadget(#UpButton, 10, 670, 30, 30, ImageID(#UpImg))
+    ButtonImageGadget(#DownButton, 45, 670, 30, 30, ImageID(#DownImg))
     
     ButtonGadget(#AddAudio, 10, 10, 130, 30, "Add audio cue")
     ButtonGadget(#AddChange, 290, 10, 130, 30, "Add level change cue")
