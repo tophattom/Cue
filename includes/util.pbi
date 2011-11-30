@@ -724,9 +724,9 @@ Procedure SaveCueList(path.s,check=1)
 	
 	If CreateFile(0,path)
 		;CLF
-		WriteByte(0,67)
-		WriteByte(0,76)
-		WriteByte(0,70)
+		WriteByte(0,67)	;C
+		WriteByte(0,76)	;L
+		WriteByte(0,70)	;F
 		
 		;Tiedostoformaatin versio
 		WriteFloat(0,#FORMAT_VERSION)
@@ -741,7 +741,7 @@ Procedure SaveCueList(path.s,check=1)
 		WriteInteger(0,gCueAmount)
 		
 		;**** Data
-		;Kirjoitetaan id:t alkuun
+		;Kirjoitetaan id:t alkuksi, jotta niiden perusteella voidaan hakea osoitteet
 		ForEach cueList()
 			WriteInteger(0,cueList()\id)
 		Next
@@ -765,6 +765,7 @@ Procedure SaveCueList(path.s,check=1)
 			EndIf
 			
 			;Cuen j‰lkeiset cuet
+			Debug "Follow cues (" + cueList()\name + "): " + Str(ListSize(cueList()\followCues()))
 			WriteInteger(0,ListSize(cueList()\followCues()))
 			ForEach cueList()\followCues()
 				WriteInteger(0,cueList()\followCues()\id)
@@ -853,6 +854,9 @@ Procedure LoadCueList(lPath.s)
 		lPath = lPath + ".clf"
 	EndIf
 	
+	Debug ""
+	Debug "*** LOADING ***"
+	
 	If ReadFile(0,lPath)
 		;Onko oikea tiedostotunniste
 		tmp.s = Chr(ReadByte(0)) + Chr(ReadByte(0)) + Chr(ReadByte(0))
@@ -878,7 +882,7 @@ Procedure LoadCueList(lPath.s)
 		
 		;Cuejen m‰‰r‰
 		tmpAmount = ReadInteger(0)
-		Debug "Amount: " + Str(tmpAmount)
+		Debug "Cue mount: " + Str(tmpAmount)
 		
 		gCueAmount = 0
 		gCueCounter = 0
@@ -900,11 +904,13 @@ Procedure LoadCueList(lPath.s)
 		
 		gCueCounter = high
 		
-		Debug ListSize(cueList())
+		Debug "Cue amount: "  + Str(ListSize(cueList()))
 		
 		;Luetaan cuejen tiedot
 		ForEach cueList()
 			With cueList()
+				Debug ""
+				Debug "Current index: " + Str(ListIndex(cueList()))
 				\cueType = ReadByte(0)
 				Debug "Type: " + Str(\cueType)
 				
@@ -945,14 +951,21 @@ Procedure LoadCueList(lPath.s)
 				\startMode = ReadByte(0)
 				\delay = ReadFloat(0)
 				
+				*prev.Cue = @cueList()
+				
 				tmpId = ReadInteger(0)
 				If tmpId <> 0
-					\afterCue = GetCueById(ReadInteger(0))
+					\afterCue = GetCueById(tmpId)
+					
+					Debug "After cue id: " + Str(\afterCue\id)
+					Debug "After cue name: " + \afterCue\name
 				EndIf
+				ChangeCurrentElement(cueList(),*prev)
 					
 				;Cuen j‰lkeiset cuet
 				tmpA = ReadInteger(0)
-				*prev.Cue = @cueList()
+				Debug "Follow cues (" + \name + "): " + Str(tmpA)
+				
 				For k = 1 To tmpA
 					AddElement(*prev\followCues())
 					*prev\followCues() = GetCueById(ReadInteger(0))

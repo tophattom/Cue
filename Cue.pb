@@ -299,6 +299,11 @@ Repeat ; Start of the event loop
       
     	ElseIf GadgetID = #ModeSelect ;--- Aloitustapa
     		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
+    		
+    		If *gCurrentCue\startMode = #START_MANUAL
+    			*gCurrentCue\afterCue = 0
+    		EndIf
+    		
     		UpdateCueControls()
     	ElseIf GadgetID = #EditorPlay Or GadgetID = #EffectPlay ;--- Esikuuntelu
     		If *gCurrentCue\state = #STATE_PAUSED
