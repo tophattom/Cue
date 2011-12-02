@@ -969,6 +969,7 @@ Procedure LoadCueList(lPath.s)
 				For k = 1 To tmpA
 					AddElement(*prev\followCues())
 					*prev\followCues() = GetCueById(ReadInteger(0))
+					Debug "Follow cue: " + *prev\followCues()\name
 				Next k
 				ChangeCurrentElement(cueList(),*prev)
 				

@@ -301,7 +301,16 @@ Repeat ; Start of the event loop
     		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
     		
     		If *gCurrentCue\startMode = #START_MANUAL
-    			*gCurrentCue\afterCue = 0
+    			If *gCurrentCue\afterCue <> 0
+    				ForEach *gCurrentCue\afterCue\followCues()
+    					If *gCurrentCue\afterCue\followCues() = *gCurrentCue
+    						DeleteElement(*gCurrentCue\afterCue\followCues())
+    					EndIf
+    				Next
+    				
+    				*gCurrentCue\afterCue = 0
+    			EndIf
+    			
     		EndIf
     		
     		UpdateCueControls()
