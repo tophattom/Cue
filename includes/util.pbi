@@ -955,10 +955,10 @@ Procedure LoadCueList(lPath.s)
 				
 				tmpId = ReadInteger(0)
 				If tmpId <> 0
-					\afterCue = GetCueById(tmpId)
+					*prev\afterCue = GetCueById(tmpId)
 					
-					Debug "After cue id: " + Str(\afterCue\id)
-					Debug "After cue name: " + \afterCue\name
+					Debug "After cue id: " + Str(*prev\afterCue\id)
+					Debug "After cue name: " + *prev\afterCue\name
 				EndIf
 				ChangeCurrentElement(cueList(),*prev)
 					

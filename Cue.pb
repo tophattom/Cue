@@ -310,7 +310,6 @@ Repeat ; Start of the event loop
     				
     				*gCurrentCue\afterCue = 0
     			EndIf
-    			
     		EndIf
     		
     		UpdateCueControls()
