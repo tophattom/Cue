@@ -114,7 +114,11 @@ Repeat ; Start of the event loop
 		ElseIf MenuID = #MenuExit
 			End
 		ElseIf MenuID = #MenuAbout
-			Debug "GadgetID: #MenuAbout"      
+			If IsWindow(#AboutWindow)
+				HideWindow(#AboutWindow,0)
+			Else
+				Open_AboutWindow()
+			EndIf
 		ElseIf MenuID = #PlaySc ;---Pikanäppäimet
 			Event = #PB_Event_Gadget
 			GadgetID = #PlayButton
@@ -709,7 +713,13 @@ Repeat ; Start of the event loop
 			DragFiles(GetGadgetText(#FileBrowser) + GetGadgetItemText(#FileBrowser,GetGadgetState(#FileBrowser)))
 		EndIf
 		
-			
+		;- About-ikkuna
+		;{
+		If GadgetID = #AboutLink
+			RunProgram(GetGadgetText(#AboutLink))
+		ElseIf GadgetID = #AboutOk
+			HideWindow(#AboutWindow,1)
+		endif
 	EndIf
 	
 	For i = 0 To 5

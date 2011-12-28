@@ -9,6 +9,7 @@ Enumeration
   #EditorWindow
   #SettingsWindow
   #ExplorerWindow
+  #AboutWindow
 EndEnumeration
 
 ;- MenuBar Constants
@@ -255,6 +256,15 @@ Procedure Open_ExplorerWindow()
 		SHGetSpecialFolderPath_(0,*path,#CSIDL_PERSONAL,0)
 		ExplorerTreeGadget(#FileBrowser, 0, 0, 250, 400, PeekS(*path) + "\",#PB_Explorer_BorderLess)
 		FreeMemory(*path)
+	EndIf
+EndProcedure
+
+Procedure Open_AboutWindow()
+	If OpenWindow(#AboutWindow,0,0,350,190,"About",#PB_Window_ScreenCentered |#PB_Window_SystemMenu)
+		TextGadget(#AboutText,0,10,350,260,"Cue" + Chr(10) + Chr(10) + "Cue is a free and open source program for theatre sound cue control." + Chr(10) + "Project started as an attempt to create a free alternative to SCS." + Chr(10) + Chr(10) + "Creator: Jaakko Rinta-Filppula" + Chr(10) + "Special thanks to Mika Kuitunen for testing!" + Chr(10) + Chr(10) + "Wiki (only in Finnish) and code hosted at",#PB_Text_Center)
+		HyperLinkGadget(#AboutLink,95,130,160,20,"http://github.com/SlyJack0/Cue/",#PB_HyperLink_Underline)
+		SetGadgetColor(#AboutLink,#PB_Gadget_FrontColor,$FF0000)
+		ButtonGadget(#AboutOk,155,155,40,30,"OK")
 	EndIf
 EndProcedure
 

@@ -223,6 +223,10 @@ Enumeration 1
   #SettingsOK
   
   #FileBrowser
+  
+  #AboutOk
+  #AboutText
+  #AboutLink
 EndEnumeration
 ;}
 
