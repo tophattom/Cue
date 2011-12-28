@@ -284,7 +284,7 @@ Repeat ; Start of the event loop
     			
     			Select *gCurrentCue\cueType
     				Case #TYPE_AUDIO
-    					LoadCueStream(*gCurrentCue,path)
+						gLoadThread = CreateThread(@LoadCueStream2(),*gCurrentCue)	
     			EndSelect
     			
     			If *gCurrentCue\desc = ""
@@ -778,7 +778,7 @@ Repeat ; Start of the event loop
 	    			
 	    			Select *gCurrentCue\cueType
 	    				Case #TYPE_AUDIO
-	    					LoadCueStream(*gCurrentCue,path)
+	    					gLoadThread = CreateThread(@LoadCueStream2(),*gCurrentCue)
 	    			EndSelect
 	    			
 	    			If *gCurrentCue\desc = ""
@@ -818,7 +818,7 @@ Repeat ; Start of the event loop
 	    			
 	    		Select *gCurrentCue\cueType
 	    			Case #TYPE_AUDIO
-	    				LoadCueStream(*gCurrentCue,path)
+	    				gLoadThread = CreateThread(@LoadCueStream2(),*gCurrentCue)
 	    		EndSelect
 	    			
 	    		If *gCurrentCue\desc = ""
@@ -846,7 +846,6 @@ Repeat ; Start of the event loop
 	    	
 	EndIf
 	;}
-			
 	
 	Delay(1)
 	
