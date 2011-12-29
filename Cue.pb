@@ -33,6 +33,26 @@ BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
 BASS_PluginLoad("basswma.dll",0)
 BASS_PluginLoad("bassflac.dll",0)
 
+;Onko ohjelmalle annettu parametreja
+paramCount = CountProgramParameters()
+If paramCount > 0
+	For i = 1 To paramCount
+		param.s = ProgramParameter()
+		
+		;Annettu tiedosto avattavaksi
+		If Right(param,4) = ".clf"
+			gSavePath = param
+			ClearCueList()
+			LoadCueList(param)
+				
+			*gCurrentCue = FirstElement(cueList())
+			UpdateMainCueList()
+			UpdateEditorList()
+			UpdateCueControls()
+		EndIf
+	Next i
+endif
+
 Repeat ; Start of the event loop
 	Event = WindowEvent() ; This line waits until an event is received from Windows
 	WindowID = EventWindow() ; The Window where the event is generated, can be used in the gadget procedures
