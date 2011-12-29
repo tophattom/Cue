@@ -719,7 +719,7 @@ Repeat ; Start of the event loop
 			RunProgram(GetGadgetText(#AboutLink))
 		ElseIf GadgetID = #AboutOk
 			HideWindow(#AboutWindow,1)
-		endif
+		EndIf
 	EndIf
 	
 	For i = 0 To 5

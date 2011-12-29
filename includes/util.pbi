@@ -251,6 +251,7 @@ Global gLastType = 0
 Global gSavePath.s = ""
 
 Global gLoadThread
+Global gLoadMutex = CreateMutex()
 
 
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
@@ -334,6 +335,8 @@ Procedure LoadCueStream(*cue.Cue,path.s)
 EndProcedure
 
 Procedure LoadCueStream2(*cue.Cue)
+	LockMutex(gLoadMutex)
+	
 	path.s = *cue\filePath
 	
 	If *cue\stream <> 0
@@ -383,6 +386,8 @@ Procedure LoadCueStream2(*cue.Cue)
     		SetGadgetState(#WaveImg,ImageID(*cue\waveform))
     	EndIf
     Next i
+    
+    UnlockMutex(gLoadMutex)
 EndProcedure
 
 Procedure GetCueById(id.l)
@@ -998,11 +1003,11 @@ Procedure LoadCueList(lPath.s)
 				    				\filePath = path
 				    			EndIf
 				    			
-				    			LoadCueStream(@cueList(),path)
+				    			gLoadThread = CreateThread(@LoadCueStream2(),@cueList())
 				    		EndIf
 				    	EndIf
 				    Else
-				    	LoadCueStream(@cueList(),fPath)
+				    	gLoadThread = CreateThread(@LoadCueStream2(),@cueList())
 				    EndIf
 				EndIf
 				
