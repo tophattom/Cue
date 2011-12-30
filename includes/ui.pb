@@ -70,14 +70,14 @@ Procedure Open_MainWindow()
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_Alt | #PB_Shortcut_N,#MenuSaveAs)
       
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Space,#PlaySc)
-      
+    
     EndIf
 
       ;If CreateGadgetList(WindowID(#MainWindow))
         Frame3DGadget(#Frame3D_0, 10, 0, 280, 80, "Controls")
-        ButtonGadget(#PlayButton, 20, 20, 80, 50, "Play")
+        ButtonGadget(#PlayButton, 20, 20, 80, 50, "Play") : GadgetToolTip(#PlayButton,"Start next cue")
         ButtonGadget(#PauseButton, 110, 20, 80, 50, "Pause")
-        ButtonGadget(#StopButton, 200, 20, 80, 50, "Stop all")
+        ButtonGadget(#StopButton, 200, 20, 80, 50, "Stop all") : GadgetToolTip(#StopButton,"Stop all cues")
         ListViewGadget(#Listview_1, 10, 420, 1010, 320)
         
         
@@ -89,7 +89,7 @@ Procedure Open_MainWindow()
         EnableGadgetDrop(#CueList,#PB_Drop_Files,#PB_Drag_Copy)
         
         Frame3DGadget(#Frame3D_2, 310, 0, 190, 80, "Actions")
-        ButtonGadget(#EditorButton, 320, 20, 80, 50, "Editor")
+        ButtonGadget(#EditorButton, 320, 20, 80, 50, "Editor") : GadgetToolTip(#EditorButton,"Add and modify cues")
         ButtonGadget(#SettingsButton, 410, 20, 80, 50, "Cue list " + Chr(10) + " settings",#PB_Button_MultiLine)
         TrackBarGadget(#MasterSlider, 730, 50, 290, 30, 0, 100)
         SetGadgetState(#MasterSlider,100)
@@ -124,16 +124,16 @@ Procedure Open_EditorWindow()
     Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
     StopDrawing()
     
-    ButtonImageGadget(#DeleteButton, 180, 670, 30, 30, ImageID(#DeleteImg))
-    ButtonImageGadget(#UpButton, 10, 670, 30, 30, ImageID(#UpImg))
-    ButtonImageGadget(#DownButton, 45, 670, 30, 30, ImageID(#DownImg))
+    ButtonImageGadget(#DeleteButton, 180, 670, 30, 30, ImageID(#DeleteImg)) : GadgetToolTip(#DeleteButton,"Delete current cue(s)")
+    ButtonImageGadget(#UpButton, 10, 670, 30, 30, ImageID(#UpImg)) : GadgetToolTip(#UpButton,"Move cue(s) up")
+    ButtonImageGadget(#DownButton, 45, 670, 30, 30, ImageID(#DownImg)) : GadgetToolTip(#DownButton,"Move cue(s) down")
     
     ButtonGadget(#AddAudio, 10, 10, 130, 30, "Add audio cue")
     ButtonGadget(#AddChange, 290, 10, 130, 30, "Add level change cue")
     ButtonGadget(#AddEvent, 430, 10, 130, 30, "Add event cue")
     ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
     
-    ButtonImageGadget(#ExplorerButton, 870, 10, 30, 30, ImageID(#ExplorerImg))
+    ButtonImageGadget(#ExplorerButton, 870, 10, 30, 30, ImageID(#ExplorerImg)) : GadgetToolTip(#ExplorerButton,"Open file browser")
     
     PanelGadget(#EditorTabs, 220, 50, 680, 650)
     EnableGadgetDrop(#EditorTabs,#PB_Drop_Files,#PB_Drag_Copy)
@@ -179,7 +179,7 @@ Procedure Open_EditorWindow()
       StringGadget(#CuePan, 535, 215, 50, 20, "")
       
       TextGadget(#Text_8, 5, 155, 60, 20, "Start mode:")
-      ComboBoxGadget(#ModeSelect, 75, 155, 140, 20)
+      ComboBoxGadget(#ModeSelect, 75, 155, 140, 20) : GadgetToolTip(#ModeSelect,"Cue's start type")
       AddGadgetItem(#ModeSelect,0,"Manual")
       SetGadgetItemData(#ModeSelect,0,#START_MANUAL)
       AddGadgetItem(#ModeSelect,1,"After start of cue")
@@ -193,7 +193,7 @@ Procedure Open_EditorWindow()
       ComboBoxGadget(#CueSelect, 275, 155, 200, 20)
       
       TextGadget(#Text_17, 495, 155, 40, 20, "Delay:")
-      StringGadget(#StartDelay, 535, 155, 50, 20, "")
+      StringGadget(#StartDelay, 535, 155, 50, 20, "") : GadgetToolTip(#StartDelay,"Delay before cue starts")
       
       ImageGadget(#WaveImg, 5, 335, #WAVEFORM_W, 120, 0)
 
@@ -202,7 +202,7 @@ Procedure Open_EditorWindow()
       ButtonImageGadget(#EditorStop, 75, 460, 30, 30, ImageID(#StopImg))
       
       TextGadget(#Text_24, 5 +#WAVEFORM_W - 95, 460, 40, 20, "Position:")
-      StringGadget(#Position, 5 + #WAVEFORM_W - 50, 460, 50, 20, "", #PB_String_ReadOnly)
+      StringGadget(#Position, 5 + #WAVEFORM_W - 50, 460, 50, 20, "", #PB_String_ReadOnly) : GadgetToolTip(#Position,"Current cue position")
       
       ;Event cue
       TextGadget(#Text_18, 5, 245, 40, 20, "Cue:")
@@ -232,7 +232,7 @@ Procedure Open_EditorWindow()
       AddGadgetItem(#EffectType, 2, "VST plugin")
       SetGadgetItemData(#EffectType , 2, #EFFECT_VST)
       
-      ButtonGadget(#AddEffect, 195, 5, 100, 30, "Add effect")
+      ButtonGadget(#AddEffect, 195, 5, 100, 30, "Add effect") : GadgetToolTip(#AddEffect,"Add selected effect to cue")
       
       ButtonImageGadget(#EffectPlay, 565, 5, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
       ButtonImageGadget(#EffectPause, 600, 5, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)

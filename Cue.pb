@@ -33,7 +33,8 @@ BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
 BASS_PluginLoad("basswma.dll",0)
 BASS_PluginLoad("bassflac.dll",0)
 
-;Onko ohjelmalle annettu parametreja
+;Parametrit
+;{
 paramCount = CountProgramParameters()
 If paramCount > 0
 	For i = 1 To paramCount
@@ -51,7 +52,9 @@ If paramCount > 0
 			UpdateCueControls()
 		EndIf
 	Next i
-endif
+EndIf
+;}
+
 
 Repeat ; Start of the event loop
 	Event = WindowEvent() ; This line waits until an event is received from Windows
@@ -115,7 +118,7 @@ Repeat ; Start of the event loop
 		ElseIf MenuID = #MenuSave
 			If gSavePath = ""
 				check = 1
-				gSavePath = OpenFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+				gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
 			Else
 				check = 0
 			EndIf
@@ -124,7 +127,7 @@ Repeat ; Start of the event loop
 				SaveCueList(gSavePath,check)
 			EndIf  
 		ElseIf MenuID = #MenuSaveAs
-			gSavePath = OpenFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+			gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
 			
 			If gSavePath <> ""
 				SaveCueList(gSavePath)
