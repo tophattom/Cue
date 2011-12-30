@@ -108,7 +108,7 @@ Procedure Open_EditorWindow()
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_Delete,#DeleteSc)
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_E,#ExplorerSc)
   	
-  	ListViewGadget(#EditorList, 10, 50, 200, 615)
+  	ListViewGadget(#EditorList, 10, 50, 200, 615,#PB_ListView_MultiSelect)
   	EnableGadgetDrop(#EditorList,#PB_Drop_Files,#PB_Drag_Copy)
     
     LoadImage(#DeleteImg,"Images/delete.ico")

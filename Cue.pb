@@ -21,6 +21,8 @@ Declare UpdateCues()
 Declare UpdateMainCueList()
 Declare UpdatePosField()
 Declare UpdateListSettings()
+Declare MoveCueUp(*cue.Cue)
+Declare MoveCueDown(*cue.Cue)
 
 Open_MainWindow()
 Open_EditorWindow()
@@ -63,7 +65,7 @@ Repeat ; Start of the event loop
 	EventType = EventType() ; The event type
 	
 	
-	If *gCurrentCue <> 0
+	If *gCurrentCue <> 0 And ListSize(*gSelection()) <= 1
 		If gControlsHidden = #True Or gLastType <> *gCurrentCue\cueType
 			gLastType = *gCurrentCue\cueType
 			ShowCueControls()
@@ -244,8 +246,19 @@ Repeat ; Start of the event loop
 				UpdateListSettings()
 			EndIf
 		ElseIf GadgetID = #EditorList ;-Editori
-			*gCurrentCue = GetGadgetItemData(#EditorList,GetGadgetState(#EditorList))
+			ClearList(*gSelection())
 			
+			If GetGadgetState(#EditorList) > -1
+				For i = 0 To CountGadgetItems(#EditorList) - 1
+					If GetGadgetItemState(#EditorList,i) = 1
+						AddElement(*gSelection())
+						*gSelection() = GetGadgetItemData(#EditorList,i)
+					EndIf
+				Next i
+			EndIf
+			
+			*gCurrentCue = GetGadgetItemData(#EditorList,GetGadgetState(#EditorList))
+
 			If *gCurrentCue <> 0
 				UpdateCueControls()
 			EndIf
@@ -393,29 +406,50 @@ Repeat ; Start of the event loop
       		*gCurrentCue\pan = Max(-100.0,Min(100.0,ValF(GetGadgetText(#CuePan)))) / 100.0
 			SetGadgetState(#PanSlider,*gCurrentCue\pan * 1000 + 1000)
       	ElseIf GadgetID = #DeleteButton ;--- Listan käsittely
-      		If *gCurrentCue <> 0
-      			ForEach cueList()
+      		If ListSize(*gSelection()) <= 1
+	      		If *gCurrentCue <> 0
+	      			ForEach cueList()
+						StopCue(@cueList())
+					Next
+					
+	      			DeleteCue(*gCurrentCue)
+	      			*gCurrentCue = 0
+	      			UpdateEditorList()
+	      		EndIf
+	      	Else
+	      		ForEach cueList()
 					StopCue(@cueList())
 				Next
-				
-      			DeleteCue(*gCurrentCue)
-      			*gCurrentCue = 0
-      			UpdateEditorList()
-      		EndIf
-      	ElseIf GadgetID = #UpButton
-      		If *gCurrentCue <> 0 And *gCurrentCue <> FirstElement(cueList())
-      			GetCueListIndex(*gCurrentCue)
-      			*prev.Cue = PreviousElement(cueList())
-      			SwapElements(cueList(),*gCurrentCue,*prev)
-      			UpdateEditorList()
-      		EndIf
-      	ElseIf GadgetID = #DownButton
-			If *gCurrentCue <> 0 And *gCurrentCue <> LastElement(cueList())
-				GetCueListIndex(*gCurrentCue)
-				*nex.Cue = NextElement(cueList())
-				SwapElements(cueList(),*gCurrentCue,*nex)
+				ForEach *gSelection()
+					DeleteCue(*gSelection())
+				Next
+				*gCurrentCue = 0
 				UpdateEditorList()
+				ClearList(*gSelection())
 			EndIf
+      	ElseIf GadgetID = #UpButton
+      		If ListSize(*gSelection()) = 1
+      			MoveCueUp(*gCurrentCue)
+      		Else     			
+      			If FirstElement(*gSelection()) <> FirstElement(cueList())
+      				ForEach *gSelection()
+      					MoveCueUp(*gSelection())
+      				Next
+      			EndIf
+      		EndIf
+      		UpdateEditorList()
+      	ElseIf GadgetID = #DownButton
+      		If ListSize(*gSelection()) = 1
+      			MoveCueDown(*gCurrentCue)
+      		Else
+      			If LastElement(*gSelection()) <> LastElement(cueList())
+      				LastElement(*gSelection())
+      				Repeat
+      					MoveCueDown(*gSelection())
+      				Until PreviousElement(*gSelection()) = 0
+      			EndIf
+      		EndIf
+      		UpdateEditorList()
 		ElseIf GadgetID = #StartDelay	;--- Delay, cuen valinta, muutoksen nopeus
 			*gCurrentCue\delay = ValF(GetGadgetText(#StartDelay)) * 1000
 		ElseIf GadgetID = #CueSelect
@@ -716,6 +750,7 @@ Repeat ; Start of the event loop
 		;}
 		
 		;- Listan asetukset
+		;{
 		If GadgetID = #CheckRelative ;--- Suhteelliset polut
 			If gSavePath = ""
 				MessageRequester("Attention","You need to save your list before you can use relative paths!")
@@ -735,6 +770,7 @@ Repeat ; Start of the event loop
 		If GadgetID = #FileBrowser And EventType = #PB_EventType_DragStart
 			DragFiles(GetGadgetText(#FileBrowser) + GetGadgetItemText(#FileBrowser,GetGadgetState(#FileBrowser)))
 		EndIf
+		;}
 		
 		;- About-ikkuna
 		;{
@@ -743,7 +779,9 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #AboutOk
 			HideWindow(#AboutWindow,1)
 		EndIf
+		;}
 	EndIf
+
 	
 	For i = 0 To 5
 		If GadgetID = eventCueSelect(i)
@@ -905,9 +943,18 @@ Procedure UpdateEditorList()
 		AddGadgetItem(#EditorList,i,text)
 		SetGadgetItemData(#EditorList,i,@cueList())
 		
-		If @cueList() = *gCurrentCue
-			SetGadgetState(#EditorList,i)
+		If ListSize(*gSelection()) <= 1
+			If @cueList() = *gCurrentCue
+				SetGadgetState(#EditorList,i)
+			EndIf
+		Else
+			ForEach *gSelection()
+				If *gSelection() = @cueList()
+					SetGadgetItemState(#EditorList,i,1)
+				EndIf
+			Next
 		EndIf
+		
 		
 		i + 1
 	Next
@@ -1523,3 +1570,21 @@ EndProcedure
 Procedure UpdateListSettings()
 	SetGadgetState(#CheckRelative, gListSettings(#SETTING_RELATIVE))
 EndProcedure
+
+Procedure MoveCueUp(*cue.Cue)
+	If *cue <> 0 And *cue <> FirstElement(cueList())
+		GetCueListIndex(*cue)
+		*prev.Cue = PreviousElement(cueList())
+		SwapElements(cueList(),*cue,*prev)
+	EndIf
+EndProcedure
+
+Procedure MoveCueDown(*cue.Cue)
+	If *cue <> 0 And *cue <> LastElement(cueList())
+		GetCueListIndex(*cue)
+		*nex.Cue = NextElement(cueList())
+		SwapElements(cueList(),*cue,*nex)
+	EndIf
+EndProcedure
+
+

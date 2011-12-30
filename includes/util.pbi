@@ -234,6 +234,7 @@ EndEnumeration
 
 
 Global NewList cueList.Cue()
+Global NewList *gSelection.Cue()
 Global Dim gListSettings(#SETTINGS - 1)
 
 Global gPlayState.i
