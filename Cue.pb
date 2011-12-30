@@ -1495,7 +1495,16 @@ Procedure UpdateCues()
 EndProcedure
 
 Procedure UpdateMainCueList()
-	ClearGadgetItems(#CueList)
+	listAmount = CountGadgetItems(#CueList)
+	If gCueAmount > listAmount
+		For i = 1 To (gCueAmount - listAmount)
+			AddGadgetItem(#CueList,-1,"")
+		Next i
+	ElseIf gCueAmount < listAmount
+		For i = 1 To (listAmount - gCueAmount)
+			RemoveGadgetItem(#CueList,listAmount - i)
+		Next i
+	EndIf
 	
 	i = 0
 	
@@ -1550,7 +1559,13 @@ Procedure UpdateMainCueList()
 		
 		secs.f = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
 		
-		AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start + Chr(10) + state + Chr(10) + "-" + SecondsToString(cueList()\endPos - secs))
+		;AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start + Chr(10) + state + Chr(10) + "-" + SecondsToString(cueList()\endPos - secs))
+		SetGadgetItemText(#CueList, i, cueList()\name + "  " + cueList()\desc,0)
+		SetGadgetItemText(#CueList, i, text, 1)
+		SetGadgetItemText(#CueList, i, start, 2)
+		SetGadgetItemText(#CueList, i, state, 3)
+		SetGadgetItemText(#CueList, i, "-" + SecondsToString(cueList()\endPos - secs),4)
+		
 		SetGadgetItemData(#CueList, i, @cueList())
 		SetGadgetItemColor(#CueList, i, #PB_Gadget_BackColor, color, -1)
 		
