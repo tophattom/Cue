@@ -148,11 +148,27 @@ Repeat ; Start of the event loop
 			Event = #PB_Event_Gadget
 			GadgetID = #PlayButton
 		ElseIf MenuID = #DeleteSc
-			If *gCurrentCue <> 0
-      			DeleteCue(*gCurrentCue)
-      			*gCurrentCue = 0
-      			UpdateEditorList()
-      		EndIf
+			If ListSize(*gSelection()) <= 1
+	      		If *gCurrentCue <> 0
+	      			ForEach cueList()
+						StopCue(@cueList())
+					Next
+					
+	      			DeleteCue(*gCurrentCue)
+	      			*gCurrentCue = 0
+	      			UpdateEditorList()
+	      		EndIf
+	      	Else
+	      		ForEach cueList()
+					StopCue(@cueList())
+				Next
+				ForEach *gSelection()
+					DeleteCue(*gSelection())
+				Next
+				*gCurrentCue = 0
+				UpdateEditorList()
+				ClearList(*gSelection())
+			EndIf
       	ElseIf MenuID = #ExplorerSc
       		Event = #PB_Event_Gadget
       		GadgetID = #ExplorerButton
@@ -1495,6 +1511,8 @@ Procedure UpdateCues()
 EndProcedure
 
 Procedure UpdateMainCueList()
+	SetGadgetState(#CueList,-1)
+	
 	listAmount = CountGadgetItems(#CueList)
 	If gCueAmount > listAmount
 		For i = 1 To (gCueAmount - listAmount)
