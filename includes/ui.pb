@@ -78,14 +78,12 @@ Procedure Open_MainWindow()
         ButtonGadget(#PlayButton, 20, 20, 80, 50, "Play") : GadgetToolTip(#PlayButton,"Start next cue")
         ButtonGadget(#PauseButton, 110, 20, 80, 50, "Pause")
         ButtonGadget(#StopButton, 200, 20, 80, 50, "Stop all") : GadgetToolTip(#StopButton,"Stop all cues")
-        ListViewGadget(#Listview_1, 10, 420, 1010, 320)
-        
-        
-        ListIconGadget(#CueList, 10, 90, 1010, 320, "Cue", 300, #PB_ListIcon_FullRowSelect | #PB_ListIcon_AlwaysShowSelection)
-        AddGadgetColumn(#CueList, 1, "Cue type", 100)
-        AddGadgetColumn(#CueList, 2, "Start mode", 100)
-        AddGadgetColumn(#CueList, 3, "State", 100)
-        AddGadgetColumn(#CueList, 4, "Time left", 100)
+
+        ListIconGadget(#CueList, 10, 90, 1004, 648, "Cue", 334, #PB_ListIcon_FullRowSelect | #PB_ListIcon_AlwaysShowSelection)
+        AddGadgetColumn(#CueList, 1, "Cue type", 166)
+        AddGadgetColumn(#CueList, 2, "Start mode", 166)
+        AddGadgetColumn(#CueList, 3, "State", 166)
+        AddGadgetColumn(#CueList, 4, "Time left", 166)
         EnableGadgetDrop(#CueList,#PB_Drop_Files,#PB_Drag_Copy)
         
         Frame3DGadget(#Frame3D_2, 310, 0, 190, 80, "Actions")

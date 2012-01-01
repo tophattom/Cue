@@ -181,6 +181,15 @@ Repeat ; Start of the event loop
 	If Event = #PB_Event_SizeWindow
 		If WindowID = #ExplorerWindow
 			ResizeGadget(#FileBrowser,0,0,WindowWidth(#ExplorerWindow),WindowHeight(#ExplorerWindow))
+		ElseIf WindowID = #MainWindow
+			ResizeGadget(#CueList,#PB_Ignore,#PB_Ignore,WindowWidth(#MainWindow) - 20,WindowHeight(#MainWindow) - 120)
+			ResizeGadget(#MasterSlider,Max(510,WindowWidth(#MainWindow) - 300),#PB_Ignore,#PB_Ignore,#PB_Ignore)
+			ResizeGadget(#Text_2,Max(510,WindowWidth(#MainWindow) - 300),#PB_Ignore,#PB_Ignore,#PB_Ignore)
+			
+			SetGadgetItemAttribute(#CueList,0,#PB_ListIcon_ColumnWidth,Round(GadgetWidth(#CueList) / 3,#PB_Round_Down),0)
+			For i = 1 To 4
+				SetGadgetItemAttribute(#CueList,i,#PB_ListIcon_ColumnWidth,Round((GadgetWidth(#CueList) * (2 / 3)) / 4 - 1,#PB_Round_Down),i)
+			Next i
 		EndIf
 	EndIf
 	;}
@@ -216,9 +225,7 @@ Repeat ; Start of the event loop
 			ForEach cueList()
 				StopCue(@cueList())
 			Next
-			UpdateMainCueList()
-		ElseIf GadgetID = #Listview_1
-		      
+			UpdateMainCueList() 
 		ElseIf GadgetID = #CueList
 			*gCurrentCue = GetGadgetItemData(#CueList,GetGadgetState(#CueList))
 			

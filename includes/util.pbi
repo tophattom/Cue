@@ -143,7 +143,6 @@ Enumeration 1
   #PlayButton
   #PauseButton
   #StopButton
-  #Listview_1
   #CueList
   #Frame3D_2
   #EditorButton
