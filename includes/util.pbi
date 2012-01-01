@@ -387,7 +387,7 @@ Procedure LoadCueStream2(*cue.Cue)
     		SetGadgetState(#WaveImg,ImageID(*cue\waveform))
     	EndIf
     Next i
-    
+
     UnlockMutex(gLoadMutex)
 EndProcedure
 
@@ -464,7 +464,7 @@ Procedure Max(a.f,b.f)
 		ProcedureReturn a
 	EndIf
 EndProcedure
-
+	
 Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.BASS_DX8_PARAMEQ=0,active=1,id=-1,path.s="")
 	If *cue\stream <> 0
 		amount = ListSize(*cue\effects())
@@ -1004,11 +1004,11 @@ Procedure LoadCueList(lPath.s)
 				    				\filePath = path
 				    			EndIf
 				    			
-				    			gLoadThread = CreateThread(@LoadCueStream2(),@cueList())
+				    			LoadCueStream(@cueList(),fPath)
 				    		EndIf
 				    	EndIf
 				    Else
-				    	gLoadThread = CreateThread(@LoadCueStream2(),@cueList())
+				    	LoadCueStream(@cueList(),fPath)
 				    EndIf
 				EndIf
 				
