@@ -24,6 +24,8 @@ Declare UpdateListSettings()
 Declare MoveCueUp(*cue.Cue)
 Declare MoveCueDown(*cue.Cue)
 
+LoadAppSettings()
+
 Open_MainWindow()
 Open_EditorWindow()
 
@@ -34,6 +36,7 @@ BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
 
 BASS_PluginLoad("basswma.dll",0)
 BASS_PluginLoad("bassflac.dll",0)
+BASS_PluginLoad("bass_aac.dll",0)
 
 ;Parametrit
 ;{
@@ -175,7 +178,27 @@ Repeat ; Start of the event loop
       	ElseIf MenuID = #ExplorerSc
       		Event = #PB_Event_Gadget
       		GadgetID = #ExplorerButton
-		EndIf	
+      	EndIf
+      	
+      	For i = 0 To #MAX_RECENT - 1
+      		If MenuID = i
+      			path = gRecentFiles(i)
+      			
+      			If path <> ""
+					gSavePath = path
+					ClearCueList()
+					
+					CreateThread(@Open_LoadWindow(),0)
+					
+					LoadCueList(path)
+					
+					*gCurrentCue = FirstElement(cueList())
+					UpdateMainCueList()
+					UpdateEditorList()
+					UpdateCueControls()
+				EndIf
+			EndIf
+		Next i
 	EndIf
 	;}
 	
@@ -333,7 +356,7 @@ Repeat ; Start of the event loop
     	ElseIf GadgetID = #OpenCueFile ;--- Tiedoston lataus
     		Select *gCurrentCue\cueType
     			Case #TYPE_AUDIO
-    				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff,*.wma,*.flac) |*.mp3;*.wav;*.ogg;*.aiff;*.wma;*.flac"
+    				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff,*.wma,*.flac,*.aac) |*.mp3;*.wav;*.ogg;*.aiff;*.wma;*.flac:*.aac"
     		EndSelect
     		
     		path.s = OpenFileRequester("Select file","",pattern,0)

@@ -11,31 +11,8 @@ Enumeration
   #ExplorerWindow
   #AboutWindow
   #LoadWindow
+  #PrefWindow
 EndEnumeration
-
-;- MenuBar Constants
-;
-Enumeration
-  #MenuBar
-EndEnumeration
-
-Enumeration
-  #MenuNew
-  #MenuOpen
-  #MenuSave
-  #MenuSaveAs
-  #MenuImport
-  #MenuPref
-  #MenuExit
-  #MenuAbout
-  
-  #PlaySc
-  
-  #DeleteSc
-  
-  #ExplorerSc
-EndEnumeration
-
 
 
 #WAVEFORM_W = 660
@@ -52,10 +29,17 @@ Procedure Open_MainWindow()
   If OpenWindow(#MainWindow, 479, 152, 1024, 768, "Cue",  #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_SizeGadget | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
     If CreateMenu(#MenuBar, WindowID(#MainWindow))
       MenuTitle("File")
-      MenuItem(#MenuNew, "New...")
-      MenuItem(#MenuOpen, "Open...")
-      MenuItem(#MenuSave, "Save")
-      MenuItem(#MenuSaveAs, "Save As...")
+      MenuItem(#MenuNew, "New..." + Chr(9) + "Ctrl+N")
+      MenuItem(#MenuOpen, "Open..." + Chr(9) + "Ctrl+O")
+      
+      OpenSubMenu("Open recent")
+      For i = 0 To #MAX_RECENT - 1
+      	MenuItem(i,GetFilePart(gRecentFiles(i)))
+      Next i
+      CloseSubMenu()
+      
+      MenuItem(#MenuSave, "Save" + Chr(9) + "Ctrl+S")
+      MenuItem(#MenuSaveAs, "Save As..." + Chr(9) + "Ctrl+Alt+S")
       MenuBar()
       MenuItem(#MenuImport, "Import cues...")
       MenuBar()
@@ -68,7 +52,7 @@ Procedure Open_MainWindow()
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_N,#MenuNew)
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_O,#MenuOpen)
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_S,#MenuSave)
-      AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_Alt | #PB_Shortcut_N,#MenuSaveAs)
+      AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_Alt | #PB_Shortcut_S,#MenuSaveAs)
       
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Space,#PlaySc)
     
@@ -278,6 +262,11 @@ Procedure Open_LoadWindow(*value)
 		Until gCuesLoaded = gCueAmount
 		
 		CloseWindow(#LoadWindow)
+	EndIf
+EndProcedure
+
+Procedure Open_PrefWindow()
+	If OpenWindow(#PrefWindow,0,0,640,480,"Preferences",#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
 	EndIf
 EndProcedure
 

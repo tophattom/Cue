@@ -77,6 +77,14 @@ Structure Cue
 EndStructure
 ;}
 
+;-Recent file structure
+;{
+Structure RecentFile
+	path.s
+	mItem.i
+EndStructure
+;}
+
 Enumeration 1
 	#TYPE_AUDIO
 	#TYPE_VIDEO
@@ -105,9 +113,15 @@ Enumeration 1
 EndEnumeration
 
 ;Asetusvakiot
-#SETTINGS = 1
+#SETTINGS = 1	;Listalle
 Enumeration
 	#SETTING_RELATIVE
+EndEnumeration
+
+#MAX_RECENT = 5
+#APP_SETTINGS = 1
+Enumeration
+	#SETTING_ADEVICE
 EndEnumeration
 
 #FORMAT_VERSION = 3.7
@@ -231,12 +245,46 @@ Enumeration 1
 EndEnumeration
 ;}
 
+;- Menu constants
+;{
+Enumeration
+  #MenuBar
+EndEnumeration
+
+Enumeration	  
+  #Recent1
+  #Recent2
+  #Recent3
+  #Recent4
+  #Recent5
+  
+  #MenuNew
+  #MenuOpen
+  #MenuSave
+  #MenuSaveAs
+  #MenuImport
+  #MenuPref
+  #MenuExit
+  #MenuAbout
+
+  #PlaySc
+  
+  #DeleteSc
+  
+  #ExplorerSc
+EndEnumeration
+;}
+
 #WAVEFORM_W = 660
 
 
 Global NewList cueList.Cue()
 Global NewList *gSelection.Cue()
+
 Global Dim gListSettings(#SETTINGS - 1)
+Global Dim gAppSettings(#APP_SETTINGS)	;Ohjelman asetukset
+
+Global Dim gRecentFiles.s(#MAX_RECENT - 1)	;Viimeisimmät tiedostot
 
 Global gPlayState.i
 Global *gCurrentCue.Cue
@@ -259,6 +307,70 @@ Global gCuesLoaded
 
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
+
+Procedure SaveAppSettings()
+	If FileSize("settings.ini") = -1
+		CreatePreferences("settings.ini")
+	EndIf
+	
+	If OpenPreferences("settings.ini")
+		PreferenceGroup("General")
+		WritePreferenceInteger("Audio device",gAppSettings(#SETTING_ADEVICE))
+		
+		PreferenceGroup("Recent files")
+		For i = 1 To #MAX_RECENT
+			WritePreferenceString("File " + Str(i),gRecentFiles(i - 1))
+		Next i
+	EndIf
+EndProcedure
+
+Procedure SetDefaultSettings()
+	gAppSettings(#SETTING_ADEVICE) = 1
+	
+	SaveAppSettings()
+EndProcedure
+
+Procedure LoadAppSettings()
+	If FileSize("settings.ini") > -1
+		If OpenPreferences("settings.ini")
+			PreferenceGroup("General")
+			gAppSettings(#SETTING_ADEVICE) = ReadPreferenceInteger("Audio device",1)
+			Debug gAppSettings(#SETTING_ADEVICE)
+			
+			PreferenceGroup("Recent files")
+			ExaminePreferenceKeys()
+			For i = 0 To #MAX_RECENT - 1
+				NextPreferenceKey()
+				gRecentFiles(i) = PreferenceKeyValue()
+			Next i
+			
+			ClosePreferences()
+		EndIf
+	Else
+		SetDefaultSettings()
+	EndIf
+EndProcedure
+
+Procedure AddRecentFile(path.s)
+	start = #MAX_RECENT - 1
+	
+	For i = 0 To #MAX_RECENT - 1
+		If gRecentFiles(i) = path
+			start = i
+			Break
+		EndIf
+	Next i
+	
+	For i = start - 1 To 0 Step -1
+		gRecentFiles(i + 1) = gRecentFiles(i)
+		SetMenuItemText(#MenuBar,i + 1,GetFilePart(gRecentFiles(i)))
+	Next i
+	
+	gRecentFiles(0) = path
+	SetMenuItemText(#MenuBar,0,GetFilePart(gRecentFiles(0)))
+	
+	SaveAppSettings()
+EndProcedure
 
 Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 	LastElement(cueList())
@@ -466,7 +578,7 @@ Procedure Max(a.f,b.f)
 		ProcedureReturn a
 	EndIf
 EndProcedure
-	
+
 Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.BASS_DX8_PARAMEQ=0,active=1,id=-1,path.s="")
 	If *cue\stream <> 0
 		amount = ListSize(*cue\effects())
@@ -1128,6 +1240,8 @@ Procedure LoadCueList(lPath.s)
 		Next
 		
 		CloseFile(0)
+		
+		AddRecentFile(lPath)
 	Else
 		MessageRequester("Error","Couldn't open file " + path + "!")
 		ProcedureReturn #False
@@ -1237,6 +1351,10 @@ Procedure ChangePathsToRelative()
 	Next
 EndProcedure
 
-		
+
+
+
+
+	
 		
 		
