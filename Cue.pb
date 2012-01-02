@@ -110,6 +110,9 @@ Repeat ; Start of the event loop
 			If path <> ""
 				gSavePath = path
 				ClearCueList()
+				
+				CreateThread(@Open_LoadWindow(),0)
+				
 				LoadCueList(path)
 				
 				*gCurrentCue = FirstElement(cueList())
@@ -928,7 +931,10 @@ Repeat ; Start of the event loop
 	    	
 	    	If Right(path,4) = ".clf"
 	    		gSavePath = path
-				ClearCueList()
+	    		ClearCueList()
+	    		
+	    		CreateThread(@Open_LoadWindow(),0)
+	    		
 				LoadCueList(path)
 				
 				*gCurrentCue = FirstElement(cueList())

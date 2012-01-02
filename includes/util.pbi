@@ -226,6 +226,8 @@ Enumeration 1
   #AboutOk
   #AboutText
   #AboutLink
+  
+  #LoadBar
 EndEnumeration
 ;}
 
@@ -253,6 +255,7 @@ Global gSavePath.s = ""
 Global gLoadThread
 Global gLoadMutex = CreateMutex()
 
+Global gCuesLoaded
 
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
@@ -949,7 +952,8 @@ Procedure LoadCueList(lPath.s)
 		
 		gCueAmount = 0
 		gCueCounter = 0
-		
+		gCuesLoaded = 0
+
 		high = 0
 		;Luetaan idt ja luodaan cuet
 		For i = 1 To tmpAmount
@@ -1119,6 +1123,8 @@ Procedure LoadCueList(lPath.s)
 				ChangeCurrentElement(cueList(),*prev)
 						
 			EndWith
+			
+			gCuesLoaded + 1
 		Next
 		
 		CloseFile(0)

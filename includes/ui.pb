@@ -10,6 +10,7 @@ Enumeration
   #SettingsWindow
   #ExplorerWindow
   #AboutWindow
+  #LoadWindow
 EndEnumeration
 
 ;- MenuBar Constants
@@ -263,6 +264,20 @@ Procedure Open_AboutWindow()
 		HyperLinkGadget(#AboutLink,95,130,160,20,"http://github.com/SlyJack0/Cue/",#PB_HyperLink_Underline)
 		SetGadgetColor(#AboutLink,#PB_Gadget_FrontColor,$FF0000)
 		ButtonGadget(#AboutOk,155,155,40,30,"OK")
+	EndIf
+EndProcedure
+
+Procedure Open_LoadWindow(*value)
+	If OpenWindow(#LoadWindow,0,0,200,40,"Loading, pease wait...",#PB_Window_ScreenCentered | #PB_Window_Tool)
+		ProgressBarGadget(#LoadBar,10,10,180,20,0,100,#PB_ProgressBar_Smooth)
+		
+		Repeat
+			If gCueAmount
+				SetGadgetState(#LoadBar,Int((gCuesLoaded / gCueAmount) * 100))
+			EndIf
+		Until gCuesLoaded = gCueAmount
+		
+		CloseWindow(#LoadWindow)
 	EndIf
 EndProcedure
 
