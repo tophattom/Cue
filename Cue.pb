@@ -111,17 +111,18 @@ Repeat ; Start of the event loop
 			path.s = OpenFileRequester("Open cue list","","Cue list files (*.clf) |*.clf",0)
 			
 			If path <> ""
-				gSavePath = path
 				ClearCueList()
 				
 				CreateThread(@Open_LoadWindow(),0)
 				
-				LoadCueList(path)
-				
-				*gCurrentCue = FirstElement(cueList())
-				UpdateMainCueList()
-				UpdateEditorList()
-				UpdateCueControls()
+				If LoadCueList(path)
+					gSavePath = path
+					
+					*gCurrentCue = FirstElement(cueList())
+					UpdateMainCueList()
+					UpdateEditorList()
+					UpdateCueControls()
+				EndIf
 			EndIf		      
 		ElseIf MenuID = #MenuSave
 			If gSavePath = ""
@@ -184,18 +185,19 @@ Repeat ; Start of the event loop
       		If MenuID = i
       			path = gRecentFiles(i)
       			
-      			If path <> ""
-					gSavePath = path
+      			If path <> ""	
 					ClearCueList()
 					
 					CreateThread(@Open_LoadWindow(),0)
 					
-					LoadCueList(path)
-					
-					*gCurrentCue = FirstElement(cueList())
-					UpdateMainCueList()
-					UpdateEditorList()
-					UpdateCueControls()
+					If LoadCueList(path)
+						gSavePath = path
+						
+						*gCurrentCue = FirstElement(cueList())
+						UpdateMainCueList()
+						UpdateEditorList()
+						UpdateCueControls()
+					EndIf
 				EndIf
 			EndIf
 		Next i
@@ -962,17 +964,19 @@ Repeat ; Start of the event loop
 	    	path.s = StringField(EventDropFiles(),1,Chr(10))
 	    	
 	    	If Right(path,4) = ".clf"
-	    		gSavePath = path
+	    		
 	    		ClearCueList()
 	    		
 	    		CreateThread(@Open_LoadWindow(),0)
 	    		
-				LoadCueList(path)
-				
-				*gCurrentCue = FirstElement(cueList())
-				UpdateMainCueList()
-				UpdateEditorList()
-				UpdateCueControls()
+				If LoadCueList(path)
+					gSavePath = path
+					
+					*gCurrentCue = FirstElement(cueList())
+					UpdateMainCueList()
+					UpdateEditorList()
+					UpdateCueControls()
+				EndIf
 	    	EndIf
 	    EndIf
 	    	
