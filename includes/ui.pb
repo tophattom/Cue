@@ -32,7 +32,11 @@ Procedure Open_MainWindow()
 	windowH = Min(768,winRect\bottom - winRect\top)
 	
   If OpenWindow(#MainWindow, 479, 152, 1024, windowH, "Cue",  #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_SizeGadget | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
-    If CreateMenu(#MenuBar, WindowID(#MainWindow))
+  	If windowH < 768
+  		ResizeWindow(#MainWindow,#PB_Ignore,0,#PB_Ignore,#PB_Ignore)
+  	EndIf
+  	
+  	If CreateMenu(#MenuBar, WindowID(#MainWindow))
       MenuTitle("File")
       MenuItem(#MenuNew, "New..." + Chr(9) + "Ctrl+N")
       MenuItem(#MenuOpen, "Open..." + Chr(9) + "Ctrl+O")
