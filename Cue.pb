@@ -206,7 +206,8 @@ Repeat ; Start of the event loop
 	;{
 	If Event = #PB_Event_SizeWindow
 		If WindowID = #ExplorerWindow
-			ResizeGadget(#FileBrowser,0,0,WindowWidth(#ExplorerWindow),WindowHeight(#ExplorerWindow))
+			ResizeGadget(#FileBrowser,0,24,WindowWidth(#ExplorerWindow),WindowHeight(#ExplorerWindow) - 24)
+			ResizeGadget(#RefreshBrowser,WindowWidth(#ExplorerWindow) - 22,2,#PB_Ignore,#PB_Ignore)
 		ElseIf WindowID = #MainWindow
 			ResizeGadget(#CueList,#PB_Ignore,#PB_Ignore,WindowWidth(#MainWindow) - 20,WindowHeight(#MainWindow) - 120)
 			ResizeGadget(#MasterSlider,Max(510,WindowWidth(#MainWindow) - 300),#PB_Ignore,#PB_Ignore,#PB_Ignore)
@@ -829,6 +830,14 @@ Repeat ; Start of the event loop
 			HideWindow(#AboutWindow,1)
 		EndIf
 		;}
+		
+		;- Selaimen päivitys
+		If GadgetID = #RefreshBrowser
+			tmpPath.s = GetPathPart(GetGadgetText(#FileBrowser))
+			FreeGadget(#FileBrowser)
+			
+			ExplorerTreeGadget(#FileBrowser, 0, 24, WindowWidth(#ExplorerWindow), WindowHeight(#ExplorerWindow) - 24, tmpPath)
+		EndIf
 	EndIf
 
 	

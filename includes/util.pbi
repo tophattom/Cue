@@ -148,6 +148,7 @@ Enumeration
 	#PauseImg
 	#StopImg
 	#ExplorerImg
+	#RefreshImg
 EndEnumeration
 
 ;- Gadget Constants
@@ -236,6 +237,7 @@ Enumeration 1
   #SettingsOK
   
   #FileBrowser
+  #RefreshBrowser
   
   #AboutOk
   #AboutText
