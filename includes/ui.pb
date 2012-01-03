@@ -26,7 +26,12 @@ Global FontID1
 FontID1 = LoadFont(1, "Tahoma", 14)
 
 Procedure Open_MainWindow()
-  If OpenWindow(#MainWindow, 479, 152, 1024, 768, "Cue",  #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_SizeGadget | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
+	winRect.RECT
+	SystemParametersInfo_(#SPI_GETWORKAREA,0,@winRect,0)
+	
+	windowH = Min(768,winRect\bottom - winRect\top)
+	
+  If OpenWindow(#MainWindow, 479, 152, 1024, windowH, "Cue",  #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_SizeGadget | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
     If CreateMenu(#MenuBar, WindowID(#MainWindow))
       MenuTitle("File")
       MenuItem(#MenuNew, "New..." + Chr(9) + "Ctrl+N")
