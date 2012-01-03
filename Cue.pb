@@ -356,7 +356,7 @@ Repeat ; Start of the event loop
     	ElseIf GadgetID = #OpenCueFile ;--- Tiedoston lataus
     		Select *gCurrentCue\cueType
     			Case #TYPE_AUDIO
-    				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff,*.wma,*.flac,*.aac) |*.mp3;*.wav;*.ogg;*.aiff;*.wma;*.flac:*.aac"
+    				pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff,*.wma,*.flac,*.aac,*.m4a) |*.mp3;*.wav;*.ogg;*.aiff;*.wma;*.flac;*.aac;*.m4a"
     		EndSelect
     		
     		path.s = OpenFileRequester("Select file","",pattern,0)
