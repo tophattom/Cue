@@ -107,7 +107,7 @@ Procedure Open_EditorWindow()
     Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
     StopDrawing()
     
-    ButtonImageGadget(#DeleteButton, 180, 670, 30, 30, ImageID(#DeleteImg)) : GadgetToolTip(#DeleteButton,"Delete current cue(s)")
+    ButtonImageGadget(#DeleteButton, 180, 670, 30, 30, ImageID(#DeleteImg)) : GadgetToolTip(#DeleteButton,"Delete current cue(s) (Ctrl+Delete)")
     ButtonImageGadget(#UpButton, 10, 670, 30, 30, ImageID(#UpImg)) : GadgetToolTip(#UpButton,"Move cue(s) up")
     ButtonImageGadget(#DownButton, 45, 670, 30, 30, ImageID(#DownImg)) : GadgetToolTip(#DownButton,"Move cue(s) down")
     
@@ -116,7 +116,7 @@ Procedure Open_EditorWindow()
     ButtonGadget(#AddEvent, 430, 10, 130, 30, "Add event cue")
     ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
     
-    ButtonImageGadget(#ExplorerButton, 870, 10, 30, 30, ImageID(#ExplorerImg)) : GadgetToolTip(#ExplorerButton,"Open file browser")
+    ButtonImageGadget(#ExplorerButton, 870, 10, 30, 30, ImageID(#ExplorerImg)) : GadgetToolTip(#ExplorerButton,"Open file browser (Ctrl+E)")
     
     PanelGadget(#EditorTabs, 220, 50, 680, 650)
     EnableGadgetDrop(#EditorTabs,#PB_Drop_Files,#PB_Drag_Copy)
