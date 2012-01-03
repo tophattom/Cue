@@ -23,6 +23,7 @@ Declare UpdatePosField()
 Declare UpdateListSettings()
 Declare MoveCueUp(*cue.Cue)
 Declare MoveCueDown(*cue.Cue)
+Declare UpdateAppSettings()
 
 LoadAppSettings()
 
@@ -142,7 +143,13 @@ Repeat ; Start of the event loop
 				SaveCueList(gSavePath)
 			EndIf
 		ElseIf MenuID = #MenuPref
-
+			If IsWindow(#PrefWindow)
+				HideWindow(#PrefWindow,0)
+			Else
+				Open_PrefWindow()
+			EndIf
+			
+			UpdateAppSettings()
 		ElseIf MenuID = #MenuExit
 			End
 		ElseIf MenuID = #MenuAbout
@@ -822,6 +829,22 @@ Repeat ; Start of the event loop
 		If GadgetID = #FileBrowser And EventType = #PB_EventType_DragStart
 			DragFiles(GetGadgetText(#FileBrowser) + GetGadgetItemText(#FileBrowser,GetGadgetState(#FileBrowser)))
 		EndIf
+		;}
+		
+		;- Ohjelman asetukset
+		;{
+		If GadgetID = #PrefCancel
+			HideWindow(#PrefWindow,1)
+		ElseIf GadgetID = #PrefOk
+			gAppSettings(#SETTING_ADEVICE) = GetGadgetState(#SelectADevice) + 1
+			BASS_SetDevice(gAppSettings(#SETTING_ADEVICE))
+			
+			SaveAppSettings()
+			
+			HideWindow(#PrefWindow,1)
+		EndIf
+		
+			
 		;}
 		
 		;- About-ikkuna
@@ -1651,6 +1674,10 @@ EndProcedure
 
 Procedure UpdateListSettings()
 	SetGadgetState(#CheckRelative, gListSettings(#SETTING_RELATIVE))
+EndProcedure
+
+Procedure UpdateAppSettings()
+	SetGadgetState(#SelectADevice,gAppSettings(#SETTING_ADEVICE) - 1)
 EndProcedure
 
 Procedure MoveCueUp(*cue.Cue)

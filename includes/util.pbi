@@ -244,6 +244,13 @@ Enumeration 1
   #AboutLink
   
   #LoadBar
+  
+  #PrefAFrame
+  #PrefIFrame
+  #Text_27
+  #SelectADevice
+  #PrefOk
+  #PrefCancel
 EndEnumeration
 ;}
 
@@ -337,7 +344,7 @@ Procedure LoadAppSettings()
 		If OpenPreferences("settings.ini")
 			PreferenceGroup("General")
 			gAppSettings(#SETTING_ADEVICE) = ReadPreferenceInteger("Audio device",1)
-			Debug gAppSettings(#SETTING_ADEVICE)
+			BASS_SetDevice(gAppSettings(#SETTING_ADEVICE))
 			
 			PreferenceGroup("Recent files")
 			ExaminePreferenceKeys()

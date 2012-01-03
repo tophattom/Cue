@@ -28,7 +28,7 @@ FontID1 = LoadFont(1, "Tahoma", 14)
 Procedure Open_MainWindow()
 	winRect.RECT
 	SystemParametersInfo_(#SPI_GETWORKAREA,0,@winRect,0)
-	
+
 	windowH = Min(768,winRect\bottom - winRect\top)
 	
   If OpenWindow(#MainWindow, 479, 152, 1024, windowH, "Cue",  #PB_Window_SystemMenu | #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_SizeGadget | #PB_Window_TitleBar | #PB_Window_ScreenCentered )
@@ -280,6 +280,24 @@ EndProcedure
 
 Procedure Open_PrefWindow()
 	If OpenWindow(#PrefWindow,0,0,640,480,"Preferences",#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
+		Frame3DGadget(#PrefAFrame,10,10,620,60,"Audio")
+		
+		TextGadget(#Text_27,20,30,80,20,"Audio device:")
+		ComboBoxGadget(#SelectADevice,100,30,200,20)
+		info.BASS_DEVICEINFO
+		For i = 1 To BASS_GetDeviceInfo(i,@info)
+			If info\flags & #BASS_DEVICE_ENABLED
+				AddGadgetItem(#SelectADevice,-1,PeekS(info\name))
+			EndIf
+		Next i
+		SetGadgetState(#SelectADevice,BASS_GetDevice() - 1)
+		
+		Frame3DGadget(#PrefIFrame,10,80,620,60,"Interface")
+		
+		
+		
+		ButtonGadget(#PrefOk,590,440,40,30,"OK")
+		ButtonGadget(#PrefCancel,535,440,50,30,"Cancel")
 	EndIf
 EndProcedure
 
