@@ -839,6 +839,11 @@ Repeat ; Start of the event loop
 			gAppSettings(#SETTING_ADEVICE) = GetGadgetState(#SelectADevice) + 1
 			BASS_SetDevice(gAppSettings(#SETTING_ADEVICE))
 			
+			gAppSettings(#SETTING_FONTSIZE) = Val(GetGadgetText(#FontSize))
+			FreeFont(gCueListFont)
+			gCueListFont = LoadFont(#PB_Any,"Microsoft Sans Serif",gAppSettings(#SETTING_FONTSIZE))
+			SetGadgetFont(#CueList,FontID(gCueListFont))
+			
 			SaveAppSettings()
 			
 			HideWindow(#PrefWindow,1)

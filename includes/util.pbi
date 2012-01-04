@@ -119,9 +119,10 @@ Enumeration
 EndEnumeration
 
 #MAX_RECENT = 5
-#APP_SETTINGS = 1
+#APP_SETTINGS = 2
 Enumeration
 	#SETTING_ADEVICE
+	#SETTING_FONTSIZE
 EndEnumeration
 
 #FORMAT_VERSION = 3.7
@@ -249,6 +250,8 @@ Enumeration 1
   #PrefIFrame
   #Text_27
   #SelectADevice
+  #Text_28
+  #FontSize
   #PrefOk
   #PrefCancel
 EndEnumeration
@@ -325,6 +328,7 @@ Procedure SaveAppSettings()
 	If OpenPreferences("settings.ini")
 		PreferenceGroup("General")
 		WritePreferenceInteger("Audio device",gAppSettings(#SETTING_ADEVICE))
+		WritePreferenceInteger("Font size",gAppSettings(#SETTING_FONTSIZE))
 		
 		PreferenceGroup("Recent files")
 		For i = 1 To #MAX_RECENT
@@ -335,6 +339,7 @@ EndProcedure
 
 Procedure SetDefaultSettings()
 	gAppSettings(#SETTING_ADEVICE) = 1
+	gAppSettings(#SETTING_FONTSIZE) = 8
 	
 	SaveAppSettings()
 EndProcedure
@@ -345,6 +350,10 @@ Procedure LoadAppSettings()
 			PreferenceGroup("General")
 			gAppSettings(#SETTING_ADEVICE) = ReadPreferenceInteger("Audio device",1)
 			BASS_SetDevice(gAppSettings(#SETTING_ADEVICE))
+			
+			gAppSettings(#SETTING_FONTSIZE) = ReadPreferenceInteger("Font size",8)
+			FreeFont(gCueListFont)
+			gCueListFont = LoadFont(#PB_Any,"Microsoft Sans Serif",gAppSettings(#SETTING_FONTSIZE))
 			
 			PreferenceGroup("Recent files")
 			ExaminePreferenceKeys()

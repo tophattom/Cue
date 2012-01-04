@@ -22,8 +22,8 @@ Global Dim eventActionSelect(5)
 Global Dim eventEffectSelect(5)
 
 ;- Fonts
-Global FontID1
-FontID1 = LoadFont(1, "Tahoma", 14)
+Global gCueListFont
+gCueListFont = LoadFont(#PB_Any, "Microsoft Sans Serif", 8)
 
 Procedure Open_MainWindow()
 	winRect.RECT
@@ -73,7 +73,7 @@ Procedure Open_MainWindow()
         ButtonGadget(#PauseButton, 110, 20, 80, 50, "Pause")
         ButtonGadget(#StopButton, 200, 20, 80, 50, "Stop all") : GadgetToolTip(#StopButton,"Stop all cues")
 
-        ListIconGadget(#CueList, 10, 90, 1004, 648, "Cue", 334, #PB_ListIcon_FullRowSelect | #PB_ListIcon_AlwaysShowSelection)
+        ListIconGadget(#CueList, 10, 90, 1004, 648, "Cue", 334, #PB_ListIcon_FullRowSelect | #PB_ListIcon_AlwaysShowSelection) : SetGadgetFont(#CueList,FontID(gCueListFont))
         AddGadgetColumn(#CueList, 1, "Cue type", 166)
         AddGadgetColumn(#CueList, 2, "Start mode", 166)
         AddGadgetColumn(#CueList, 3, "State", 166)
@@ -292,8 +292,12 @@ Procedure Open_PrefWindow()
 		Next i
 		SetGadgetState(#SelectADevice,BASS_GetDevice() - 1)
 		
+		
 		Frame3DGadget(#PrefIFrame,10,80,620,60,"Interface")
 		
+		TextGadget(#Text_28,20,100,55,20,"Font size:")
+		StringGadget(#FontSize,75,100,30,20,"",#PB_String_Numeric)
+		SetGadgetText(#FontSize,Str(gAppSettings(#SETTING_FONTSIZE)))
 		
 		
 		ButtonGadget(#PrefOk,590,440,40,30,"OK")
