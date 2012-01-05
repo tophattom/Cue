@@ -90,10 +90,26 @@ Repeat ; Start of the event loop
 	If gEditor = #False
 		If ElapsedMilliseconds() > lastUpdate + 500
 			UpdateMainCueList()
+			
+			If gSavePath = ""
+				SetWindowTitle(#MainWindow,"Cue - Untitled")
+			Else
+				SetWindowTitle(#MainWindow,"Cue - " + GetFilePart(gSavePath))
+			EndIf
+			
+			If ListSize(cueList()) > 0
+				FirstElement(cueList())
+				If CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList())) <> gLastHash
+					SetWindowTitle(#MainWindow,GetWindowTitle(#MainWindow) + "*")
+					gSaved = #False
+				Else
+					gSaved = #True
+				EndIf
+			EndIf
+			
 			lastUpdate = ElapsedMilliseconds()
 		EndIf
 	EndIf
-	
 	
 	;- Valikot
 	;{
@@ -123,6 +139,9 @@ Repeat ; Start of the event loop
 					UpdateMainCueList()
 					UpdateEditorList()
 					UpdateCueControls()
+					
+					FirstElement(cueList())
+					gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 				EndIf
 			EndIf		      
 		ElseIf MenuID = #MenuSave
@@ -135,12 +154,18 @@ Repeat ; Start of the event loop
 			
 			If gSavePath <> ""
 				SaveCueList(gSavePath,check)
+				
+				FirstElement(cueList())
+				gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 			EndIf  
 		ElseIf MenuID = #MenuSaveAs
 			gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
 			
 			If gSavePath <> ""
 				SaveCueList(gSavePath)
+				
+				FirstElement(cueList())
+				gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 			EndIf
 		ElseIf MenuID = #MenuPref
 			If IsWindow(#PrefWindow)
@@ -151,7 +176,27 @@ Repeat ; Start of the event loop
 			
 			UpdateAppSettings()
 		ElseIf MenuID = #MenuExit
-			End
+			If gSaved = #False And ListSize(cueList()) > 0
+				result = MessageRequester("Cue","Cue list has been modified. Do you want to save it?",#PB_MessageRequester_YesNoCancel)
+				
+				If result = #PB_MessageRequester_Yes
+					If gSavePath = ""
+						check = 1
+						gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+					Else
+						check = 0
+					EndIf
+					
+					If gSavePath <> ""
+						SaveCueList(gSavePath,check)
+						End
+					EndIf
+				ElseIf result = #PB_MessageRequester_No
+					End
+				EndIf
+			Else
+				End
+			EndIf
 		ElseIf MenuID = #MenuAbout
 			If IsWindow(#AboutWindow)
 				HideWindow(#AboutWindow,0)
@@ -204,6 +249,10 @@ Repeat ; Start of the event loop
 						UpdateMainCueList()
 						UpdateEditorList()
 						UpdateCueControls()
+						
+						FirstElement(cueList())
+						gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+						gSaved = #True
 					EndIf
 				EndIf
 			EndIf
@@ -393,6 +442,8 @@ Repeat ; Start of the event loop
     			
     			UpdateCueControls()
     			UpdateEditorList()
+    			
+    			
     		EndIf
     	ElseIf GadgetID = #Image_1
       
@@ -893,7 +944,27 @@ Repeat ; Start of the event loop
 		eWindow = EventWindow()
 
 		If eWindow = #MainWindow
-			End
+			If gSaved = #False And ListSize(cueList()) > 0
+				result = MessageRequester("Cue","Cue list has been modified. Do you want to save it?",#PB_MessageRequester_YesNoCancel)
+				
+				If result = #PB_MessageRequester_Yes
+					If gSavePath = ""
+						check = 1
+						gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+					Else
+						check = 0
+					EndIf
+					
+					If gSavePath <> ""
+						SaveCueList(gSavePath,check)
+						End
+					EndIf
+				ElseIf result = #PB_MessageRequester_No
+					End
+				EndIf
+			Else
+				End
+			EndIf
 		Else
 			HideWindow(eWindow,1)
 			
@@ -1004,6 +1075,10 @@ Repeat ; Start of the event loop
 					UpdateMainCueList()
 					UpdateEditorList()
 					UpdateCueControls()
+					
+					FirstElement(cueList())
+					gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+					gSaved = #True
 				EndIf
 	    	EndIf
 	    EndIf

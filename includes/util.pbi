@@ -311,11 +311,14 @@ Global gControlsHidden = #False
 Global gLastType = 0
 
 Global gSavePath.s = ""
+Global gSaved
 
 Global gLoadThread
 Global gLoadMutex = CreateMutex()
 
 Global gCuesLoaded
+
+Global gLastHash
 
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
