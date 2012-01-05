@@ -320,6 +320,8 @@ Global gCuesLoaded
 
 Global gLastHash
 
+Global gCueListFont
+
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
 
@@ -355,7 +357,6 @@ Procedure LoadAppSettings()
 			BASS_SetDevice(gAppSettings(#SETTING_ADEVICE))
 			
 			gAppSettings(#SETTING_FONTSIZE) = ReadPreferenceInteger("Font size",8)
-			FreeFont(gCueListFont)
 			gCueListFont = LoadFont(#PB_Any,"Microsoft Sans Serif",gAppSettings(#SETTING_FONTSIZE))
 			
 			PreferenceGroup("Recent files")
@@ -1044,6 +1045,11 @@ Procedure SaveCueList(path.s,check=1)
 		
 		CloseFile(0)
 	EndIf
+	
+	If ListSize(cueList()) > 0
+		FirstElement(cueList())
+		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+	EndIf
 
 	ProcedureReturn #True
 EndProcedure
@@ -1266,6 +1272,11 @@ Procedure LoadCueList(lPath.s)
 	Else
 		MessageRequester("Error","Couldn't open file " + path + "!")
 		ProcedureReturn #False
+	EndIf
+	
+	If ListSize(cueList()) > 0
+		FirstElement(cueList())
+		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 	EndIf
 	
 	ProcedureReturn #True

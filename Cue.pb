@@ -139,9 +139,6 @@ Repeat ; Start of the event loop
 					UpdateMainCueList()
 					UpdateEditorList()
 					UpdateCueControls()
-					
-					FirstElement(cueList())
-					gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 				EndIf
 			EndIf		      
 		ElseIf MenuID = #MenuSave
@@ -154,18 +151,12 @@ Repeat ; Start of the event loop
 			
 			If gSavePath <> ""
 				SaveCueList(gSavePath,check)
-				
-				FirstElement(cueList())
-				gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 			EndIf  
 		ElseIf MenuID = #MenuSaveAs
 			gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
 			
 			If gSavePath <> ""
 				SaveCueList(gSavePath)
-				
-				FirstElement(cueList())
-				gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 			EndIf
 		ElseIf MenuID = #MenuPref
 			If IsWindow(#PrefWindow)
@@ -213,9 +204,22 @@ Repeat ; Start of the event loop
 						StopCue(@cueList())
 					Next
 					
-	      			DeleteCue(*gCurrentCue)
-	      			*gCurrentCue = 0
-	      			UpdateEditorList()
+					tmpNum = GetGadgetState(#EditorList)
+					Debug "Position: " + Str(tmpNum)
+					
+					DeleteCue(*gCurrentCue)
+					*gCurrentCue = 0
+					UpdateEditorList()
+
+					If CountGadgetItems(#EditorList) > tmpNum
+						*gCurrentCue = GetGadgetItemData(#EditorList,tmpNum)
+					Else
+						If gCueAmount > 0
+							*gCurrentCue = GetGadgetItemData(#EditorList,tmpNum - 1)
+						EndIf
+					EndIf
+					
+					UpdateEditorList()
 	      		EndIf
 	      	Else
 	      		ForEach cueList()
@@ -249,10 +253,6 @@ Repeat ; Start of the event loop
 						UpdateMainCueList()
 						UpdateEditorList()
 						UpdateCueControls()
-						
-						FirstElement(cueList())
-						gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
-						gSaved = #True
 					EndIf
 				EndIf
 			EndIf
@@ -522,9 +522,22 @@ Repeat ; Start of the event loop
 						StopCue(@cueList())
 					Next
 					
-	      			DeleteCue(*gCurrentCue)
-	      			*gCurrentCue = 0
-	      			UpdateEditorList()
+					tmpNum = GetGadgetState(#EditorList)
+					Debug "Position: " + Str(tmpNum)
+					
+					DeleteCue(*gCurrentCue)
+					*gCurrentCue = 0
+					UpdateEditorList()
+
+					If CountGadgetItems(#EditorList) > tmpNum
+						*gCurrentCue = GetGadgetItemData(#EditorList,tmpNum)
+					Else
+						If gCueAmount > 0
+							*gCurrentCue = GetGadgetItemData(#EditorList,tmpNum - 1)
+						EndIf
+					EndIf
+					
+					UpdateEditorList()
 	      		EndIf
 	      	Else
 	      		ForEach cueList()
@@ -1075,10 +1088,6 @@ Repeat ; Start of the event loop
 					UpdateMainCueList()
 					UpdateEditorList()
 					UpdateCueControls()
-					
-					FirstElement(cueList())
-					gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
-					gSaved = #True
 				EndIf
 	    	EndIf
 	    EndIf
@@ -1300,170 +1309,172 @@ Procedure ShowEffectControls()
 EndProcedure
 
 Procedure UpdateCueControls()
-	SetGadgetText(#CueNameField,*gCurrentCue\name)
-	SetGadgetText(#CueDescField,*gCurrentCue\desc)
-	SetGadgetText(#CueFileField,*gCurrentCue\filePath)
-		
-	SetGadgetText(#LengthField,SecondsToString(*gCurrentCue\length))
-		
-	SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
-	SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
-		
-	SetGadgetText(#FadeIn,StrF(*gCurrentCue\fadeIn,2))
-	SetGadgetText(#FadeOut,StrF(*gCurrentCue\fadeOut,2))
-	
-	SetGadgetText(#LoopStart,SecondsToString(*gCurrentCue\loopStart))
-	SetGadgetText(#LoopEnd, SecondsToString(*gCurrentCue\loopEnd))
-	SetGadgetText(#LoopCount, Str(*gCurrentCue\loopCount))
-	If *gCurrentCue\looped = #True
-		SetGadgetState(#LoopEnable,#PB_Checkbox_Checked)
-		DisableGadget(#LoopStart, 0)
-		DisableGadget(#LoopEnd, 0)
-		DisableGadget(#LoopCount, 0)
-	Else
-		SetGadgetState(#LoopEnable,#PB_Checkbox_Unchecked)
-		DisableGadget(#LoopStart, 1)
-		DisableGadget(#LoopEnd, 1)
-		DisableGadget(#LoopCount, 1)
-	EndIf
-		
-	SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 1000)
-	SetGadgetState(#PanSlider,*gCurrentCue\pan * 1000 + 1000)
-	SetGadgetText(#CueVolume,StrF(*gCurrentCue\volume * 100.0,1))
-	SetGadgetText(#CuePan,StrF(*gCurrentCue\pan * 100.0,1))
-		
-	SetGadgetText(#StartDelay,StrF(*gCurrentCue\delay / 1000.0,2))
-	
-	SetGadgetText(#ChangeDur,StrF(*gCurrentCue\fadeIn,2))
-		
-	ClearGadgetItems(#CueSelect)
-	If *gCurrentCue\startMode = #START_AFTER_END Or *gCurrentCue\startMode = #START_AFTER_START
-		DisableGadget(#CueSelect, 0)
-		i = 0
-		ForEach cueList()
-			If @cueList() <> *gCurrentCue
-				AddGadgetItem(#CueSelect, i, cueList()\name + "  " + cueList()\desc)
-				SetGadgetItemData(#CueSelect, i, @cueList())
-				
-				If @cueList() = *gCurrentCue\afterCue
-					SetGadgetState(#CueSelect, i)
-				EndIf
-					
-				i + 1
-			EndIf
-							
-		Next
-	Else
-		DisableGadget(#CueSelect, 1)
-	EndIf
-	
-	Select *gCurrentCue\startMode
-		Case #START_MANUAL
-			SetGadgetState(#ModeSelect, 0)
-		Case #START_AFTER_START
-			SetGadgetState(#ModeSelect, 1)
-		Case #START_AFTER_END
-			SetGadgetState(#ModeSelect, 2)
-		Case #START_HOTKEY
-			SetGadgetState(#ModeSelect, 3)
-	EndSelect
-
-	If *gCurrentCue\waveform <> 0
-		SetGadgetState(#WaveImg,ImageID(*gCurrentCue\waveform))
-	Else
-		SetGadgetState(#WaveImg,ImageID(#BlankWave))
-	EndIf
-	
-	
-	For i = 0 To 5
-		ClearGadgetItems(eventCueSelect(i))
-		ClearGadgetItems(eventActionSelect(i))
-		ClearGadgetItems(eventEffectSelect(i))
-		DisableGadget(eventEffectSelect(i),1)
-		
-		
-		AddGadgetItem(eventCueSelect(i), 0, "")
-		SetGadgetItemData(eventCueSelect(i), 0, 0)
-		
-		k = 1
-		ForEach cueList()
-			If @cueList() <> *gCurrentCue
-				AddGadgetItem(eventCueSelect(i), k, cueList()\name + "  " + cueList()\desc)
-				SetGadgetItemData(eventCueSelect(i), k, @cueList())
-				
-				If @cueList() = *gCurrentCue\actionCues[i]
-					SetGadgetState(eventCueSelect(i), k)
-				EndIf
-				
-				k + 1
-			EndIf
-		Next
-		
-		AddGadgetItem(eventActionSelect(i), 0, "")
-		SetGadgetItemData(eventActionSelect(i), 0, 0)
-		
-		AddGadgetItem(eventActionSelect(i), 1 , "Fade out")
-		SetGadgetItemData(eventActionSelect(i), 1, #EVENT_FADE_OUT)
-		
-		AddGadgetItem(eventActionSelect(i), 2, "Stop")
-		SetGadgetItemData(eventActionSelect(i), 2, #EVENT_STOP)
-		
-		AddGadgetItem(eventActionSelect(i), 3, "Release loop")
-		SetGadgetItemData(eventActionSelect(i), 4, #EVENT_RELEASE)
-		
-		AddGadgetItem(eventActionSelect(i), 4, "Effect on")
-		SetGadgetItemData(eventActionSelect(i), 4, #EVENT_EFFECT_ON)
-		
-		AddGadgetItem(eventActionSelect(i), 5, "Effect off")
-		SetGadgetItemData(eventActionSelect(i), 5, #EVENT_EFFECT_OFF)
-		
-		If *gCurrentCue\actions[i] = #EVENT_FADE_OUT
-			SetGadgetState(eventActionSelect(i), 1)
-		ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
-			SetGadgetState(eventActionSelect(i), 2)
-		ElseIf *gCurrentCue\actions[i] = #EVENT_EFFECT_ON Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
-			If *gCurrentCue\actions[i] = #EVENT_EFFECT_ON
-				SetGadgetState(eventActionSelect(i), 4)
-			Else
-				SetGadgetState(eventActionSelect(i), 5)
-			EndIf
+	If *gCurrentCue <> 0
+		SetGadgetText(#CueNameField,*gCurrentCue\name)
+		SetGadgetText(#CueDescField,*gCurrentCue\desc)
+		SetGadgetText(#CueFileField,*gCurrentCue\filePath)
 			
-			DisableGadget(eventEffectSelect(i),0)
-
-			If *gCurrentCue\actionCues[i] <> 0
-				AddGadgetItem(eventEffectSelect(i), 0, "")
-				SetGadgetItemData(eventEffectSelect(i), 0, 0)
-				
-				k = 1
-				ForEach *gCurrentCue\actionCues[i]\effects()
-					AddGadgetItem(eventEffectSelect(i),k,*gCurrentCue\actionCues[i]\effects()\name + " " + Str(*gCurrentCue\actionCues[i]\effects()\id))
-					SetGadgetItemData(eventEffectSelect(i),k,@*gCurrentCue\actionCues[i]\effects())
+		SetGadgetText(#LengthField,SecondsToString(*gCurrentCue\length))
+			
+		SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
+		SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
+			
+		SetGadgetText(#FadeIn,StrF(*gCurrentCue\fadeIn,2))
+		SetGadgetText(#FadeOut,StrF(*gCurrentCue\fadeOut,2))
+		
+		SetGadgetText(#LoopStart,SecondsToString(*gCurrentCue\loopStart))
+		SetGadgetText(#LoopEnd, SecondsToString(*gCurrentCue\loopEnd))
+		SetGadgetText(#LoopCount, Str(*gCurrentCue\loopCount))
+		If *gCurrentCue\looped = #True
+			SetGadgetState(#LoopEnable,#PB_Checkbox_Checked)
+			DisableGadget(#LoopStart, 0)
+			DisableGadget(#LoopEnd, 0)
+			DisableGadget(#LoopCount, 0)
+		Else
+			SetGadgetState(#LoopEnable,#PB_Checkbox_Unchecked)
+			DisableGadget(#LoopStart, 1)
+			DisableGadget(#LoopEnd, 1)
+			DisableGadget(#LoopCount, 1)
+		EndIf
+			
+		SetGadgetState(#VolumeSlider,*gCurrentCue\volume * 1000)
+		SetGadgetState(#PanSlider,*gCurrentCue\pan * 1000 + 1000)
+		SetGadgetText(#CueVolume,StrF(*gCurrentCue\volume * 100.0,1))
+		SetGadgetText(#CuePan,StrF(*gCurrentCue\pan * 100.0,1))
+			
+		SetGadgetText(#StartDelay,StrF(*gCurrentCue\delay / 1000.0,2))
+		
+		SetGadgetText(#ChangeDur,StrF(*gCurrentCue\fadeIn,2))
+			
+		ClearGadgetItems(#CueSelect)
+		If *gCurrentCue\startMode = #START_AFTER_END Or *gCurrentCue\startMode = #START_AFTER_START
+			DisableGadget(#CueSelect, 0)
+			i = 0
+			ForEach cueList()
+				If @cueList() <> *gCurrentCue
+					AddGadgetItem(#CueSelect, i, cueList()\name + "  " + cueList()\desc)
+					SetGadgetItemData(#CueSelect, i, @cueList())
 					
-					If @*gCurrentCue\actionCues[i]\effects() = *gCurrentCue\actionEffects[i]
-						SetGadgetState(eventEffectSelect(i),k)
+					If @cueList() = *gCurrentCue\afterCue
+						SetGadgetState(#CueSelect, i)
+					EndIf
+						
+					i + 1
+				EndIf
+								
+			Next
+		Else
+			DisableGadget(#CueSelect, 1)
+		EndIf
+		
+		Select *gCurrentCue\startMode
+			Case #START_MANUAL
+				SetGadgetState(#ModeSelect, 0)
+			Case #START_AFTER_START
+				SetGadgetState(#ModeSelect, 1)
+			Case #START_AFTER_END
+				SetGadgetState(#ModeSelect, 2)
+			Case #START_HOTKEY
+				SetGadgetState(#ModeSelect, 3)
+		EndSelect
+	
+		If *gCurrentCue\waveform <> 0
+			SetGadgetState(#WaveImg,ImageID(*gCurrentCue\waveform))
+		Else
+			SetGadgetState(#WaveImg,ImageID(#BlankWave))
+		EndIf
+		
+		
+		For i = 0 To 5
+			ClearGadgetItems(eventCueSelect(i))
+			ClearGadgetItems(eventActionSelect(i))
+			ClearGadgetItems(eventEffectSelect(i))
+			DisableGadget(eventEffectSelect(i),1)
+			
+			
+			AddGadgetItem(eventCueSelect(i), 0, "")
+			SetGadgetItemData(eventCueSelect(i), 0, 0)
+			
+			k = 1
+			ForEach cueList()
+				If @cueList() <> *gCurrentCue
+					AddGadgetItem(eventCueSelect(i), k, cueList()\name + "  " + cueList()\desc)
+					SetGadgetItemData(eventCueSelect(i), k, @cueList())
+					
+					If @cueList() = *gCurrentCue\actionCues[i]
+						SetGadgetState(eventCueSelect(i), k)
 					EndIf
 					
 					k + 1
-				Next
-			EndIf
+				EndIf
+			Next
 			
-		EndIf
-	Next i
+			AddGadgetItem(eventActionSelect(i), 0, "")
+			SetGadgetItemData(eventActionSelect(i), 0, 0)
+			
+			AddGadgetItem(eventActionSelect(i), 1 , "Fade out")
+			SetGadgetItemData(eventActionSelect(i), 1, #EVENT_FADE_OUT)
+			
+			AddGadgetItem(eventActionSelect(i), 2, "Stop")
+			SetGadgetItemData(eventActionSelect(i), 2, #EVENT_STOP)
+			
+			AddGadgetItem(eventActionSelect(i), 3, "Release loop")
+			SetGadgetItemData(eventActionSelect(i), 4, #EVENT_RELEASE)
+			
+			AddGadgetItem(eventActionSelect(i), 4, "Effect on")
+			SetGadgetItemData(eventActionSelect(i), 4, #EVENT_EFFECT_ON)
+			
+			AddGadgetItem(eventActionSelect(i), 5, "Effect off")
+			SetGadgetItemData(eventActionSelect(i), 5, #EVENT_EFFECT_OFF)
+			
+			If *gCurrentCue\actions[i] = #EVENT_FADE_OUT
+				SetGadgetState(eventActionSelect(i), 1)
+			ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
+				SetGadgetState(eventActionSelect(i), 2)
+			ElseIf *gCurrentCue\actions[i] = #EVENT_EFFECT_ON Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
+				If *gCurrentCue\actions[i] = #EVENT_EFFECT_ON
+					SetGadgetState(eventActionSelect(i), 4)
+				Else
+					SetGadgetState(eventActionSelect(i), 5)
+				EndIf
+				
+				DisableGadget(eventEffectSelect(i),0)
 	
-	UpdatePosField()
-
-	If *gCurrentCue\cueType = #TYPE_AUDIO
-		If GetGadgetState(#EffectType) > -1 And *gCurrentCue\stream <> 0
-			DisableGadget(#AddEffect, 0)
+				If *gCurrentCue\actionCues[i] <> 0
+					AddGadgetItem(eventEffectSelect(i), 0, "")
+					SetGadgetItemData(eventEffectSelect(i), 0, 0)
+					
+					k = 1
+					ForEach *gCurrentCue\actionCues[i]\effects()
+						AddGadgetItem(eventEffectSelect(i),k,*gCurrentCue\actionCues[i]\effects()\name + " " + Str(*gCurrentCue\actionCues[i]\effects()\id))
+						SetGadgetItemData(eventEffectSelect(i),k,@*gCurrentCue\actionCues[i]\effects())
+						
+						If @*gCurrentCue\actionCues[i]\effects() = *gCurrentCue\actionEffects[i]
+							SetGadgetState(eventEffectSelect(i),k)
+						EndIf
+						
+						k + 1
+					Next
+				EndIf
+				
+			EndIf
+		Next i
+		
+		UpdatePosField()
+	
+		If *gCurrentCue\cueType = #TYPE_AUDIO
+			If GetGadgetState(#EffectType) > -1 And *gCurrentCue\stream <> 0
+				DisableGadget(#AddEffect, 0)
+			Else
+				DisableGadget(#AddEffect, 1)
+			EndIf
 		Else
 			DisableGadget(#AddEffect, 1)
 		EndIf
-	Else
-		DisableGadget(#AddEffect, 1)
+		
+		HideEffectControls()
+		ShowEffectControls()
 	EndIf
-	
-	HideEffectControls()
-	ShowEffectControls()
 
 EndProcedure
 

@@ -22,8 +22,7 @@ Global Dim eventActionSelect(5)
 Global Dim eventEffectSelect(5)
 
 ;- Fonts
-Global gCueListFont
-gCueListFont = LoadFont(#PB_Any, "Microsoft Sans Serif", 8)
+
 
 Procedure Open_MainWindow()
 	winRect.RECT
