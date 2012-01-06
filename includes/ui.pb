@@ -14,9 +14,6 @@ Enumeration
   #PrefWindow
 EndEnumeration
 
-
-#WAVEFORM_W = 660
-
 Global Dim eventCueSelect(5)
 Global Dim eventActionSelect(5)
 Global Dim eventEffectSelect(5)

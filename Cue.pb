@@ -354,6 +354,10 @@ Repeat ; Start of the event loop
 				UpdateListSettings()
 			EndIf
 		ElseIf GadgetID = #EditorList ;-Editori
+			ForEach cueList()
+				StopCue(@cueList())
+			Next
+			
 			ClearList(*gSelection())
 			
 			If GetGadgetState(#EditorList) > -1
