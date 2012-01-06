@@ -1486,7 +1486,7 @@ EndProcedure
 
 Procedure PlayCue(*cue.Cue)
 	If *cue\stream <> 0
-		If *cue\delay > 0 And *cue\state = #STATE_STOPPED
+		If *cue\delay > 0 And *cue\state = #STATE_STOPPED And gEditor = #False
 			*cue\state = #STATE_WAITING
 			*cue\startTime = ElapsedMilliseconds()
 		Else
