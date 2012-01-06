@@ -1510,17 +1510,19 @@ Procedure PlayCue(*cue.Cue)
 				BASS_ChannelSlideAttribute(*cue\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
 			EndIf
 			
-			ForEach *cue\followCues()
-				If *cue\followCues()\startMode = #START_AFTER_START
-					If *cue\followCues()\cueType = #TYPE_AUDIO
-						PlayCue(*cue\followCues())
-					ElseIf *cue\followCues()\cueType = #TYPE_EVENT Or *cue\followCues()\cueType = #TYPE_CHANGE
-						StartEvents(*cue\followCues())
+			If gEditor = #False
+				ForEach *cue\followCues()
+					If *cue\followCues()\startMode = #START_AFTER_START
+						If *cue\followCues()\cueType = #TYPE_AUDIO
+							PlayCue(*cue\followCues())
+						ElseIf *cue\followCues()\cueType = #TYPE_EVENT Or *cue\followCues()\cueType = #TYPE_CHANGE
+							StartEvents(*cue\followCues())
+						EndIf
+					ElseIf *cue\followCues()\startMode = #START_AFTER_END
+						*cue\followCues()\state = #STATE_WAITING_END
 					EndIf
-				ElseIf *cue\followCues()\startMode = #START_AFTER_END
-					*cue\followCues()\state = #STATE_WAITING_END
-				EndIf
-			Next
+				Next
+			endif
 		EndIf
 
 		ProcedureReturn #True
