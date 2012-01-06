@@ -1423,7 +1423,7 @@ Procedure UpdateCueControls()
 			SetGadgetItemData(eventActionSelect(i), 2, #EVENT_STOP)
 			
 			AddGadgetItem(eventActionSelect(i), 3, "Release loop")
-			SetGadgetItemData(eventActionSelect(i), 4, #EVENT_RELEASE)
+			SetGadgetItemData(eventActionSelect(i), 3, #EVENT_RELEASE)
 			
 			AddGadgetItem(eventActionSelect(i), 4, "Effect on")
 			SetGadgetItemData(eventActionSelect(i), 4, #EVENT_EFFECT_ON)
@@ -1435,6 +1435,8 @@ Procedure UpdateCueControls()
 				SetGadgetState(eventActionSelect(i), 1)
 			ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
 				SetGadgetState(eventActionSelect(i), 2)
+			ElseIf *gCurrentCue\actions[i] = #EVENT_RELEASE
+				SetGadgetState(eventActionSelect(i),3)
 			ElseIf *gCurrentCue\actions[i] = #EVENT_EFFECT_ON Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
 				If *gCurrentCue\actions[i] = #EVENT_EFFECT_ON
 					SetGadgetState(eventActionSelect(i), 4)
