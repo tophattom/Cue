@@ -324,6 +324,7 @@ Global gCueListFont
 
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
+Declare StopCue(*cue.Cue)
 
 Procedure SaveAppSettings()
 	If FileSize("settings.ini") = -1
@@ -908,6 +909,10 @@ Procedure GetEffectById(id.l)
 EndProcedure
 
 Procedure SaveCueList(path.s,check=1)
+	ForEach cueList()
+		StopCue(@cueList())
+	Next
+	
 	If GetExtensionPart(path) = ""
 		path = path + ".clf"
 	EndIf
