@@ -1728,39 +1728,46 @@ Procedure UpdateMainCueList()
 				color = RGB(100,200,100)
 		EndSelect
 		
-		Select cueList()\startMode
-			Case #START_MANUAL
-				start.s = "Manual"
-			Case #START_HOTKEY
-				start.s = "Hotkey"
-			Case #START_AFTER_START
-				start.s = StrF(cueList()\delay / 1000,2) + " as "
-				If cueList()\afterCue <> 0
-					start = start + cueList()\afterCue\name
-				EndIf
-			Case #START_AFTER_END
-				start.s = StrF(cueList()\delay / 1000,2) + " ae "
-				If cueList()\afterCue <> 0
-					start = start + cueList()\afterCue\name
-				EndIf
-		EndSelect
+		If cueList()\cueType <> #TYPE_NOTE
+			Select cueList()\startMode
+				Case #START_MANUAL
+					start.s = "Manual"
+				Case #START_HOTKEY
+					start.s = "Hotkey"
+				Case #START_AFTER_START
+					start.s = StrF(cueList()\delay / 1000,2) + " as "
+					If cueList()\afterCue <> 0
+						start = start + cueList()\afterCue\name
+					EndIf
+				Case #START_AFTER_END
+					start.s = StrF(cueList()\delay / 1000,2) + " ae "
+					If cueList()\afterCue <> 0
+						start = start + cueList()\afterCue\name
+					EndIf
+			EndSelect
+			
+			Select cueList()\state
+				Case #STATE_STOPPED
+					state.s = "Stopped"
+				Case #STATE_WAITING
+					state.s = "Waiting to start"
+				Case #STATE_WAITING_END
+					state.s = "Waiting to start"
+				Case #STATE_PLAYING
+					state.s = "Playing"
+				Case #STATE_DONE
+					state.s = "Done"
+				Case #STATE_PAUSED
+					state.s = "Paused"
+				Case #STATE_FADING_OUT
+					state.s = "Fading out"
+			EndSelect
+		Else
+			start.s = ""
+			state.s = ""
+		EndIf
 		
-		Select cueList()\state
-			Case #STATE_STOPPED
-				state.s = "Stopped"
-			Case #STATE_WAITING
-				state.s = "Waiting to start"
-			Case #STATE_WAITING_END
-				state.s = "Waiting to start"
-			Case #STATE_PLAYING
-				state.s = "Playing"
-			Case #STATE_DONE
-				state.s = "Done"
-			Case #STATE_PAUSED
-				state.s = "Paused"
-			Case #STATE_FADING_OUT
-				state.s = "Fading out"
-		EndSelect
+		
 		
 		secs.f = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
 		
@@ -1769,7 +1776,10 @@ Procedure UpdateMainCueList()
 		SetGadgetItemText(#CueList, i, text, 1)
 		SetGadgetItemText(#CueList, i, start, 2)
 		SetGadgetItemText(#CueList, i, state, 3)
-		SetGadgetItemText(#CueList, i, "-" + SecondsToString(cueList()\endPos - secs),4)
+		
+		If cueList()\cueType <> #TYPE_NOTE
+			SetGadgetItemText(#CueList, i, "-" + SecondsToString(cueList()\endPos - secs),4)
+		EndIf
 		
 		SetGadgetItemData(#CueList, i, @cueList())
 		SetGadgetItemColor(#CueList, i, #PB_Gadget_BackColor, color, -1)
