@@ -110,6 +110,8 @@ Enumeration 1
 	#EVENT_RELEASE
 	#EVENT_EFFECT_ON
 	#EVENT_EFFECT_OFF
+	
+	#TYPE_NOTE
 EndEnumeration
 
 ;Asetusvakiot
@@ -169,6 +171,7 @@ Enumeration 1
   #AddChange
   #AddEvent
   #AddVideo
+  #AddNote
   #ExplorerButton
   #MasterSlider
   #Text_2

@@ -399,7 +399,15 @@ Repeat ; Start of the event loop
 			UpdateEditorList()
 			UpdateCueControls()
 		ElseIf GadgetID = #AddVideo
+		ElseIf GadgetID = #AddNote
+			ForEach cueList()
+				StopCue(@cueList())
+			Next
 			
+			*gCurrentCue = AddCue(#TYPE_NOTE,"NOTE:")
+			*gCurrentCue\startMode = #START_AFTER_START
+			UpdateEditorList()
+			UpdateCueControls()
 		ElseIf GadgetID = #ExplorerButton
 			If Not IsWindow(#ExplorerWindow)
 				Open_ExplorerWindow()
@@ -1119,6 +1127,8 @@ Procedure UpdateEditorList()
 				text = text + "  (Change)"
 			Case #TYPE_EVENT
 				text = text + "  (Event)"
+			Case #TYPE_NOTE
+				text = text + "  (Note)"
 		EndSelect
 		
 		AddGadgetItem(#EditorList,i,text)
@@ -1212,12 +1222,15 @@ Procedure ShowCueControls()
 		HideGadget(#CueDescField,0)
 		HideGadget(#Text_3,0)
 		HideGadget(#Text_4,0)
-		HideGadget(#ModeSelect,0)
-		HideGadget(#Text_8,0)
-		HideGadget(#Text_16,0)
-		HideGadget(#Text_17,0)
-		HideGadget(#CueSelect,0)
-		HideGadget(#StartDelay,0)
+		
+		If *gCurrentCue\cueType <> #TYPE_NOTE
+			HideGadget(#ModeSelect,0)
+			HideGadget(#Text_8,0)
+			HideGadget(#Text_16,0)
+			HideGadget(#Text_17,0)
+			HideGadget(#CueSelect,0)
+			HideGadget(#StartDelay,0)
+		EndIf
 		
 		Select *gCurrentCue\cueType
 			Case #TYPE_AUDIO
@@ -1522,7 +1535,7 @@ Procedure PlayCue(*cue.Cue)
 						*cue\followCues()\state = #STATE_WAITING_END
 					EndIf
 				Next
-			endif
+			EndIf
 		EndIf
 
 		ProcedureReturn #True
@@ -1710,6 +1723,9 @@ Procedure UpdateMainCueList()
 			Case #TYPE_EVENT
 				text.s = "Event"
 				color = RGB(200,200,0)
+			Case #TYPE_NOTE
+				text.s = "Note"
+				color = RGB(100,200,100)
 		EndSelect
 		
 		Select cueList()\startMode

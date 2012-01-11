@@ -120,6 +120,7 @@ Procedure Open_EditorWindow()
     ButtonGadget(#AddChange, 290, 10, 130, 30, "Add level change cue")
     ButtonGadget(#AddEvent, 430, 10, 130, 30, "Add event cue")
     ButtonGadget(#AddVideo, 150, 10, 130, 30, "")
+    ButtonGadget(#AddNote, 570, 10, 130, 30, "Add note cue")
     
     ButtonImageGadget(#ExplorerButton, 870, 10, 30, 30, ImageID(#ExplorerImg)) : GadgetToolTip(#ExplorerButton,"Open file browser (Ctrl+E)")
     
