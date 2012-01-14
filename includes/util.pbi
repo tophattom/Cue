@@ -367,11 +367,15 @@ Procedure LoadAppSettings()
 			ExaminePreferenceKeys()
 			For i = 0 To #MAX_RECENT - 1
 				NextPreferenceKey()
-				gRecentFiles(i) = PreferenceKeyValue()
+				If FileSize(PreferenceKeyValue()) > -1
+					gRecentFiles(i) = PreferenceKeyValue()
+				EndIf
 			Next i
 			
 			ClosePreferences()
 		EndIf
+		
+		SaveAppSettings()
 	Else
 		SetDefaultSettings()
 	EndIf
@@ -1052,6 +1056,8 @@ Procedure SaveCueList(path.s,check=1)
 		Next
 		
 		CloseFile(0)
+		
+		AddRecentFile(path)
 	EndIf
 	
 	If ListSize(cueList()) > 0
