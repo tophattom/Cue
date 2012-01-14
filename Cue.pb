@@ -1368,7 +1368,7 @@ Procedure UpdateCueControls()
 			DisableGadget(#CueSelect, 0)
 			i = 0
 			ForEach cueList()
-				If @cueList() <> *gCurrentCue
+				If @cueList() <> *gCurrentCue And cueList()\cueType <> #TYPE_NOTE
 					AddGadgetItem(#CueSelect, i, cueList()\name + "  " + cueList()\desc)
 					SetGadgetItemData(#CueSelect, i, @cueList())
 					
@@ -1414,7 +1414,7 @@ Procedure UpdateCueControls()
 			
 			k = 1
 			ForEach cueList()
-				If @cueList() <> *gCurrentCue
+				If @cueList() <> *gCurrentCue And cueList()\cueType <> #TYPE_NOTE
 					AddGadgetItem(eventCueSelect(i), k, cueList()\name + "  " + cueList()\desc)
 					SetGadgetItemData(eventCueSelect(i), k, @cueList())
 					
