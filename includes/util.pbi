@@ -445,7 +445,7 @@ Procedure LoadCueStream(*cue.Cue,path.s)
     *cue\endPos = *cue\length
     
     ;****Aallon piirto
-    tmpStream.l = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE |#BASS_SAMPLE_FLOAT)
+    tmpStream.l = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE | #BASS_SAMPLE_FLOAT)
     length.l = BASS_ChannelGetLength(tmpStream,#BASS_POS_BYTE)
     Dim buffer.f(length / 4)
     

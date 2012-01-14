@@ -303,6 +303,11 @@ Repeat ; Start of the event loop
 				EndIf
 
 				UpdateMainCueList()
+				
+				If gSaved = #True
+					FirstElement(cueList())
+					gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+				EndIf
 			EndIf
 		ElseIf GadgetID = #PauseButton
 			
@@ -310,7 +315,12 @@ Repeat ; Start of the event loop
 			ForEach cueList()
 				StopCue(@cueList())
 			Next
-			UpdateMainCueList() 
+			UpdateMainCueList()
+			
+			If gSaved = #True
+				FirstElement(cueList())
+				gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+			EndIf
 		ElseIf GadgetID = #CueList
 			*gCurrentCue = GetGadgetItemData(#CueList,GetGadgetState(#CueList))
 			
