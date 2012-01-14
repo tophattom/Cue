@@ -99,13 +99,18 @@ Repeat ; Start of the event loop
 			
 			If ListSize(cueList()) > 0
 				FirstElement(cueList())
-				If CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList())) <> gLastHash
-					SetWindowTitle(#MainWindow,GetWindowTitle(#MainWindow) + "*")
-					gSaved = #False
-				Else
-					gSaved = #True
-				EndIf
+				tmpHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+			Else
+				tmpHash = 0
 			EndIf
+			
+			If tmpHash <> gLastHash
+				SetWindowTitle(#MainWindow,GetWindowTitle(#MainWindow) + "*")
+				gSaved = #False
+			Else
+				gSaved = #True
+			EndIf
+				
 			
 			lastUpdate = ElapsedMilliseconds()
 		EndIf
