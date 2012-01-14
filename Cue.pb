@@ -1714,18 +1714,18 @@ Procedure UpdateMainCueList()
 		Select cueList()\cueType
 			Case #TYPE_AUDIO
 				text.s = "Audio"
-				color = RGB(0,200,200)
+				color = RGB(100,200,200)
 			Case #TYPE_VIDEO
 				text.s = "Video"
 			Case #TYPE_CHANGE
 				text.s = "Change"
-				color = RGB(200,0,200)
+				color = RGB(200,100,200)
 			Case #TYPE_EVENT
 				text.s = "Event"
-				color = RGB(200,200,0)
+				color = RGB(100,200,100)
 			Case #TYPE_NOTE
 				text.s = "Note"
-				color = RGB(100,200,100)
+				color = RGB(240,190,0)
 		EndSelect
 		
 		If cueList()\cueType <> #TYPE_NOTE
