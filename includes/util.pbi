@@ -528,7 +528,10 @@ Procedure LoadCueStream2(*cue.Cue)
     	StopDrawing()
     	
     	If *gCurrentCue = *cue
-    		SetGadgetState(#WaveImg,ImageID(*cue\waveform))
+    		StartDrawing(CanvasOutput(#WaveImg))
+			DrawImage(ImageID(*cue\waveform),0,0)
+			StopDrawing()
+    		;SetGadgetState(#WaveImg,ImageID(*cue\waveform))
     	EndIf
     Next i
 
@@ -1397,7 +1400,67 @@ Procedure ChangePathsToRelative()
 	Next
 EndProcedure
 
+Procedure Triangle(x1,y1,x2,y2,x3,y3,fill=0)
+	LineXY(x1,y1,x2,y2)
+    LineXY(x2,y2,x3,y3)
+    LineXY(x3,y3,x1,y1)
 
+    If fill = 1
+        If y2<y1
+            tmp=y1
+            y1=y2
+            y2=tmp
+            
+            tmp=x1
+            x1=x2
+            x2=tmp
+        EndIf
+        
+        If y3<y1
+            tmp=y1
+            y1=y3
+            y3=tmp
+            
+            tmp=x1
+            x1=x3
+            x3=tmp
+        EndIf
+        
+        If y3<y2
+            tmp=y2
+            y2=y3
+            y3=tmp
+            
+            tmp=x2
+            x2=x3
+            x3=tmp
+        EndIf
+        
+        dy1=y2-y1
+        dx1=x2-x1
+        dy2=y3-y1
+        dx2=x3-x1
+        
+        If dy1
+            For i = y1 To y2
+                ax=x1+((i-y1)*dx1)/dy1
+                bx=x1+((i-y1)*dx2)/dy2
+                LineXY(ax,i,bx,i)
+            Next i
+        EndIf
+        
+        dy1=y3-y2
+        dx1=x3-x2
+        
+        If dy1
+            For i = y2 To y3
+                ax=x2+((i-y2)*dx1)/dy1
+                bx=x1+((i-y1)*dx2)/dy2
+                LineXY(ax,i,bx,i)
+            Next i
+        EndIf
+    EndIf
+EndProcedure
 
 
 

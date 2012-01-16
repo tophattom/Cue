@@ -184,7 +184,8 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_17, 495, 155, 40, 20, "Delay:")
       StringGadget(#StartDelay, 535, 155, 50, 20, "") : GadgetToolTip(#StartDelay,"Delay before cue starts")
       
-      ImageGadget(#WaveImg, 5, 335, #WAVEFORM_W, 120, 0)
+      ;ImageGadget(#WaveImg, 5, 335, #WAVEFORM_W, 120, 0)
+      CanvasGadget(#WaveImg, 5, 335,#WAVEFORM_W, 120)
 
       ButtonImageGadget(#EditorPlay, 5, 460, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
       ButtonImageGadget(#EditorPause, 40, 460, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)

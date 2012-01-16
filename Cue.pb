@@ -1411,9 +1411,15 @@ Procedure UpdateCueControls()
 		EndSelect
 	
 		If *gCurrentCue\waveform <> 0
-			SetGadgetState(#WaveImg,ImageID(*gCurrentCue\waveform))
+			;SetGadgetState(#WaveImg,ImageID(*gCurrentCue\waveform))
+			StartDrawing(CanvasOutput(#WaveImg))
+			DrawImage(ImageID(*gCurrentCue\waveform),0,0)
+			StopDrawing()
 		Else
-			SetGadgetState(#WaveImg,ImageID(#BlankWave))
+			;SetGadgetState(#WaveImg,ImageID(#BlankWave))
+			StartDrawing(CanvasOutput(#WaveImg))
+			DrawImage(ImageID(#BlankWave),0,0)
+			StopDrawing()
 		EndIf
 		
 		
@@ -1810,6 +1816,17 @@ EndProcedure
 Procedure UpdatePosField()
 	pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
 	SetGadgetText(#Position, SecondsToString(pos))
+	
+	If *gCurrentCue\waveform <> 0
+		StartDrawing(CanvasOutput(#WaveImg))
+		FrontColor($0000FF)
+		DrawImage(ImageID(*gCurrentCue\waveform),0,0)
+		
+		tmpX = #WAVEFORM_W * (pos / *gCurrentCue\length)
+		Triangle(tmpX - 5,0,tmpX + 5,0,tmpX,8,1)
+		LineXY(tmpX,0,tmpX,120)
+		StopDrawing()
+	endif
 EndProcedure
 
 Procedure UpdateListSettings()
