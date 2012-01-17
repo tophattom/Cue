@@ -24,6 +24,7 @@ Declare UpdateListSettings()
 Declare MoveCueUp(*cue.Cue)
 Declare MoveCueDown(*cue.Cue)
 Declare UpdateAppSettings()
+Declare UpdateWaveform(pos.f)
 
 LoadAppSettings()
 
@@ -110,8 +111,7 @@ Repeat ; Start of the event loop
 			Else
 				gSaved = #True
 			EndIf
-				
-			
+
 			lastUpdate = ElapsedMilliseconds()
 		EndIf
 	EndIf
@@ -469,8 +469,6 @@ Repeat ; Start of the event loop
     			
     			UpdateCueControls()
     			UpdateEditorList()
-    			
-    			
     		EndIf
     	ElseIf GadgetID = #Image_1
       
@@ -524,8 +522,18 @@ Repeat ; Start of the event loop
     		UpdatePosField()
       	ElseIf GadgetID = #StartPos ;--- Rajaus, fade, pan, volume
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
+      		
+      		startX.f = #WAVEFORM_W * (*gCurrentCue\startPos / *gCurrentCue\length)
+      		ResizeImage(#StartOffset,Max(1,startX),#PB_Ignore)
+      		
+      		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
       	ElseIf GadgetID = #EndPos
       		*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#EndPos))
+      		
+      		endX.f = #WAVEFORM_W * (*gCurrentCue\endPos / *gCurrentCue\length)
+      		ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
+      		
+      		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
       	ElseIf GadgetID = #FadeIn
       		*gCurrentCue\fadeIn = ValF(GetGadgetText(#FadeIn))
       	ElseIf GadgetID = #FadeOut
@@ -565,6 +573,10 @@ Repeat ; Start of the event loop
 					EndIf
 					
 					UpdateEditorList()
+					
+					If *gCurrentCue <> 0
+						UpdateCueControls()
+					EndIf
 	      		EndIf
 	      	Else
 	      		ForEach cueList()
@@ -661,6 +673,10 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #AddEffect
 			AddCueEffect(*gCurrentCue,GetGadgetItemData(#EffectType,GetGadgetState(#EffectType)))
 			UpdateCueControls()
+		EndIf
+		
+		If GadgetID = #WaveImg	;--- Waveform
+			UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
 		EndIf
 		
 		;----- Efektien säätimet
@@ -1501,6 +1517,7 @@ Procedure UpdateCueControls()
 		Next i
 		
 		UpdatePosField()
+		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
 	
 		If *gCurrentCue\cueType = #TYPE_AUDIO
 			If GetGadgetState(#EffectType) > -1 And *gCurrentCue\stream <> 0
@@ -1817,16 +1834,7 @@ Procedure UpdatePosField()
 	pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
 	SetGadgetText(#Position, SecondsToString(pos))
 	
-	If *gCurrentCue\waveform <> 0
-		StartDrawing(CanvasOutput(#WaveImg))
-		FrontColor($0000FF)
-		DrawImage(ImageID(*gCurrentCue\waveform),0,0)
-		
-		tmpX = #WAVEFORM_W * (pos / *gCurrentCue\length)
-		Triangle(tmpX - 5,0,tmpX + 5,0,tmpX,8,1)
-		LineXY(tmpX,0,tmpX,120)
-		StopDrawing()
-	endif
+	UpdateWaveform(pos)
 EndProcedure
 
 Procedure UpdateListSettings()
@@ -1850,6 +1858,94 @@ Procedure MoveCueDown(*cue.Cue)
 		GetCueListIndex(*cue)
 		*nex.Cue = NextElement(cueList())
 		SwapElements(cueList(),*cue,*nex)
+	EndIf
+EndProcedure
+
+Procedure UpdateWaveform(pos.f)
+	Static grab
+	Static *lastCue.Cue
+	Static lastX.f
+	
+	Shared startX.f,endX.f
+	Shared GadgetID
+	
+	If *gCurrentCue <> 0 And *gCurrentCue\waveform <> 0
+		startX.f = #WAVEFORM_W * (*gCurrentCue\startPos / *gCurrentCue\length)
+		endX.f = #WAVEFORM_W * (*gCurrentCue\endPos / *gCurrentCue\length)
+		posX.f = #WAVEFORM_W * (pos / *gCurrentCue\length)
+		
+		If *lastCue <> *gCurrentCue
+			ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
+			ResizeImage(#StartOffset,Max(1,startX),#PB_Ignore)
+			
+			*lastCue = *gCurrentCue
+		EndIf
+		
+		
+		If GadgetID = #WaveImg
+			mX.f = GetGadgetAttribute(#WaveImg,#PB_Canvas_MouseX)
+			mY.f = GetGadgetAttribute(#WaveImg,#PB_Canvas_MouseY)
+			
+			If EventType() = #PB_EventType_LeftButtonDown Or (EventType() = #PB_EventType_MouseMove And GetGadgetAttribute(#WaveImg, #PB_Canvas_Buttons) & #PB_Canvas_LeftButton)
+				mDeltaX.f = mX - lastX
+				
+				If mX >= (posX - 5 + mDeltaX) And mX <= (posX + 5 + mDeltaX) And mY < 8 And (grab = #GRAB_POS Or grab = 0)
+					posX + mDeltaX
+					pos.f = (posX * *gCurrentCue\length) / #WAVEFORM_W
+					BASS_ChannelSetPosition(*gCurrentCue\stream,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,pos),#BASS_POS_BYTE)
+					
+					SetGadgetText(#Position,SecondsToString(pos))
+					
+					If *gCurrentCue\state <> #STATE_PLAYING
+						*gCurrentCue\state = #STATE_PAUSED
+					EndIf
+					
+					grab = #GRAB_POS
+				ElseIf mX <= (endX + mDeltaX) And mX >= (endX - 7 + mDeltaX) And mY < 10 And (grab = #GRAB_END Or grab = 0)
+					endX + mDeltaX
+					*gCurrentCue\endPos = (endX * *gCurrentCue\length) / #WAVEFORM_W
+					SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
+					
+					ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
+					
+					grab = #GRAB_END
+				ElseIf mX >= (startX + mDeltaX) And mX <= (startX + 7 + mDeltaX) And mY < 10 And (grab = #GRAB_START Or grab = 0)
+					startX = Max(0,Min(startX + mDeltaX,*gCurrentCue\length))
+					*gCurrentCue\startPos = (startX * *gCurrentCue\length) / #WAVEFORM_W
+					SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
+
+					ResizeImage(#StartOffset,Max(1,startX),#PB_Ignore)
+					
+					grab = #GRAB_START
+				Else
+					grab = 0
+				EndIf
+
+				
+			EndIf
+			
+			lastX = mX
+		EndIf
+
+		StartDrawing(CanvasOutput(#WaveImg))
+		DrawImage(ImageID(*gCurrentCue\waveform),0,0)
+
+		;Rajaimet
+		FrontColor($00FFFF)
+		
+		DrawAlphaImage(ImageID(#StartOffset),0,0,128)
+		LineXY(startX,0,startX,120)	;Alku
+		Triangle(startX,0,startX + 7,5,startX,10,1)
+
+		DrawAlphaImage(ImageID(#EndOffset),endX,0,128)
+		LineXY(endX,0,endX,120)		;Loppu
+		Triangle(endX,0,endX - 7,5,endX,10,1)
+
+		;Sijainti
+		FrontColor($0000FF)
+		Triangle(posX - 5,0,posX + 5,0,posX,8,1)
+		LineXY(posX,0,posX,120)
+		StopDrawing()
 	EndIf
 EndProcedure
 

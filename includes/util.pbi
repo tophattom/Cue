@@ -152,7 +152,24 @@ Enumeration
 	#StopImg
 	#ExplorerImg
 	#RefreshImg
+	
+	#StartOffset
+	#EndOffset
 EndEnumeration
+
+;Vakioita rajaimien avuksi
+Enumeration 1
+	#GRAB_START
+	#GRAB_END
+	#GRAB_POS
+	#GRAB_LOOP_START
+	#GRAB_LOOP_END
+EndEnumeration
+
+
+CreateImage(#StartOffset,1,120)
+CreateImage(#EndOffset,1,120)
+
 
 ;- Gadget Constants
 ;{
@@ -328,6 +345,7 @@ Global gCueListFont
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
 Declare StopCue(*cue.Cue)
+Declare UpdateWaveform(pos.f)
 
 Procedure SaveAppSettings()
 	If FileSize("settings.ini") = -1
@@ -528,9 +546,7 @@ Procedure LoadCueStream2(*cue.Cue)
     	StopDrawing()
     	
     	If *gCurrentCue = *cue
-    		StartDrawing(CanvasOutput(#WaveImg))
-			DrawImage(ImageID(*cue\waveform),0,0)
-			StopDrawing()
+    		UpdateWaveform(0)
     		;SetGadgetState(#WaveImg,ImageID(*cue\waveform))
     	EndIf
     Next i
