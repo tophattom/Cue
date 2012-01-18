@@ -1910,7 +1910,7 @@ Procedure UpdateWaveform(pos.f)
 			If EventType() = #PB_EventType_LeftButtonDown Or (EventType() = #PB_EventType_MouseMove And GetGadgetAttribute(#WaveImg, #PB_Canvas_Buttons) & #PB_Canvas_LeftButton)
 				
 				;Alku ja loppu rajaimet
-				If mX >= (posX - 5 + mDeltaX) And mX <= (posX + 5 + mDeltaX) And mY < 8 And (grab = #GRAB_POS Or grab = 0)
+				If mX >= (posX - 5 + mDeltaX) And mX <= (posX + 5 + mDeltaX) And (grab = #GRAB_POS Or grab = 0)
 					posX + mDeltaX
 					pos.f = (posX * *gCurrentCue\length) / #WAVEFORM_W
 					BASS_ChannelSetPosition(*gCurrentCue\stream,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,pos),#BASS_POS_BYTE)
@@ -1922,7 +1922,7 @@ Procedure UpdateWaveform(pos.f)
 					EndIf
 					
 					grab = #GRAB_POS
-				ElseIf mX <= (endX + mDeltaX) And mX >= (endX - 7 + mDeltaX) And mY < 10 And (grab = #GRAB_END Or grab = 0)
+				ElseIf mX <= (endX + mDeltaX) And mX >= (endX - 7 + mDeltaX) And (grab = #GRAB_END Or grab = 0)
 					endX = Max(startX,Min(endX + mDeltaX,#WAVEFORM_W))
 					*gCurrentCue\endPos = (endX * *gCurrentCue\length) / #WAVEFORM_W
 					SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
@@ -1930,7 +1930,7 @@ Procedure UpdateWaveform(pos.f)
 					ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
 					
 					grab = #GRAB_END
-				ElseIf mX >= (startX + mDeltaX) And mX <= (startX + 7 + mDeltaX) And mY < 10 And (grab = #GRAB_START Or grab = 0)
+				ElseIf mX >= (startX + mDeltaX) And mX <= (startX + 7 + mDeltaX) And (grab = #GRAB_START Or grab = 0)
 					startX = Max(0,Min(startX + mDeltaX,endX))
 					*gCurrentCue\startPos = (startX * *gCurrentCue\length) / #WAVEFORM_W
 					SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
@@ -1944,7 +1944,7 @@ Procedure UpdateWaveform(pos.f)
 				
 				;Loopin rajaimet
 				If *gCurrentCue\looped = #True
-					If mX >= (loopStartX + mDeltaX) And mX <= (loopStartX + 7 + mDeltaX) And mY > 110 And (grab = #GRAB_LOOP_START Or grab = 0)
+					If mX >= (loopStartX + mDeltaX) And mX <= (loopStartX + 7 + mDeltaX) And (grab = #GRAB_LOOP_START Or grab = 0)
 						loopStartX.f = Max(startX,Min(loopEndX.f,loopStartX + mDeltaX))
 						*gCurrentCue\loopStart = (loopStartX * *gCurrentCue\length) / #WAVEFORM_W
 						
@@ -1953,7 +1953,7 @@ Procedure UpdateWaveform(pos.f)
 						ResizeImage(#LoopArea,Max(1,loopEndX - loopStartX),#PB_Ignore)
 						
 						grab = #GRAB_LOOP_START
-					ElseIf mX <= (loopEndX + mDeltaX) And mX >= (loopEndX - 7 + mDeltaX) And mY > 110 And (grab = #GRAB_LOOP_END Or grab = 0)
+					ElseIf mX <= (loopEndX + mDeltaX) And mX >= (loopEndX - 7 + mDeltaX) And (grab = #GRAB_LOOP_END Or grab = 0)
 						loopEndX.f = Max(loopStartX,Min(endX,loopEndX + mDeltaX))
 						*gCurrentCue\loopEnd = (loopEndX * *gCurrentCue\length) / #WAVEFORM_W
 						
