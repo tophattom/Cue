@@ -155,6 +155,7 @@ Enumeration
 	
 	#StartOffset
 	#EndOffset
+	#LoopArea
 EndEnumeration
 
 ;Vakioita rajaimien avuksi
@@ -169,6 +170,11 @@ EndEnumeration
 
 CreateImage(#StartOffset,1,120)
 CreateImage(#EndOffset,1,120)
+
+CreateImage(#LoopArea,1,120)
+StartDrawing(ImageOutput(#LoopArea))
+Box(0,0,1,120,$00FF00)
+StopDrawing()
 
 
 ;- Gadget Constants

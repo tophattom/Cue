@@ -640,6 +640,12 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #LoopEnable ;--- Looppaus
 			If GetGadgetState(#LoopEnable) = #PB_Checkbox_Checked
 				*gCurrentCue\looped = #True
+				
+				If *gCurrentCue\loopStart = 0 And *gCurrentCue\loopEnd = 0
+					*gCurrentCue\loopStart = *gCurrentCue\startPos
+					*gCurrentCue\loopEnd = *gCurrentCue\endPos
+				EndIf
+				
 				DisableGadget(#LoopStart, 0)
 				DisableGadget(#LoopEnd, 0)
 				DisableGadget(#LoopCount, 0)
@@ -1866,17 +1872,20 @@ Procedure UpdateWaveform(pos.f)
 	Static *lastCue.Cue
 	Static lastX.f
 	
-	Shared startX.f,endX.f
+	Shared startX.f,endX.f,loopStartX.f,loopEndX.f
 	Shared GadgetID
 	
 	If *gCurrentCue <> 0 And *gCurrentCue\waveform <> 0
 		startX.f = #WAVEFORM_W * (*gCurrentCue\startPos / *gCurrentCue\length)
 		endX.f = #WAVEFORM_W * (*gCurrentCue\endPos / *gCurrentCue\length)
 		posX.f = #WAVEFORM_W * (pos / *gCurrentCue\length)
+		loopStartX = #WAVEFORM_W * (*gCurrentCue\loopStart / *gCurrentCue\length)
+		loopEndX = #WAVEFORM_W * (*gCurrentCue\loopEnd / *gCurrentCue\length)
 		
 		If *lastCue <> *gCurrentCue
 			ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
 			ResizeImage(#StartOffset,Max(1,startX),#PB_Ignore)
+			ResizeImage(#LoopArea,Max(1,loopEndX - loopStartX),#PB_Ignore)
 			
 			*lastCue = *gCurrentCue
 		EndIf
@@ -1886,9 +1895,11 @@ Procedure UpdateWaveform(pos.f)
 			mX.f = GetGadgetAttribute(#WaveImg,#PB_Canvas_MouseX)
 			mY.f = GetGadgetAttribute(#WaveImg,#PB_Canvas_MouseY)
 			
+			mDeltaX.f = mX - lastX
+			
 			If EventType() = #PB_EventType_LeftButtonDown Or (EventType() = #PB_EventType_MouseMove And GetGadgetAttribute(#WaveImg, #PB_Canvas_Buttons) & #PB_Canvas_LeftButton)
-				mDeltaX.f = mX - lastX
 				
+				;Alku ja loppu rajaimet
 				If mX >= (posX - 5 + mDeltaX) And mX <= (posX + 5 + mDeltaX) And mY < 8 And (grab = #GRAB_POS Or grab = 0)
 					posX + mDeltaX
 					pos.f = (posX * *gCurrentCue\length) / #WAVEFORM_W
@@ -1902,7 +1913,7 @@ Procedure UpdateWaveform(pos.f)
 					
 					grab = #GRAB_POS
 				ElseIf mX <= (endX + mDeltaX) And mX >= (endX - 7 + mDeltaX) And mY < 10 And (grab = #GRAB_END Or grab = 0)
-					endX + mDeltaX
+					endX = Max(startX,Min(endX + mDeltaX,#WAVEFORM_W))
 					*gCurrentCue\endPos = (endX * *gCurrentCue\length) / #WAVEFORM_W
 					SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
 					
@@ -1910,7 +1921,7 @@ Procedure UpdateWaveform(pos.f)
 					
 					grab = #GRAB_END
 				ElseIf mX >= (startX + mDeltaX) And mX <= (startX + 7 + mDeltaX) And mY < 10 And (grab = #GRAB_START Or grab = 0)
-					startX = Max(0,Min(startX + mDeltaX,*gCurrentCue\length))
+					startX = Max(0,Min(startX + mDeltaX,endX))
 					*gCurrentCue\startPos = (startX * *gCurrentCue\length) / #WAVEFORM_W
 					SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
 
@@ -1920,7 +1931,31 @@ Procedure UpdateWaveform(pos.f)
 				Else
 					grab = 0
 				EndIf
-
+				
+				;Loopin rajaimet
+				If *gCurrentCue\looped = #True
+					If mX >= (loopStartX + mDeltaX) And mX <= (loopStartX + 7 + mDeltaX) And mY > 110 And (grab = #GRAB_LOOP_START Or grab = 0)
+						loopStartX = Max(startX,Min(loopEndX,loopStartX + mDeltaX))
+						*gCurrentCue\loopStart = (loopStartX * *gCurrentCue\length) / #WAVEFORM_W
+						
+						SetGadgetText(#LoopStart,SecondsToString(*gCurrentCue\loopStart))
+						
+						ResizeImage(#LoopArea,Max(1,loopEndX - loopStartX),#PB_Ignore)
+						
+						grab = #GRAB_LOOP_START
+					ElseIf mX <= (loopEndX + mDeltaX) And mX >= (loopEndX - 7 + mDeltaX) And mY > 110 And (grab = #GRAB_LOOP_END Or grab = 0)
+						loopEndX = Max(loopStartX,Min(endX,loopEndX + mDeltaX))
+						*gCurrentCue\loopEnd = (loopEndX * *gCurrentCue\length) / #WAVEFORM_W
+						
+						SetGadgetText(#LoopEnd,SecondsToString(*gCurrentCue\loopEnd))
+						
+						ResizeImage(#LoopArea,Max(1,loopEndX - loopStartX),#PB_Ignore)
+						
+						grab = #GRAB_LOOP_END
+					Else
+						grab = 0
+					EndIf
+				EndIf
 				
 			EndIf
 			
@@ -1929,6 +1964,7 @@ Procedure UpdateWaveform(pos.f)
 
 		StartDrawing(CanvasOutput(#WaveImg))
 		DrawImage(ImageID(*gCurrentCue\waveform),0,0)
+		
 
 		;Rajaimet
 		FrontColor($00FFFF)
@@ -1940,6 +1976,19 @@ Procedure UpdateWaveform(pos.f)
 		DrawAlphaImage(ImageID(#EndOffset),endX,0,128)
 		LineXY(endX,0,endX,120)		;Loppu
 		Triangle(endX,0,endX - 7,5,endX,10,1)
+		
+		;Loopin rajaimet
+		If *gCurrentCue\looped = #True
+			FrontColor($00FF00)
+			
+			DrawAlphaImage(ImageID(#LoopArea),loopStartX,0,60)
+			
+			LineXY(loopStartX,0,loopStartX,120)
+			Triangle(loopStartX,110,loopStartX + 7,115,loopStartX,120,1)
+			
+			LineXY(loopEndX,0,loopEndX,120)
+			Triangle(loopEndX,110,loopEndX - 7,115,loopEndX,120,1)
+		EndIf
 
 		;Sijainti
 		FrontColor($0000FF)
