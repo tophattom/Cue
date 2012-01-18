@@ -50,6 +50,8 @@ Structure Cue
 	startPos.f
 	endPos.f
 	
+	stopHandle.l
+	
 	loopStart.f
 	loopEnd.f
 	loopCount.i
@@ -352,6 +354,7 @@ Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
 Declare StopCue(*cue.Cue)
 Declare UpdateWaveform(pos.f)
+Declare StopProc(handle.i,channel.i,d,*user.Cue)
 
 Procedure SaveAppSettings()
 	If FileSize("settings.ini") = -1
@@ -519,6 +522,8 @@ Procedure LoadCueStream2(*cue.Cue)
     *cue\startPos = 0
     *cue\endPos = *cue\length
     
+    *cue\stopHandle = BASS_ChannelSetSync(*cue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\endPos),@StopProc(),*cue)
+
     ;****Aallon piirto
     tmpStream.l = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE |#BASS_SAMPLE_FLOAT)
     length.l = BASS_ChannelGetLength(tmpStream,#BASS_POS_BYTE)

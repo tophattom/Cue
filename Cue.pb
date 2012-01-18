@@ -529,6 +529,9 @@ Repeat ; Start of the event loop
       		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
       	ElseIf GadgetID = #EndPos
       		*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#EndPos))
+
+      		BASS_ChannelRemoveSync(*gCurrentCue\stream,*gCurrentCue\stopHandle)
+      		*gCurrentCue\stopHandle = BASS_ChannelSetSync(*gCurrentCue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,*gCurrentCue\endPos),@StopProc(),*gCurrentCue)
       		
       		endX.f = #WAVEFORM_W * (*gCurrentCue\endPos / *gCurrentCue\length)
       		ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
@@ -1660,7 +1663,11 @@ Procedure LoopProc(handle.l,channel.l,d,*user.Cue)
 		EndIf
 	EndIf
 EndProcedure
-	
+
+Procedure StopProc(handle.i,channel.i,d,*user.Cue)
+	StopCue(*user)
+EndProcedure
+
 Procedure StartEvents(*cue.Cue)
 	If *cue\delay > 0 And *cue\state = #STATE_STOPPED
 		*cue\state = #STATE_WAITING
@@ -1728,10 +1735,6 @@ Procedure UpdateCues()
 						BASS_ChannelSlideAttribute(cueList()\stream,#BASS_ATTRIB_VOL,0,cueList()\fadeOut * 1000)
 					EndIf
 				EndIf
-				
-				If pos >= cueList()\endPos ;And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
-					StopCue(@cueList())
-				EndIf
 			EndIf
 		ElseIf cueList()\state = #STATE_WAITING
 			If ElapsedMilliseconds() >= (cueList()\startTime + cueList()\delay)
@@ -1744,7 +1747,6 @@ Procedure UpdateCues()
 		ElseIf cueList()\state = #STATE_FADING_OUT And Not BASS_ChannelIsSliding(cueList()\stream,#BASS_ATTRIB_VOL)
 			StopCue(@cueList())
 		EndIf
-		
 	Next
 EndProcedure
 
@@ -1926,6 +1928,9 @@ Procedure UpdateWaveform(pos.f)
 					endX = Max(startX,Min(endX + mDeltaX,#WAVEFORM_W))
 					*gCurrentCue\endPos = (endX * *gCurrentCue\length) / #WAVEFORM_W
 					SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
+					
+					BASS_ChannelRemoveSync(*gCurrentCue\stream,*gCurrentCue\stopHandle)
+      				*gCurrentCue\stopHandle = BASS_ChannelSetSync(*gCurrentCue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,*gCurrentCue\endPos),@StopProc(),*gCurrentCue)
 					
 					ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
 					
