@@ -664,8 +664,18 @@ Repeat ; Start of the event loop
 			UpdateCueControls()
 		ElseIf GadgetID = #LoopStart
 			*gCurrentCue\loopStart = StringToSeconds(GetGadgetText(#LoopStart))
+			
+			loopStartX.f = #WAVEFORM_W * (*gCurrentCue\loopStart / *gCurrentCue\length)
+      		ResizeImage(#LoopArea,Max(1,loopEndX.f - loopStartX),#PB_Ignore)
+      		
+      		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
 		ElseIf GadgetID = #LoopEnd
 			*gCurrentCue\loopEnd = StringToSeconds(GetGadgetText(#LoopEnd))
+			
+			loopEndX.f = #WAVEFORM_W * (*gCurrentCue\loopEnd / *gCurrentCue\length)
+      		ResizeImage(#LoopArea,Max(1,loopEndX.f - loopStartX),#PB_Ignore)
+      		
+      		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
 		ElseIf GadgetID = #LoopCount
 			*gCurrentCue\loopCount = Val(GetGadgetText(#LoopCount))
 		ElseIf GadgetID = #EditorTabs ;--- Efektien asetukset
@@ -1879,8 +1889,8 @@ Procedure UpdateWaveform(pos.f)
 		startX.f = #WAVEFORM_W * (*gCurrentCue\startPos / *gCurrentCue\length)
 		endX.f = #WAVEFORM_W * (*gCurrentCue\endPos / *gCurrentCue\length)
 		posX.f = #WAVEFORM_W * (pos / *gCurrentCue\length)
-		loopStartX = #WAVEFORM_W * (*gCurrentCue\loopStart / *gCurrentCue\length)
-		loopEndX = #WAVEFORM_W * (*gCurrentCue\loopEnd / *gCurrentCue\length)
+		loopStartX.f = #WAVEFORM_W * (*gCurrentCue\loopStart / *gCurrentCue\length)
+		loopEndX.f = #WAVEFORM_W * (*gCurrentCue\loopEnd / *gCurrentCue\length)
 		
 		If *lastCue <> *gCurrentCue
 			ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
@@ -1935,7 +1945,7 @@ Procedure UpdateWaveform(pos.f)
 				;Loopin rajaimet
 				If *gCurrentCue\looped = #True
 					If mX >= (loopStartX + mDeltaX) And mX <= (loopStartX + 7 + mDeltaX) And mY > 110 And (grab = #GRAB_LOOP_START Or grab = 0)
-						loopStartX = Max(startX,Min(loopEndX,loopStartX + mDeltaX))
+						loopStartX.f = Max(startX,Min(loopEndX.f,loopStartX + mDeltaX))
 						*gCurrentCue\loopStart = (loopStartX * *gCurrentCue\length) / #WAVEFORM_W
 						
 						SetGadgetText(#LoopStart,SecondsToString(*gCurrentCue\loopStart))
@@ -1944,7 +1954,7 @@ Procedure UpdateWaveform(pos.f)
 						
 						grab = #GRAB_LOOP_START
 					ElseIf mX <= (loopEndX + mDeltaX) And mX >= (loopEndX - 7 + mDeltaX) And mY > 110 And (grab = #GRAB_LOOP_END Or grab = 0)
-						loopEndX = Max(loopStartX,Min(endX,loopEndX + mDeltaX))
+						loopEndX.f = Max(loopStartX,Min(endX,loopEndX + mDeltaX))
 						*gCurrentCue\loopEnd = (loopEndX * *gCurrentCue\length) / #WAVEFORM_W
 						
 						SetGadgetText(#LoopEnd,SecondsToString(*gCurrentCue\loopEnd))
