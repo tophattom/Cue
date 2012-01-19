@@ -213,7 +213,7 @@ Procedure Open_EditorWindow()
       AddGadgetItem(#EditorTabs, 1, "Effects")
       
       TextGadget(#Text_25,5,12,60,20,"Effect type:")
-      
+
       ComboBoxGadget(#EffectType, 65, 10, 120, 20)
       AddGadgetItem(#EffectType, 0, "Reverb")
       SetGadgetItemData(#EffectType, 0, #BASS_FX_DX8_REVERB)
@@ -227,6 +227,11 @@ Procedure Open_EditorWindow()
       ButtonImageGadget(#EffectPlay, 565, 5, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
       ButtonImageGadget(#EffectPause, 600, 5, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
       ButtonImageGadget(#EffectStop, 635, 5, 30, 30, ImageID(#StopImg))
+            
+      ScrollAreaGadget(#EffectScroll,0,40,670,580,650,0,#PB_Ignore,#PB_ScrollArea_BorderLess)
+      SetGadgetColor(#EffectScroll,#PB_Gadget_BackColor,$FFFFFF)
+      
+      CloseGadgetList()
       CloseGadgetList()
       
     ;EndIf

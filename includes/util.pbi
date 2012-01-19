@@ -261,6 +261,7 @@ Enumeration 1
   #EffectPlay
   #EffectPause
   #EffectStop
+  #EffectScroll
   
   #CheckRelative
   #SettingsOK
@@ -724,8 +725,9 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 		
 		
 		;S‰‰timet
-		OpenGadgetList(#EditorTabs,1)
-		tmpY = 40 + (amount - 1) * 115
+		SetGadgetAttribute(#EffectScroll,#PB_ScrollArea_InnerHeight,GetGadgetAttribute(#EffectScroll,#PB_ScrollArea_InnerHeight) + 115)
+		OpenGadgetList(#EffectScroll,1)
+		tmpY = (amount - 1) * 115
 		Select eType
 			Case #BASS_FX_DX8_REVERB
 				*cue\effects()\name = "Reverb"
@@ -733,18 +735,18 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				
 				*cue\effects()\gadgets[5] = TrackBarGadget(#PB_Any,75, tmpY + 40,170,30,0,960)		;Input gain [-96.0,0.0]
 				*cue\effects()\gadgets[6] = TrackBarGadget(#PB_Any,75, tmpY + 75,170,30,0,960) 		;Reverb mix [-96.0,0.0]
-				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,390, tmpY + 40,170,30,1,3000) 	;Reverb time [1,3000]
-				*cue\effects()\gadgets[8] = TrackBarGadget(#PB_Any,390, tmpY + 75,170,30,1,999)		;High freq rvrb time [0.001,0.999]
+				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,370, tmpY + 40,170,30,1,3000) 	;Reverb time [1,3000]
+				*cue\effects()\gadgets[8] = TrackBarGadget(#PB_Any,370, tmpY + 75,170,30,1,999)		;High freq rvrb time [0.001,0.999]
 				
 				*cue\effects()\gadgets[9] = StringGadget(#PB_Any,250,tmpY + 40,40,20,"",#PB_String_ReadOnly)
 				*cue\effects()\gadgets[10] = StringGadget(#PB_Any,250,tmpY + 75,40,20,"",#PB_String_ReadOnly)
-				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,565,tmpY + 40,40,20,"",#PB_String_ReadOnly)
-				*cue\effects()\gadgets[12] = StringGadget(#PB_Any,565,tmpY + 75,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,545,tmpY + 40,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[12] = StringGadget(#PB_Any,545,tmpY + 75,40,20,"",#PB_String_ReadOnly)
 				
 				*cue\effects()\gadgets[13] = TextGadget(#PB_Any,10,tmpY + 40,60,30,"Input gain (dB):")
 				*cue\effects()\gadgets[14] = TextGadget(#PB_Any,10,tmpY + 75,60,30,"Reverb mix (dB):")
-				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,330,tmpY + 40,60,30,"Reverb time (ms):")
-				*cue\effects()\gadgets[16] = TextGadget(#PB_Any,330,tmpY + 75,60,30,"High freq time ratio:")
+				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,310,tmpY + 40,60,30,"Reverb time (ms):")
+				*cue\effects()\gadgets[16] = TextGadget(#PB_Any,310,tmpY + 75,60,30,"High freq time ratio:")
 				
 				If *revParams = 0
 					*cue\effects()\revParam\fReverbTime = 1000
@@ -777,15 +779,15 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				
 				*cue\effects()\gadgets[5] = TrackBarGadget(#PB_Any,75, tmpY + 40,170,30,80,Min(16000,info\freq / 3))	;Center
 				*cue\effects()\gadgets[6] = TrackBarGadget(#PB_Any,75, tmpY + 75,170,30,1,360) 							;Bandwidth [1,36]
-				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,390, tmpY + 40,170,30,0,300) 							;Gain [-15,15]
+				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,370, tmpY + 40,170,30,0,300) 							;Gain [-15,15]
 				
 				*cue\effects()\gadgets[9] = StringGadget(#PB_Any,250,tmpY + 40,40,20,"",#PB_String_ReadOnly)
 				*cue\effects()\gadgets[10] = StringGadget(#PB_Any,250,tmpY + 75,40,20,"",#PB_String_ReadOnly)
-				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,565,tmpY + 40,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,545,tmpY + 40,40,20,"",#PB_String_ReadOnly)
 				
 				*cue\effects()\gadgets[13] = TextGadget(#PB_Any,10,tmpY + 40,60,30,"Center (Hz):")
 				*cue\effects()\gadgets[14] = TextGadget(#PB_Any,10,tmpY + 75,60,30,"Bandwidth (semitones):")
-				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,330,tmpY + 40,60,30,"Gain (dB):")
+				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,310,tmpY + 40,60,30,"Gain (dB):")
 				
 				If *eqParams = 0
 					*cue\effects()\eqParam\fBandwidth = 12.0
@@ -817,22 +819,28 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 					*cue\effects()\gadgets[5] = OpenWindow(#PB_Any,0,0,vstInfo\editorWidth,vstInfo\editorHeight,*cue\name + " - " + vstInfo\effectName,#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
 					BASS_VST_EmbedEditor(*cue\effects()\handle,WindowID(*cue\effects()\gadgets[5]))
 					
-					OpenGadgetList(#EditorTabs,1)
+					OpenGadgetList(#EffectScroll,1)
 					
 					*cue\effects()\gadgets[6] = ButtonGadget(#PB_Any,10,tmpY + 40,70,30,"Open editor")
 				EndIf		
 		EndSelect
 		
-		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,660,115,text)
-		*cue\effects()\gadgets[#EGADGET_UP] = ButtonImageGadget(#PB_Any,625,tmpY + 10,30,30,ImageID(#UpImg))
-		*cue\effects()\gadgets[#EGADGET_DOWN] = ButtonImageGadget(#PB_Any,625,tmpY + 45,30,30,ImageID(#DownImg))
-		*cue\effects()\gadgets[#EGADGET_DELETE] = ButtonImageGadget(#PB_Any,625,tmpy + 80,30,30,ImageID(#DeleteImg))
+		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,640,115,text)
+		*cue\effects()\gadgets[#EGADGET_UP] = ButtonImageGadget(#PB_Any,605,tmpY + 10,30,30,ImageID(#UpImg))
+		*cue\effects()\gadgets[#EGADGET_DOWN] = ButtonImageGadget(#PB_Any,605,tmpY + 45,30,30,ImageID(#DownImg))
+		*cue\effects()\gadgets[#EGADGET_DELETE] = ButtonImageGadget(#PB_Any,605,tmpy + 80,30,30,ImageID(#DeleteImg))
 		*cue\effects()\gadgets[#EGADGET_ACTIVE] = CheckBoxGadget(#PB_Any,10,tmpY + 15,60,20,"Active")
 		SetGadgetState(*cue\effects()\gadgets[#EGADGET_ACTIVE],1)
 		
-		ProcedureReturn #True
+		
+		For i = 0 To 16
+			If IsGadget(*cue\effects()\gadgets[i])
+				SetGadgetColor(*cue\effects()\gadgets[i],#PB_Gadget_BackColor,$FFFFFF)
+			endif
+		Next i
 		
 		CloseGadgetList()
+		ProcedureReturn #True	
 	EndIf
 EndProcedure
 
@@ -902,6 +910,8 @@ Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
 			Break
 		EndIf
 	Next
+	
+	SetGadgetAttribute(#EffectScroll,#PB_ScrollArea3D_InnerHeight,GetGadgetAttribute(#EffectScroll,#PB_ScrollArea3D_InnerHeight) - 115)
 EndProcedure
 
 Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
