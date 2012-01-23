@@ -288,11 +288,11 @@ Procedure Open_PrefWindow()
 		TextGadget(#Text_27,20,30,80,20,"Audio device:")
 		ComboBoxGadget(#SelectADevice,100,30,200,20)
 		info.BASS_DEVICEINFO
-		For i = 1 To BASS_GetDeviceInfo(i,@info)
-			If info\flags & #BASS_DEVICE_ENABLED
-				AddGadgetItem(#SelectADevice,-1,PeekS(info\name))
-			EndIf
-		Next i
+		i = 1
+		While BASS_GetDeviceInfo(i,@info)
+			AddGadgetItem(#SelectADevice,-1,PeekS(info\name))
+			i + 1
+		Wend
 		SetGadgetState(#SelectADevice,BASS_GetDevice() - 1)
 		
 		
