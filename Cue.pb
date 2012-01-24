@@ -34,7 +34,7 @@ Open_EditorWindow()
 HideWindow(#EditorWindow, 1)
 HideCueControls()
 
-BASS_Init(-1,44100,0,WindowID(#MainWindow),#Null)
+BASS_Init(gAppSettings(#SETTING_ADEVICE),44100,0,WindowID(#MainWindow),#Null)
 
 BASS_PluginLoad("basswma.dll",0)
 BASS_PluginLoad("bassflac.dll",0)

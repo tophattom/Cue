@@ -605,6 +605,14 @@ Procedure.f StringToSeconds(text.s)
 EndProcedure
 
 Procedure DeleteCue(*cue.Cue)
+	If *cue\afterCue <> 0
+		ForEach *cue\afterCue\followCues()
+			If *cue\afterCue\followCues() = *cue
+				DeleteElement(*cue\afterCue\followCues())
+			EndIf
+		Next
+	EndIf
+	
 	If ListSize(*cue\effects()) > 0
 		ForEach *cue\effects()
 			DeleteCueEffect(*cue,@*cue\effects())
@@ -836,7 +844,7 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 		For i = 0 To 16
 			If IsGadget(*cue\effects()\gadgets[i])
 				SetGadgetColor(*cue\effects()\gadgets[i],#PB_Gadget_BackColor,$FFFFFF)
-			endif
+			EndIf
 		Next i
 		
 		CloseGadgetList()
