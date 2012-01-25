@@ -277,12 +277,15 @@ Enumeration 1
   
   #PrefAFrame
   #PrefIFrame
+  #PrefGFrame
   #Text_27
   #SelectADevice
   #Text_28
   #FontSize
   #PrefOk
   #PrefCancel
+  #Text_29
+  #CuePrefix
 EndEnumeration
 ;}
 
@@ -351,6 +354,8 @@ Global gLastHash
 
 Global gCueListFont
 
+Global gCueNaming.s	;Cuen nimeämiskäytäntö.		# = numero, $ = pieni kirjain, & = iso kirjain
+
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
 Declare StopCue(*cue.Cue)
@@ -366,6 +371,7 @@ Procedure SaveAppSettings()
 		PreferenceGroup("General")
 		WritePreferenceInteger("Audio device",gAppSettings(#SETTING_ADEVICE))
 		WritePreferenceInteger("Font size",gAppSettings(#SETTING_FONTSIZE))
+		WritePreferenceString("Cue naming",gCueNaming)
 		
 		PreferenceGroup("Recent files")
 		For i = 1 To #MAX_RECENT
@@ -377,6 +383,8 @@ EndProcedure
 Procedure SetDefaultSettings()
 	gAppSettings(#SETTING_ADEVICE) = 1
 	gAppSettings(#SETTING_FONTSIZE) = 8
+	
+	gCueNaming = "Q#"
 	
 	SaveAppSettings()
 EndProcedure
@@ -390,6 +398,8 @@ Procedure LoadAppSettings()
 			
 			gAppSettings(#SETTING_FONTSIZE) = ReadPreferenceInteger("Font size",8)
 			gCueListFont = LoadFont(#PB_Any,"Microsoft Sans Serif",gAppSettings(#SETTING_FONTSIZE))
+			
+			gCueNaming = ReadPreferenceString("Cue naming","Q#")
 			
 			PreferenceGroup("Recent files")
 			ExaminePreferenceKeys()
@@ -430,6 +440,36 @@ Procedure AddRecentFile(path.s)
 	SaveAppSettings()
 EndProcedure
 
+Procedure.s CreateCueName()
+	cueName.s = gCueNaming
+	
+	;#
+	cueName = ReplaceString(cueName,"#",Str(gCueCounter))
+	
+	;&
+	r = Round(gCueCounter / 27,#PB_Round_Down)
+
+	If r > 0
+		tmpS.s = Chr(64 + r)
+	EndIf
+	
+	tmpS = tmpS + Chr(64 + (gCueCounter - gCueCounter * r))
+	
+	cueName = ReplaceString(cueName,"&",tmpS)
+	
+	;$
+	tmpS = ""
+	If r > 0
+		tmpS = Chr(96 + r)
+	EndIf
+	
+	tmpS = tmpS + Chr(96 + (gCueCounter - gCueCounter * r))
+	
+	cueName = ReplaceString(cueName,"$",tmpS)
+	
+	ProcedureReturn cueName
+EndProcedure
+
 Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 	LastElement(cueList())
 	AddElement(cueList())
@@ -441,7 +481,7 @@ Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 		\cueType = type
 		
 		If name = ""
-			\name = "Q" + Str(gCueCounter)
+			\name = CreateCueName()
 		Else
 			\name = name
 		EndIf
@@ -1506,6 +1546,7 @@ Procedure Triangle(x1,y1,x2,y2,x3,y3,fill=0)
         EndIf
     EndIf
 EndProcedure
+
 
 
 

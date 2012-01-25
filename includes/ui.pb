@@ -302,6 +302,11 @@ Procedure Open_PrefWindow()
 		StringGadget(#FontSize,75,100,30,20,"",#PB_String_Numeric)
 		SetGadgetText(#FontSize,Str(gAppSettings(#SETTING_FONTSIZE)))
 		
+		Frame3DGadget(#PrefGFrame,10, 150, 620, 60, "General")
+		
+		TextGadget(#Text_29,20,170,60,20,"Cue naming:")
+		StringGadget(#CuePrefix,90,170,60,20,"Q%")
+		
 		
 		ButtonGadget(#PrefOk,590,440,40,30,"OK")
 		ButtonGadget(#PrefCancel,535,440,50,30,"Cancel")

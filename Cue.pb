@@ -970,6 +970,8 @@ Repeat ; Start of the event loop
 			gCueListFont = LoadFont(#PB_Any,"Microsoft Sans Serif",gAppSettings(#SETTING_FONTSIZE))
 			SetGadgetFont(#CueList,FontID(gCueListFont))
 			
+			gCueNaming = GetGadgetText(#CuePrefix)
+			
 			SaveAppSettings()
 			
 			HideWindow(#PrefWindow,1)
