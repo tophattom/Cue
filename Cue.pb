@@ -1137,8 +1137,7 @@ Repeat ; Start of the event loop
 	    ElseIf GadgetID = #CueList
 	    	path.s = StringField(EventDropFiles(),1,Chr(10))
 	    	
-	    	If Right(path,4) = ".clf"
-	    		
+	    	If Right(path,4) = ".clf"	;Cuelistan lataus
 	    		ClearCueList()
 	    		
 	    		CreateThread(@Open_LoadWindow(),0)
@@ -1151,7 +1150,43 @@ Repeat ; Start of the event loop
 					UpdateEditorList()
 					UpdateCueControls()
 				EndIf
+			Else	;Uuden audiocuen luonti p‰‰ikkunasta
+				pattern.s = ".mp3;.wav;.ogg;.aiff;.wma;.flac;.aac;.m4a"
+				count = CountString(pattern,";") + 1
+				match = #False
+				
+				For i = 1 To count
+					format.s = StringField(pattern,i,";")
+					If Right(path,Len(format)) = format
+						match = #True
+						Break
+					EndIf
+				Next i
+				
+				If match
+					*gCurrentCue = AddCue(#TYPE_AUDIO)
+					
+					*gCurrentCue\absolutePath = path
+	    			
+	    			If gListSettings(#SETTING_RELATIVE) = 1
+	    				*gCurrentCue\relativePath = RelativePath(GetPathPart(gSavePath),GetPathPart(path)) + GetFilePart(path)
+	    				*gCurrentCue\filePath = *gCurrentCue\relativePath
+	    			Else
+	    				*gCurrentCue\filePath = *gCurrentCue\absolutePath
+	    			EndIf
+	    			
+	    			gLoadThread = CreateThread(@LoadCueStream2(),*gCurrentCue)
+
+	    			file.s = GetFilePart(path)
+	    			*gCurrentCue\desc = Mid(file,0,Len(file) - 4)
+
+	    			UpdateCueControls()
+	    			UpdateEditorList()
+	    			
+	    			HideWindow(#EditorWindow,0)
+	    		EndIf
 	    	EndIf
+	    	
 	    EndIf
 	    	
 	EndIf
