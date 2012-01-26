@@ -2051,3 +2051,9 @@ Procedure UpdateWaveform(pos.f)
 EndProcedure
 
 
+
+; IDE Options = PureBasic 4.60 (Windows - x86)
+; CursorPosition = 1899
+; FirstLine = 1898
+; Folding = -----
+; EnableXP

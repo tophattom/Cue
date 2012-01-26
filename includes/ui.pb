@@ -305,7 +305,7 @@ Procedure Open_PrefWindow()
 		Frame3DGadget(#PrefGFrame,10, 150, 620, 60, "General")
 		
 		TextGadget(#Text_29,20,170,60,20,"Cue naming:")
-		StringGadget(#CuePrefix,90,170,60,20,"Q%")
+		StringGadget(#CuePrefix,90,170,60,20,gCueNaming)
 		
 		
 		ButtonGadget(#PrefOk,590,440,40,30,"OK")
@@ -313,3 +313,9 @@ Procedure Open_PrefWindow()
 	EndIf
 EndProcedure
 
+
+; IDE Options = PureBasic 4.60 (Windows - x86)
+; CursorPosition = 307
+; FirstLine = 283
+; Folding = --
+; EnableXP
