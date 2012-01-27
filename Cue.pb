@@ -24,7 +24,7 @@ Declare UpdateListSettings()
 Declare MoveCueUp(*cue.Cue)
 Declare MoveCueDown(*cue.Cue)
 Declare UpdateAppSettings()
-Declare UpdateWaveform(pos.f)
+Declare UpdateWaveform(pos.f,mode=0)
 
 LoadAppSettings()
 
@@ -696,6 +696,23 @@ Repeat ; Start of the event loop
 		
 		If GadgetID = #WaveImg	;--- Waveform
 			UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
+		ElseIf GadgetID = #ZoomSlider
+			zoomLevel.f = GetGadgetState(#ZoomSlider) / 1000
+			
+			ResizeImage(#EndOffset,Max(1,drawW.f - endX.f),#PB_Ignore)
+			If (startX.f + drawX.f) > #WAVEFORM_W
+				ResizeImage(#StartOffset,#WAVEFORM_W,#PB_Ignore)
+			Else
+				ResizeImage(#StartOffset,Max(1,startX + drawX),#PB_Ignore)
+			EndIf
+			
+			If (endX + drawX) < 0
+				ResizeImage(#EndOffset,#WAVEFORM_W,#PB_Ignore)
+			Else	
+				ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - (endX + drawX)),#PB_Ignore)
+			EndIf
+			
+			UpdateWaveform(StringToSeconds(GetGadgetText(#Position)),1)
 		EndIf
 		
 		;----- Efektien säätimet
@@ -1916,24 +1933,45 @@ Procedure MoveCueDown(*cue.Cue)
 	EndIf
 EndProcedure
 
-Procedure UpdateWaveform(pos.f)
+Procedure UpdateWaveform(pos.f,mode=0)
 	Static grab
 	Static *lastCue.Cue
 	Static lastX.f
 	
-	Shared startX.f,endX.f,loopStartX.f,loopEndX.f
+	Shared startX.f,endX.f,loopStartX.f,loopEndX.f,drawX.f
+	Shared zoomLevel.f,drawW.f
 	Shared GadgetID
 	
 	If *gCurrentCue <> 0 And *gCurrentCue\waveform <> 0
-		startX.f = #WAVEFORM_W * (*gCurrentCue\startPos / *gCurrentCue\length)
-		endX.f = #WAVEFORM_W * (*gCurrentCue\endPos / *gCurrentCue\length)
-		posX.f = #WAVEFORM_W * (pos / *gCurrentCue\length)
-		loopStartX.f = #WAVEFORM_W * (*gCurrentCue\loopStart / *gCurrentCue\length)
-		loopEndX.f = #WAVEFORM_W * (*gCurrentCue\loopEnd / *gCurrentCue\length)
+		tmpW = ImageWidth(*gCurrentCue\waveform)
+		
+		drawW.f = Max(#WAVEFORM_W,tmpW * zoomLevel)
+
+		startX.f = drawW * (*gCurrentCue\startPos / *gCurrentCue\length)
+		endX.f = drawW * (*gCurrentCue\endPos / *gCurrentCue\length)
+		posX.f = drawW * (pos / *gCurrentCue\length)
+		loopStartX.f = drawW * (*gCurrentCue\loopStart / *gCurrentCue\length)
+		loopEndX.f = drawW * (*gCurrentCue\loopEnd / *gCurrentCue\length)
+		
+		If mode = 1
+			drawX = Max(#WAVEFORM_W - drawW,Min(0,-posX + #WAVEFORM_W / 2))
+		Else
+			drawX = Max(#WAVEFORM_W - drawW,Min(0,drawX))
+		EndIf
 		
 		If *lastCue <> *gCurrentCue
-			ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
-			ResizeImage(#StartOffset,Max(1,startX),#PB_Ignore)
+			If (startX + drawX) > #WAVEFORM_W
+				ResizeImage(#StartOffset,#WAVEFORM_W,#PB_Ignore)
+			Else
+				ResizeImage(#StartOffset,Max(1,startX + drawX),#PB_Ignore)
+			EndIf
+			
+			If (endX + drawX) < 0
+				ResizeImage(#EndOffset,#WAVEFORM_W,#PB_Ignore)
+			Else	
+				ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - (endX + drawX)),#PB_Ignore)
+			EndIf
+			
 			ResizeImage(#LoopArea,Max(1,loopEndX - loopStartX),#PB_Ignore)
 			
 			*lastCue = *gCurrentCue
@@ -1949,9 +1987,9 @@ Procedure UpdateWaveform(pos.f)
 			If EventType() = #PB_EventType_LeftButtonDown Or (EventType() = #PB_EventType_MouseMove And GetGadgetAttribute(#WaveImg, #PB_Canvas_Buttons) & #PB_Canvas_LeftButton)
 				
 				;Alku ja loppu rajaimet
-				If mX >= (posX - 5 + mDeltaX) And mX <= (posX + 5 + mDeltaX) And (grab = #GRAB_POS Or grab = 0)
+				If (mX - drawX) >= (posX - 5 + mDeltaX) And (mX - drawX) <= (posX + 5 + mDeltaX) And (grab = #GRAB_POS Or grab = 0)
 					posX + mDeltaX
-					pos.f = (posX * *gCurrentCue\length) / #WAVEFORM_W
+					pos.f = (posX  * *gCurrentCue\length) / drawW
 					BASS_ChannelSetPosition(*gCurrentCue\stream,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,pos),#BASS_POS_BYTE)
 					
 					SetGadgetText(#Position,SecondsToString(pos))
@@ -1961,43 +1999,55 @@ Procedure UpdateWaveform(pos.f)
 					EndIf
 					
 					grab = #GRAB_POS
-				ElseIf mX <= (endX + mDeltaX) And mX >= (endX - 7 + mDeltaX) And (grab = #GRAB_END Or grab = 0)
-					endX = Max(startX,Min(endX + mDeltaX,#WAVEFORM_W))
-					*gCurrentCue\endPos = (endX * *gCurrentCue\length) / #WAVEFORM_W
+				ElseIf (mX - drawX) <= (endX + mDeltaX) And (mX - drawX) >= (endX - 7 + mDeltaX) And mY < 113 And (grab = #GRAB_END Or grab = 0)
+					endX = Max(startX,Min(endX + mDeltaX,drawW))
+					*gCurrentCue\endPos = (endX * *gCurrentCue\length) / drawW
 					SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
 					
 					BASS_ChannelRemoveSync(*gCurrentCue\stream,*gCurrentCue\stopHandle)
       				*gCurrentCue\stopHandle = BASS_ChannelSetSync(*gCurrentCue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,*gCurrentCue\endPos),@StopProc(),*gCurrentCue)
 					
-					ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
+					ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - (endX + drawX)),#PB_Ignore)
 					
 					grab = #GRAB_END
-				ElseIf mX >= (startX + mDeltaX) And mX <= (startX + 7 + mDeltaX) And (grab = #GRAB_START Or grab = 0)
+				ElseIf (mX - drawX) >= (startX + mDeltaX) And (mX - drawX) <= (startX + 7 + mDeltaX) And mY < 113 And (grab = #GRAB_START Or grab = 0)
 					startX = Max(0,Min(startX + mDeltaX,endX))
-					*gCurrentCue\startPos = (startX * *gCurrentCue\length) / #WAVEFORM_W
+					*gCurrentCue\startPos = (startX * *gCurrentCue\length) / drawW
 					SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
 
-					ResizeImage(#StartOffset,Max(1,startX),#PB_Ignore)
+					ResizeImage(#StartOffset,Max(1,startX + drawX),#PB_Ignore)
 					
 					grab = #GRAB_START
 				Else
-					grab = 0
+					drawX = Max(#WAVEFORM_W - drawW,Min(0,drawX + mDeltaX))
+					
+					If (startX + drawX) > #WAVEFORM_W
+						ResizeImage(#StartOffset,#WAVEFORM_W,#PB_Ignore)
+					Else
+						ResizeImage(#StartOffset,Max(1,startX + drawX),#PB_Ignore)
+					EndIf
+					
+					If (endX + drawX) < 0
+						ResizeImage(#EndOffset,#WAVEFORM_W,#PB_Ignore)
+					Else	
+						ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - (endX + drawX)),#PB_Ignore)
+					EndIf
 				EndIf
 				
 				;Loopin rajaimet
 				If *gCurrentCue\looped = #True
-					If mX >= (loopStartX + mDeltaX) And mX <= (loopStartX + 7 + mDeltaX) And (grab = #GRAB_LOOP_START Or grab = 0)
+					If (mX - drawX) >= (loopStartX + mDeltaX) And (mX - drawX) <= (loopStartX + 7 + mDeltaX) And (grab = #GRAB_LOOP_START Or grab = 0)
 						loopStartX.f = Max(startX,Min(loopEndX.f,loopStartX + mDeltaX))
-						*gCurrentCue\loopStart = (loopStartX * *gCurrentCue\length) / #WAVEFORM_W
+						*gCurrentCue\loopStart = (loopStartX * *gCurrentCue\length) / drawW
 						
 						SetGadgetText(#LoopStart,SecondsToString(*gCurrentCue\loopStart))
 						
 						ResizeImage(#LoopArea,Max(1,loopEndX - loopStartX),#PB_Ignore)
 						
 						grab = #GRAB_LOOP_START
-					ElseIf mX <= (loopEndX + mDeltaX) And mX >= (loopEndX - 7 + mDeltaX) And (grab = #GRAB_LOOP_END Or grab = 0)
+					ElseIf (mX - drawX) <= (loopEndX + mDeltaX) And (mX - drawX) >= (loopEndX - 7 + mDeltaX) And (grab = #GRAB_LOOP_END Or grab = 0)
 						loopEndX.f = Max(loopStartX,Min(endX,loopEndX + mDeltaX))
-						*gCurrentCue\loopEnd = (loopEndX * *gCurrentCue\length) / #WAVEFORM_W
+						*gCurrentCue\loopEnd = (loopEndX * *gCurrentCue\length) / drawW
 						
 						SetGadgetText(#LoopEnd,SecondsToString(*gCurrentCue\loopEnd))
 						
@@ -2009,51 +2059,46 @@ Procedure UpdateWaveform(pos.f)
 					EndIf
 				EndIf
 				
+			Else
+				grab = 0
 			EndIf
 			
 			lastX = mX
 		EndIf
 
 		StartDrawing(CanvasOutput(#WaveImg))
-		DrawImage(ImageID(*gCurrentCue\waveform),0,0)
+		DrawImage(ImageID(*gCurrentCue\waveform),0 + drawX,0,drawW,120)
 		
 
 		;Rajaimet
 		FrontColor($00FFFF)
 		
 		DrawAlphaImage(ImageID(#StartOffset),0,0,128)
-		LineXY(startX,0,startX,120)	;Alku
-		Triangle(startX,0,startX + 7,5,startX,10,1)
+		LineXY(startX + drawX,0,startX + drawX,120)	;Alku
+		Triangle(startX + drawX,0,startX + 7 + drawX,5,startX + drawX,10,1)
 
-		DrawAlphaImage(ImageID(#EndOffset),endX,0,128)
-		LineXY(endX,0,endX,120)		;Loppu
-		Triangle(endX,0,endX - 7,5,endX,10,1)
+		DrawAlphaImage(ImageID(#EndOffset),Max(0,endX + drawX),0,128)
+		LineXY(endX + drawX,0,endX + drawX,120)		;Loppu
+		Triangle(endX + drawX,0,endX - 7 + drawX,5,endX + drawX,10,1)
 		
 		;Loopin rajaimet
 		If *gCurrentCue\looped = #True
 			FrontColor($00FF00)
 			
-			DrawAlphaImage(ImageID(#LoopArea),loopStartX,0,60)
+			DrawAlphaImage(ImageID(#LoopArea),loopStartX + drawX,0,60)
 			
-			LineXY(loopStartX,0,loopStartX,120)
-			Triangle(loopStartX,110,loopStartX + 7,115,loopStartX,120,1)
+			LineXY(loopStartX + drawX,0,loopStartX + drawX,120)
+			Triangle(loopStartX + drawX,110,loopStartX + 7 + drawX,115,loopStartX + drawX,120,1)
 			
-			LineXY(loopEndX,0,loopEndX,120)
-			Triangle(loopEndX,110,loopEndX - 7,115,loopEndX,120,1)
+			LineXY(loopEndX + drawX,0,loopEndX + drawX,120)
+			Triangle(loopEndX + drawX,110,loopEndX - 7 + drawX,115,loopEndX + drawX,120,1)
 		EndIf
 
 		;Sijainti
 		FrontColor($0000FF)
-		Triangle(posX - 5,0,posX + 5,0,posX,8,1)
-		LineXY(posX,0,posX,120)
+		Triangle(posX - 5 + drawX,0,posX + 5 + drawX,0,posX + drawX,8,1)
+		LineXY(posX + drawX,0,posX + drawX,120)
 		StopDrawing()
 	EndIf
 EndProcedure
 
-
-
-; IDE Options = PureBasic 4.60 (Windows - x86)
-; CursorPosition = 1899
-; FirstLine = 1898
-; Folding = -----
-; EnableXP

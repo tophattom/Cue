@@ -191,6 +191,9 @@ Procedure Open_EditorWindow()
       ButtonImageGadget(#EditorPause, 40, 460, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
       ButtonImageGadget(#EditorStop, 75, 460, 30, 30, ImageID(#StopImg))
       
+      TextGadget(#Text_30,5 + #WAVEFORM_W - 340,460,40,20,"Zoom:")
+      TrackBarGadget(#ZoomSlider,5 + #WAVEFORM_W - 300,460,200,30,0,1000)
+      
       TextGadget(#Text_24, 5 +#WAVEFORM_W - 95, 460, 40, 20, "Position:")
       StringGadget(#Position, 5 + #WAVEFORM_W - 50, 460, 50, 20, "", #PB_String_ReadOnly) : GadgetToolTip(#Position,"Current cue position")
       
@@ -312,10 +315,3 @@ Procedure Open_PrefWindow()
 		ButtonGadget(#PrefCancel,535,440,50,30,"Cancel")
 	EndIf
 EndProcedure
-
-
-; IDE Options = PureBasic 4.60 (Windows - x86)
-; CursorPosition = 307
-; FirstLine = 283
-; Folding = --
-; EnableXP

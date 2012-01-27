@@ -167,6 +167,7 @@ Enumeration 1
 	#GRAB_POS
 	#GRAB_LOOP_START
 	#GRAB_LOOP_END
+	#GRAB_WAVEFORM
 EndEnumeration
 
 
@@ -252,6 +253,8 @@ Enumeration 1
   #Position
   #Text_24
   #Text_26
+  #Text_30
+  #ZoomSlider
   
   #EditorTabs
   
@@ -359,8 +362,9 @@ Global gCueNaming.s	;Cuen nimeämiskäytäntö.		# = numero, $ = pieni kirjain, & = 
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
 Declare StopCue(*cue.Cue)
-Declare UpdateWaveform(pos.f)
+Declare UpdateWaveform(pos.f,mode=0)
 Declare StopProc(handle.i,channel.i,d,*user.Cue)
+Declare Min(a.f,b.f)
 
 Procedure SaveAppSettings()
 	If FileSize("settings.ini") = -1
@@ -572,19 +576,22 @@ Procedure LoadCueStream2(*cue.Cue)
     
     BASS_ChannelGetData(tmpStream,@buffer(0), length)
     
+   
     amount = ArraySize(buffer())
-    s = amount / #WAVEFORM_W
+    tmpW = Min(4000,amount)
+    s = amount / tmpW
     pos = 0
     
+    
     If *cue\waveform = 0
-    	*cue\waveform = CreateImage(#PB_Any,#WAVEFORM_W,120)
+    	*cue\waveform = CreateImage(#PB_Any,tmpW,120)
     EndIf
     
     StartDrawing(ImageOutput(*cue\waveform))
-    Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
+    Box(0,0,tmpW,120,RGB(64,64,64))
    	StopDrawing()
     
-    For i = 0 To #WAVEFORM_W - 1
+    For i = 0 To tmpW - 1
     	StartDrawing(ImageOutput(*cue\waveform))
     	maxValue.f = 0.0
     	For k = (i * s) To (i * s + s)
@@ -598,11 +605,15 @@ Procedure LoadCueStream2(*cue.Cue)
     	StopDrawing()
     	
     	If *gCurrentCue = *cue
-    		UpdateWaveform(0)
+    		If i % 200 = 0
+    			UpdateWaveform(0)
+    		EndIf
     		;SetGadgetState(#WaveImg,ImageID(*cue\waveform))
     	EndIf
     Next i
-
+    
+    UpdateWaveform(0)
+    
     UnlockMutex(gLoadMutex)
 EndProcedure
 
