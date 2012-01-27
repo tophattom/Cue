@@ -1307,6 +1307,8 @@ Procedure HideCueControls()
 	HideGadget(#Text_24, 1)
 	HideGadget(#Position, 1)
 	HideGadget(#Text_26, 1)
+	HideGadget(#Text_30, 1)
+	HideGadget(#ZoomSlider, 1)
 	
 	For i = 0 To 5
 		HideGadget(eventCueSelect(i),1)
@@ -1370,6 +1372,8 @@ Procedure ShowCueControls()
 				HideGadget(#Text_23, 0)
 				HideGadget(#Text_24, 0)
 				HideGadget(#Position, 0)
+				HideGadget(#Text_30, 0)
+				HideGadget(#ZoomSlider, 0)
 				
 				ShowEffectControls()
 			Case #TYPE_EVENT
