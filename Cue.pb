@@ -2062,9 +2062,20 @@ Procedure UpdateWaveform(pos.f,mode=0)
 						grab = 0
 					EndIf
 				EndIf
-				
 			Else
 				grab = 0
+			EndIf
+			
+			If EventType() = #PB_EventType_RightButtonDown
+				posX = mX - drawX
+				pos.f = (posX  * *gCurrentCue\length) / drawW
+				BASS_ChannelSetPosition(*gCurrentCue\stream,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,pos),#BASS_POS_BYTE)
+				
+				SetGadgetText(#Position,SecondsToString(pos))
+					
+				If *gCurrentCue\state <> #STATE_PLAYING
+					*gCurrentCue\state = #STATE_PAUSED
+				EndIf
 			EndIf
 			
 			lastX = mX
