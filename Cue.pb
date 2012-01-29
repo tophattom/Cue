@@ -698,8 +698,7 @@ Repeat ; Start of the event loop
 			UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
 		ElseIf GadgetID = #ZoomSlider
 			zoomLevel.f = GetGadgetState(#ZoomSlider) / 1000
-			
-			ResizeImage(#EndOffset,Max(1,drawW.f - endX.f),#PB_Ignore)
+
 			If (startX.f + drawX.f) > #WAVEFORM_W
 				ResizeImage(#StartOffset,#WAVEFORM_W,#PB_Ignore)
 			Else
@@ -710,6 +709,12 @@ Repeat ; Start of the event loop
 				ResizeImage(#EndOffset,#WAVEFORM_W,#PB_Ignore)
 			Else	
 				ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - (endX + drawX)),#PB_Ignore)
+			EndIf
+			
+			If (loopStartX + drawX) < 0 And (loopEndX + drawX) > #WAVEFORM_W
+				ResizeImage(#LoopArea,#WAVEFORM_W,#PB_Ignore)
+			Else
+				ResizeImage(#LoopArea,Max(1,loopEndX - Max(0,loopStartX)),#PB_Ignore)
 			EndIf
 			
 			UpdateWaveform(StringToSeconds(GetGadgetText(#Position)),1)
@@ -1976,7 +1981,11 @@ Procedure UpdateWaveform(pos.f,mode=0)
 				ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - (endX + drawX)),#PB_Ignore)
 			EndIf
 			
-			ResizeImage(#LoopArea,Max(1,loopEndX - loopStartX),#PB_Ignore)
+			If (loopStartX + drawX) <0 And (loopEndX + drawX) > #WAVEFORM_W
+				ResizeImage(#LoopArea,#WAVEFORM_W,#PB_Ignore)
+			Else
+				ResizeImage(#LoopArea,Max(1,loopEndX - Max(0,loopStartX)),#PB_Ignore)
+			EndIf
 			
 			*lastCue = *gCurrentCue
 		EndIf
@@ -2022,7 +2031,7 @@ Procedure UpdateWaveform(pos.f,mode=0)
 					ResizeImage(#StartOffset,Max(1,startX + drawX),#PB_Ignore)
 					
 					grab = #GRAB_START
-				Else
+				ElseIf grab = 0
 					drawX = Max(#WAVEFORM_W - drawW,Min(0,drawX + mDeltaX))
 					
 					If (startX + drawX) > #WAVEFORM_W
@@ -2077,7 +2086,7 @@ Procedure UpdateWaveform(pos.f,mode=0)
 					*gCurrentCue\state = #STATE_PAUSED
 				EndIf
 			EndIf
-			
+
 			lastX = mX
 		EndIf
 
@@ -2100,7 +2109,12 @@ Procedure UpdateWaveform(pos.f,mode=0)
 		If *gCurrentCue\looped = #True
 			FrontColor($00FF00)
 			
-			DrawAlphaImage(ImageID(#LoopArea),loopStartX + drawX,0,60)
+ 			If (loopStartX + drawX) < 0 And (loopEndX + drawX) > #WAVEFORM_W
+				tmpX = 0
+			Else
+				tmpX = loopStartX + drawX
+			EndIf
+			DrawAlphaImage(ImageID(#LoopArea),tmpX,0,60)
 			
 			LineXY(loopStartX + drawX,0,loopStartX + drawX,120)
 			Triangle(loopStartX + drawX,110,loopStartX + 7 + drawX,115,loopStartX + drawX,120,1)
