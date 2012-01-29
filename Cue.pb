@@ -202,6 +202,9 @@ Repeat ; Start of the event loop
 		ElseIf MenuID = #PlaySc ;---Pikanäppäimet
 			Event = #PB_Event_Gadget
 			GadgetID = #PlayButton
+		ElseIf MenuID = #StopSc
+			Event = #PB_Event_Gadget
+			GadgetID = #StopButton
 		ElseIf MenuID = #DeleteSc
 			If ListSize(*gSelection()) <= 1
 	      		If *gCurrentCue <> 0
@@ -240,6 +243,29 @@ Repeat ; Start of the event loop
       	ElseIf MenuID = #ExplorerSc
       		Event = #PB_Event_Gadget
       		GadgetID = #ExplorerButton
+      	ElseIf MenuID = #InSc
+      		If *gCurrentCue <> 0
+      			*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#Position))
+      			SetGadgetText(#StartPos,SecondsToString(*gCurrentCue\startPos))
+      			
+      			startX.f = #WAVEFORM_W * (*gCurrentCue\startPos / *gCurrentCue\length)
+      			ResizeImage(#StartOffset,Max(1,startX),#PB_Ignore)
+      			
+      			UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
+      		EndIf
+      	ElseIf MenuID = #OutSc
+      		If *gCurrentCue <> 0
+      			*gCurrentCue\endPos = StringToSeconds(GetGadgetText(#Position))	
+      			SetGadgetText(#EndPos,SecondsToString(*gCurrentCue\endPos))
+      			
+      			BASS_ChannelRemoveSync(*gCurrentCue\stream,*gCurrentCue\stopHandle)
+	      		*gCurrentCue\stopHandle = BASS_ChannelSetSync(*gCurrentCue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*gCurrentCue\stream,*gCurrentCue\endPos),@StopProc(),*gCurrentCue)
+	      		
+	      		endX.f = #WAVEFORM_W * (*gCurrentCue\endPos / *gCurrentCue\length)
+	      		ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
+	      		
+      			UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
+			EndIf	
       	EndIf
       	
       	For i = 0 To #MAX_RECENT - 1

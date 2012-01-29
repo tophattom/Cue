@@ -60,6 +60,7 @@ Procedure Open_MainWindow()
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Control | #PB_Shortcut_Alt | #PB_Shortcut_S,#MenuSaveAs)
       
       AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Space,#PlaySc)
+      AddKeyboardShortcut(#MainWindow,#PB_Shortcut_Return,#StopSc)
     
     EndIf
 
@@ -95,6 +96,8 @@ Procedure Open_EditorWindow()
   	
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_Delete,#DeleteSc)
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_E,#ExplorerSc)
+  	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_I,#InSc)
+  	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_O,#OutSc)
   	
   	ListViewGadget(#EditorList, 10, 50, 200, 615,#PB_ListView_MultiSelect)
   	EnableGadgetDrop(#EditorList,#PB_Drop_Files,#PB_Drag_Copy)

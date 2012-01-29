@@ -315,10 +315,14 @@ Enumeration
   #MenuAbout
 
   #PlaySc
+  #StopSc
   
   #DeleteSc
   
   #ExplorerSc
+  
+  #InSc
+  #OutSc
 EndEnumeration
 ;}
 
