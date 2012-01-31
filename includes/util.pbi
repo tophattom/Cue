@@ -1167,8 +1167,237 @@ Procedure SaveCueList(path.s,check=1)
 		FirstElement(cueList())
 		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 	EndIf
-
+	
 	ProcedureReturn #True
+EndProcedure
+
+Procedure SaveCueListXML(path.s,check=1)
+	xml = CreateXML(#PB_Any)
+	mainNode = CreateXMLNode(RootXMLNode(xml))
+	SetXMLNodeName(mainNode,"cuelist")
+	
+	;Listan asetukset
+	setNode = CreateXMLNode(mainNode)
+	SetXMLNodeName(setNode,"settings")
+	SetXMLAttribute(setNode,"amount",Str(#SETTINGS))
+	For i = 0 To #SETTINGS - 1
+		tmpNode = CreateXMLNode(setNode)
+		SetXMLNodeName(tmpNode,"setting")
+		SetXMLAttribute(tmpNode,"type",Str(i))
+		SetXMLAttribute(tmpNode,"value",Str(gListSettings(i)))
+	Next i
+	
+	;Kirjoitetaan idt alkuun, jotta cuet voidaan luoda ennen tietojen asetusta
+	idNode = CreateXMLNode(mainNode)
+	SetXMLNodeName(idNode,"ids")
+	SetXMLAttribute(idNode,"amount",Str(gCueAmount))
+	ForEach cueList()
+		tmpNode = CreateXMLNode(idNode)
+		SetXMLNodeName(tmpNode,"cueid")
+		SetXMLNodeText(tmpNode,Str(cueList()\id))
+	Next
+	
+	;Cuejen tiedot
+	cuesNode = CreateXMLNode(mainNode)
+	SetXMLNodeName(cuesNode,"cues")
+	SetXMLAttribute(cuesNode,"amount",Str(gCueAmount))
+	ForEach cueList()
+		cueNode = CreateXMLNode(cuesNode)
+		SetXMLNodeName(cueNode,"cue")
+		SetXMLAttribute(cueNode,"id",Str(cueList()\id))
+		
+		;Cuen tyyppi
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"type")
+		SetXMLNodeText(tmpNode,Str(cueList()\cueType))
+		
+		;Nimi
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"name")
+		SetXMLNodeText(tmpNode,cueList()\name)
+		
+		;Kuvaus
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"description")
+		SetXMLNodeText(tmpNode,cueList()\desc)
+		
+		;Tiedostopolku
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"file")
+		SetXMLNodeText(tmpNode,cueList()\filePath)
+		
+		;Aloitustapa
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"startmode")
+		SetXMLNodeText(tmpNode,Str(cueList()\startMode))
+		
+		;Viive
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"delay")
+		SetXMLNodeText(tmpNode,StrF(cueList()\delay))
+		
+		;After cue
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"aftercue")
+		If cueList()\afterCue <> 0
+			SetXMLNodeText(tmpNode,Str(cueList()\afterCue\id))
+		Else
+			SetXMLNodeText(tmpNode,"")
+		EndIf
+		
+		;Cuen j‰lkeiset cuet
+		followNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(followNode,"followcues")
+		SetXMLAttribute(followNode,"amount",Str(ListSize(cueList()\followCues())))
+		ForEach cueList()\followCues()
+			tmpNode = CreateXMLNode(followNode)
+			SetXMLNodeName(tmpNode,"cueid")
+			SetXMLNodeText(tmpNode,Str(cueList()\followCues()\id))
+		Next
+		
+		If cueList()\cueType = #TYPE_AUDIO
+			;Alku
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"startpos")
+			SetXMLNodeText(tmpNode,StrF(cueList()\startPos))
+			;Loppu
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"endpos")
+			SetXMLNodeText(tmpNode,StrF(cueList()\endPos))
+			
+			;Looppi
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"looped")
+			SetXMLNodeText(tmpNode,Str(cueList()\looped))
+			;Loopin alku
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"loopstart")
+			SetXMLNodeText(tmpNode,StrF(cueList()\loopStart))
+			;Loopin loppu
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"loopend")
+			SetXMLNodeText(tmpNode,StrF(cueList()\loopEnd))
+			;Looppien m‰‰r‰
+			tmpNode	= CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"loopcount")
+			SetXMLNodeText(tmpNode,Str(cueList()\loopCount))
+			
+			;Fade in
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"fadein")
+			SetXMLNodeText(tmpNode,StrF(cueList()\fadeIn))
+			;Fade out
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"fadeout")
+			SetXMLNodeText(tmpNode,StrF(cueList()\fadeOut))
+			
+			;Volume
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"volume")
+			SetXMLNodeText(tmpNode,StrF(cueList()\volume))
+			;Pannaus
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"pan")
+			SetXMLNodeText(tmpNode,StrF(cueList()\pan))
+		EndIf
+		
+		;Eventit
+		If cueList()\cueType = #TYPE_EVENT
+			eventsNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(eventsNode,"events")
+			For i = 0 To 5
+				eventNode = CreateXMLNode(eventsNode)
+				SetXMLNodeName(eventNode,"event")
+				SetXMLAttribute(eventNode,"action",Str(cueList()\actions[i]))
+				
+				;Kohde
+				tmpNode = CreateXMLNode(eventNode)
+				SetXMLNodeName(tmpNode,"target")
+				If cueList()\actionCues[i] <> 0
+					SetXMLNodeText(tmpNode,Str(cueList()\actionCues[i]\id))
+				Else
+					SetXMLNodeText(tmpNode,"0")
+				EndIf
+
+				;Kohde-efekti
+				tmpNode = CreateXMLNode(eventNode)
+				SetXMLNodeName(tmpNode,"effect")
+				If cueList()\actionEffects[i] <> 0
+					SetXMLNodeText(tmpNode,Str(cueList()\actionEffects[i]\id))
+				Else
+					SetXMLNodeText(tmpNode,"0")
+				EndIf
+			Next i
+		EndIf
+		
+		;Efektit
+		If cueList()\cueType = #TYPE_AUDIO
+			effectsNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(effectsNode,"effects")
+			SetXMLAttribute(effectsNode,"amount",Str(ListSize(cueList()\effects())))
+			
+			ForEach cueList()\effects()
+				With cueList()\effects()
+					effectNode = CreateXMLNode(effectsNode)
+					SetXMLNodeName(effectNode,"effect")
+					SetXMLAttribute(effectNode,"type",Str(\type))
+					SetXMLAttribute(effectNode,"id",Str(\id))
+					
+					;Aktiivisuus
+					tmpNode = CreateXMLNode(effectNode)
+					SetXMLNodeName(tmpNode,"active")
+					SetXMLNodeText(tmpNode,Str(\active))
+					
+					;Arvot
+					If \type = #BASS_FX_DX8_REVERB
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"ingain")
+						SetXMLNodeText(tmpNode,StrF(\revParam\fInGain))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"reverbmix")
+						SetXMLNodeText(tmpNode,StrF(\revParam\fReverbMix))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"reverbtime")
+						SetXMLNodeText(tmpNode,StrF(\revParam\fReverbTime))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"hfrtr")
+						SetXMLNodeText(tmpNode,StrF(\revParam\fHighFreqRTRatio))
+					ElseIf \type = #BASS_FX_DX8_PARAMEQ
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"center")
+						SetXMLNodeText(tmpNode,StrF(\eqParam\fCenter))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"bandwidth")
+						SetXMLNodeText(tmpNode,StrF(\eqParam\fBandwidth))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"gain")
+						SetXMLNodeText(tmpNode,StrF(\eqParam\fGain))
+					ElseIf \type = #EFFECT_VST
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"vstpath")
+						SetXMLNodeText(tmpNode,\pluginPath)
+
+						pAmount = BASS_VST_GetParamCount(\handle)
+						For i = 0 To pAmount - 1
+							info.BASS_VST_PARAM_INFO
+							BASS_VST_GetParamInfo(\handle,i,@info)
+							
+							tmpNode = CreateXMLNode(effectNode)
+							SetXMLNodeName(tmpNode,info\name)
+							SetXMLNodeText(tmpNode,StrF(BASS_VST_GetParam(\handle,i)))
+						Next i
+					EndIf
+				EndWith
+			Next		
+		EndIf
+	Next
+
+	SaveXML(xml,path)
 EndProcedure
 
 Procedure LoadCueList(lPath.s)

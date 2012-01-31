@@ -156,7 +156,8 @@ Repeat ; Start of the event loop
 			
 			If gSavePath <> ""
 				SaveCueList(gSavePath,check)
-			EndIf  
+			EndIf
+			SaveCueListXML("tmp.xml")
 		ElseIf MenuID = #MenuSaveAs
 			gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
 			
