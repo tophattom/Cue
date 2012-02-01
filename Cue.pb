@@ -274,10 +274,8 @@ Repeat ; Start of the event loop
       			path = gRecentFiles(i)
       			
       			If path <> ""	
-					ClearCueList()
-					
-					CreateThread(@Open_LoadWindow(),0)
-					
+      				ClearCueList()
+      				
 					If LoadCueListXML(path)
 						gSavePath = path
 						

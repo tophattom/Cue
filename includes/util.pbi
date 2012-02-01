@@ -1972,6 +1972,11 @@ Procedure ClearCueList()
 		If cueList()\waveform <> 0
 			FreeImage(cueList()\waveform)
 		EndIf
+		
+		ForEach cueList()\events()
+			DeleteElement(cueList()\events())
+		Next
+		
 	Next
 	
 	ClearList(cueList())
