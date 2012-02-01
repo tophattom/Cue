@@ -1456,6 +1456,11 @@ Procedure SaveCueListXML(path.s,check=1)
 
 	SaveXML(xml,path)
 	
+	If ListSize(cueList()) > 0
+		FirstElement(cueList())
+		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+	EndIf
+	
 	ProcedureReturn #True
 EndProcedure
 
@@ -1938,8 +1943,17 @@ Procedure LoadCueListXML(lPath.s)
 			currentNode = NextXMLNode(currentNode)
 			
 		ForEver
-
+	Else
+		MessageRequester("Error","File " + lPath + " couldn't be loaded!")
+		ProcedureReturn #False
+	endif
+	
+	If ListSize(cueList()) > 0
+		FirstElement(cueList())
+		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 	EndIf
+	
+	ProcedureReturn #True
 EndProcedure
 
 Procedure ClearCueList()
