@@ -162,7 +162,7 @@ Repeat ; Start of the event loop
 			gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
 			
 			If gSavePath <> ""
-				SaveCueList(gSavePath)
+				SaveCueListXML(gSavePath)
 			EndIf
 		ElseIf MenuID = #MenuPref
 			If IsWindow(#PrefWindow)
@@ -185,7 +185,7 @@ Repeat ; Start of the event loop
 					EndIf
 					
 					If gSavePath <> ""
-						SaveCueList(gSavePath,check)
+						SaveCueListXML(gSavePath,check)
 						End
 					EndIf
 				ElseIf result = #PB_MessageRequester_No
@@ -1108,7 +1108,7 @@ Repeat ; Start of the event loop
 					EndIf
 					
 					If gSavePath <> ""
-						SaveCueList(gSavePath,check)
+						SaveCueListXML(gSavePath,check)
 						End
 					EndIf
 				ElseIf result = #PB_MessageRequester_No
