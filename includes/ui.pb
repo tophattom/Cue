@@ -109,6 +109,7 @@ Procedure Open_EditorWindow()
     LoadImage(#PauseImg,"Images/epause.ico")
     LoadImage(#StopImg,"Images/estop.ico")
     LoadImage(#ExplorerImg,"Images/explorer.ico")
+    LoadImage(#AddImg,"Images/add.ico")
     
     CreateImage(#BlankWave, #WAVEFORM_W, 120)
     StartDrawing(ImageOutput(#BlankWave))
@@ -201,19 +202,34 @@ Procedure Open_EditorWindow()
       StringGadget(#Position, 5 + #WAVEFORM_W - 50, 460, 50, 20, "", #PB_String_ReadOnly) : GadgetToolTip(#Position,"Current cue position")
       
       ;Event cue
-      TextGadget(#Text_18, 5, 245, 40, 20, "Cue:")
-      TextGadget(#Text_19, 275, 245, 40, 20, "Action:")
-      TextGadget(#Text_26, 445, 245, 40, 20, "Effect:")
-      For i = 0 To 5
-      	eventCueSelect(i) = ComboBoxGadget(#PB_Any, 45, 245 + (i * 40), 200, 20)
-      	eventActionSelect(i) = ComboBoxGadget(#PB_Any, 315, 245 + (i * 40), 120, 20)
-      	eventEffectSelect(i) = ComboBoxGadget(#PB_Any, 485, 245 + (i * 40), 150, 20)
-      	DisableGadget(eventEffectSelect(i),1)
-      Next i
+      TextGadget(#Text_18, 5, 245, 40, 20, "Events:")
+      ListViewGadget(#EventList, 5, 265, 100, 140)
+      
+      TextGadget(#Text_19, 115, 265, 40, 20, "Target:")
+      ComboBoxGadget(#EventTarget, 115, 285, 200,20)
+      
+      TextGadget(#Text_26, 115, 315, 40, 20, "Action:")
+      ComboBoxGadget(#EventAction, 115, 335, 120, 20)
+      AddGadgetItem(#EventAction,0,"Fade out")
+      AddGadgetItem(#EventAction,1,"Stop")
+      AddGadgetItem(#EventAction,2,"Release loop")
+      AddGadgetItem(#EventAction,3,"Effect on")
+      AddGadgetItem(#EventAction,4,"Effect off")
+      
+      TextGadget(#Text_31, 115, 365, 40, 20, "Effect:")
+      ComboBoxGadget(#EventEffect, 115, 385, 120, 20)
+      
+      ButtonImageGadget(#EventAdd, 5, 410, 30, 30, ImageID(#AddImg))
+      ButtonImageGadget(#EventDelete, 75, 410, 30, 30, ImageID(#DeleteImg))
+      
+      
       
       ;Change cue
       TextGadget(#Text_20, 5, 185, 100, 20, "Change duration:")
       StringGadget(#ChangeDur, 105, 185, 40, 20, "")
+      
+      TextGadget(#Text_32, 5, 245, 60, 20, "Target cue:")
+      ComboBoxGadget(#ChangeTarget, 65, 245, 200, 20)
       
       ;Efektivälilehti
       AddGadgetItem(#EditorTabs, 1, "Effects")

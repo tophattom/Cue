@@ -25,6 +25,9 @@ Declare MoveCueUp(*cue.Cue)
 Declare MoveCueDown(*cue.Cue)
 Declare UpdateAppSettings()
 Declare UpdateWaveform(pos.f,mode=0)
+Declare ShowEventControls()
+Declare HideEventControls()
+Declare UpdateEventList()
 
 LoadAppSettings()
 
@@ -51,7 +54,7 @@ If paramCount > 0
 		If Right(param,4) = ".clf"
 			gSavePath = param
 			ClearCueList()
-			LoadCueList(param)
+			LoadCueListXML(param)
 				
 			*gCurrentCue = FirstElement(cueList())
 			UpdateMainCueList()
@@ -275,7 +278,7 @@ Repeat ; Start of the event loop
 					
 					CreateThread(@Open_LoadWindow(),0)
 					
-					If LoadCueList(path)
+					If LoadCueListXML(path)
 						gSavePath = path
 						
 						*gCurrentCue = FirstElement(cueList())
@@ -664,6 +667,8 @@ Repeat ; Start of the event loop
 			EndIf
 		ElseIf GadgetID = #ChangeDur
 			*gCurrentCue\fadeIn = Val(GetGadgetText(#ChangeDur))
+		ElseIf GadgetID = #ChangeTarget
+			*gCurrentCue\events()\target = GetGadgetItemData(#ChangeTarget,GetGadgetState(#ChangeTarget))
 		ElseIf GadgetID = #LoopEnable ;--- Looppaus
 			If GetGadgetState(#LoopEnable) = #PB_Checkbox_Checked
 				*gCurrentCue\looped = #True
@@ -980,6 +985,49 @@ Repeat ; Start of the event loop
 		EndIf
 		;}
 		
+		;--- Eventien s‰‰timet
+		;{
+		If GadgetID = #EventAdd
+			AddElement(*gCurrentCue\events())
+			*gCurrentCue\events()\action = #EVENT_FADE_OUT
+			
+			*gCurrentEvent = *gCurrentCue\events()
+			
+			UpdateEventList()
+			ShowEventControls()
+		ElseIf GadgetID = #EventDelete
+			ChangeCurrentElement(*gCurrentCue\events(),*gCurrentEvent)
+			DeleteElement(*gCurrentCue\events())
+			
+			*gCurrentEvent = 0
+			
+			UpdateEventList()
+			HideEventControls()
+		ElseIf GadgetID = #EventList
+			If GetGadgetState(#EventList) <> -1
+				*gCurrentEvent = GetGadgetItemData(#EventList,GetGadgetState(#EventList))
+				
+				ShowEventControls()
+			Else
+				HideEventControls()
+			EndIf
+		ElseIf GadgetID = #EventTarget
+			*gCurrentEvent\target = GetGadgetItemData(#EventTarget,GetGadgetState(#EventTarget))
+			
+			UpdateEventList()
+			ShowEventControls()
+		ElseIf GadgetID = #EventAction
+			*gCurrentEvent\action = GetGadgetState(#EventAction) + 1
+			
+			UpdateEventList()
+			ShowEventControls()
+		ElseIf GadgetID = #EventEffect
+			*gCurrentEvent\effect = GetGadgetItemData(#EventEffect,GetGadgetState(#EventEffect))
+			
+			ShowEventControls()
+		EndIf
+		;}
+		
 		;- Listan asetukset
 		;{
 		If GadgetID = #CheckRelative ;--- Suhteelliset polut
@@ -1043,25 +1091,6 @@ Repeat ; Start of the event loop
 			ExplorerTreeGadget(#FileBrowser, 0, 24, WindowWidth(#ExplorerWindow), WindowHeight(#ExplorerWindow) - 24, tmpPath)
 		EndIf
 	EndIf
-
-	
-	For i = 0 To 5
-		If GadgetID = eventCueSelect(i)
-			*gCurrentCue\actionCues[i] = GetGadgetItemData(eventCueSelect(i),GetGadgetState(eventCueSelect(i)))
-		EndIf
-		
-		If GadgetID = eventActionSelect(i)
-			*gCurrentCue\actions[i] = GetGadgetItemData(eventActionSelect(i),GetGadgetState(eventActionSelect(i)))
-			
-			If *gCurrentCue\actions[i] = #EVENT_EFFECT_ON Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
-				UpdateCueControls()
-			EndIf
-		EndIf
-		
-		If GadgetID = eventEffectSelect(i)
-			*gCurrentCue\actionEffects[i] = GetGadgetItemData(eventEffectSelect(i),GetGadgetState(eventEffectSelect(i)))
-		EndIf
-	Next i
 
 	If Event = #PB_Event_CloseWindow
 		eWindow = EventWindow()
@@ -1190,7 +1219,7 @@ Repeat ; Start of the event loop
 	    		
 	    		CreateThread(@Open_LoadWindow(),0)
 	    		
-				If LoadCueList(path)
+				If LoadCueListXML(path)
 					gSavePath = path
 					
 					*gCurrentCue = FirstElement(cueList())
@@ -1323,6 +1352,8 @@ Procedure HideCueControls()
 	HideGadget(#Text_19,1)
 	HideGadget(#Text_20,1)
 	HideGadget(#ChangeDur,1)
+	HideGadget(#Text_32, 1)
+	HideGadget(#ChangeTarget, 1)
 	HideGadget(#EditorPlay,1)
 	HideGadget(#EditorPause,1)
 	HideGadget(#EditorStop,1)
@@ -1338,13 +1369,14 @@ Procedure HideCueControls()
 	HideGadget(#Text_26, 1)
 	HideGadget(#Text_30, 1)
 	HideGadget(#ZoomSlider, 1)
-	
-	For i = 0 To 5
-		HideGadget(eventCueSelect(i),1)
-		HideGadget(eventActionSelect(i),1)
-		HideGadget(eventEffectSelect(i),1)
-	Next i
-	
+	HideGadget(#EventList, 1)
+	HideGadget(#EventTarget, 1)
+	HideGadget(#EventAction, 1)
+	HideGadget(#EventEffect, 1)
+	HideGadget(#Text_31, 1)
+	HideGadget(#EventAdd, 1)
+	HideGadget(#EventDelete, 1)
+
 	HideEffectControls()
 EndProcedure
 
@@ -1407,14 +1439,12 @@ Procedure ShowCueControls()
 				ShowEffectControls()
 			Case #TYPE_EVENT
 				HideGadget(#Text_18,0)
-				HideGadget(#Text_19,0)
-				HideGadget(#Text_26,0)
+; 				HideGadget(#Text_19,0)
+; 				HideGadget(#Text_26,0)
+				HideGadget(#EventList, 0)
+				HideGadget(#EventAdd, 0)
+				HideGadget(#EventDelete, 0)
 				
-				For i = 0 To 5
-					HideGadget(eventCueSelect(i),0)
-					HideGadget(eventActionSelect(i),0)
-					HideGadget(eventEffectSelect(i),0)
-				Next i
 			Case #TYPE_CHANGE
 				HideGadget(#Text_14,0)
 				HideGadget(#Text_15,0)
@@ -1424,8 +1454,8 @@ Procedure ShowCueControls()
 				HideGadget(#PanSlider,0)
 				HideGadget(#Text_20,0)
 				HideGadget(#ChangeDur,0)
-				HideGadget(#Text_18,0)
-				HideGadget(eventCueSelect(0),0)
+				HideGadget(#Text_32,0)
+				HideGadget(#ChangeTarget, 0)
 		EndSelect
 	EndIf
 EndProcedure
@@ -1460,6 +1490,93 @@ Procedure ShowEffectControls()
 			Next i
 		Next
 	EndIf
+EndProcedure
+
+Procedure HideEventControls()
+	HideGadget(#Text_19, 1)
+	HideGadget(#Text_26, 1)
+	HideGadget(#Text_31, 1)
+	HideGadget(#EventTarget, 1)
+	HideGadget(#EventAction, 1)
+	HideGadget(#EventEffect, 1)
+EndProcedure
+
+Procedure ShowEventControls()
+	HideGadget(#Text_19, 0)
+	HideGadget(#Text_26, 0)
+	HideGadget(#EventTarget, 0)
+	HideGadget(#EventAction, 0)
+
+	ClearGadgetItems(#EventTarget)
+	i = 0
+	ForEach cueList()
+		If @cueList() <> *gCurrentCue
+			AddGadgetItem(#EventTarget,i,cueList()\name + " " + cueList()\desc)
+			SetGadgetItemData(#EventTarget,i,@cueList())
+			
+			If @cueList() = *gCurrentEvent\target
+				SetGadgetState(#EventTarget,i)
+			EndIf
+			
+			i + 1
+		EndIf
+	Next
+	
+	SetGadgetState(#EventAction,*gCurrentEvent\action - 1)
+	
+	If (*gCurrentEvent\action = #EVENT_EFFECT_ON Or *gCurrentEvent\action = #EVENT_EFFECT_OFF) And *gCurrentEvent\target <> 0
+		HideGadget(#Text_31, 0)
+		HideGadget(#EventEffect, 0)
+		
+		ClearGadgetItems(#EventEffect)
+		i = 0
+		ForEach *gCurrentEvent\target\effects()
+			AddGadgetItem(#EventEffect,i,*gCurrentEvent\target\effects()\name + " " + Str(*gCurrentEvent\target\effects()\id))
+			SetGadgetItemData(#EventEffect,i,@*gCurrentEvent\target\effects())
+			
+			If @*gCurrentEvent\target\effects() = *gCurrentEvent\effect
+				SetGadgetState(#EventEffect,i)
+			EndIf
+			
+			i + 1
+		Next
+	Else
+		HideGadget(#Text_31, 1)
+		HideGadget(#EventEffect, 1)
+	EndIf
+EndProcedure
+
+Procedure UpdateEventList()
+	ClearGadgetItems(#EventList)
+	i = 0
+	ForEach *gCurrentCue\events()
+		Select *gCurrentCue\events()\action
+			Case #EVENT_FADE_OUT
+				text.s = "Fade out"
+			Case #EVENT_STOP
+				text.s = "Stop"
+			Case #EVENT_RELEASE
+				text.s = "Release"
+			Case #EVENT_EFFECT_ON
+				text.s = "Effect on"
+			Case #EVENT_EFFECT_OFF
+				text.s = "Effect off"
+		EndSelect
+		
+		If *gCurrentCue\events()\target <> 0
+			text = text + " " + *gCurrentCue\events()\target\name
+		EndIf
+		
+		AddGadgetItem(#EventList,i,text)
+		SetGadgetItemData(#EventList,i,@*gCurrentCue\events())
+		
+		If @*gCurrentCue\events() = *gCurrentEvent
+			SetGadgetState(#EventList,i)
+		EndIf
+		
+		
+		i + 1
+	Next
 EndProcedure
 
 Procedure UpdateCueControls()
@@ -1499,6 +1616,23 @@ Procedure UpdateCueControls()
 		SetGadgetText(#StartDelay,StrF(*gCurrentCue\delay / 1000.0,2))
 		
 		SetGadgetText(#ChangeDur,StrF(*gCurrentCue\fadeIn,2))
+		If *gCurrentCue\cueType = #TYPE_CHANGE
+			FirstElement(*gCurrentCue\events())
+			ClearGadgetItems(#ChangeTarget)
+			i = 0
+			ForEach cueList()
+				If @cueList() <> *gCurrentCue
+					AddGadgetItem(#ChangeTarget,i,cueList()\name + " " + cueList()\desc)
+					SetGadgetItemData(#ChangeTarget,i,@cueList())
+					
+					If @cueList() = *gCurrentCue\events()\target
+						SetGadgetState(#ChangeTarget,i)
+					EndIf
+					
+					i + 1
+				EndIf
+			Next
+		EndIf
 			
 		ClearGadgetItems(#CueSelect)
 		If *gCurrentCue\startMode = #START_AFTER_END Or *gCurrentCue\startMode = #START_AFTER_START
@@ -1543,85 +1677,7 @@ Procedure UpdateCueControls()
 			DrawImage(ImageID(#BlankWave),0,0)
 			StopDrawing()
 		EndIf
-		
-		
-		For i = 0 To 5
-			ClearGadgetItems(eventCueSelect(i))
-			ClearGadgetItems(eventActionSelect(i))
-			ClearGadgetItems(eventEffectSelect(i))
-			DisableGadget(eventEffectSelect(i),1)
-			
-			
-			AddGadgetItem(eventCueSelect(i), 0, "")
-			SetGadgetItemData(eventCueSelect(i), 0, 0)
-			
-			k = 1
-			ForEach cueList()
-				If @cueList() <> *gCurrentCue And cueList()\cueType <> #TYPE_NOTE
-					AddGadgetItem(eventCueSelect(i), k, cueList()\name + "  " + cueList()\desc)
-					SetGadgetItemData(eventCueSelect(i), k, @cueList())
-					
-					If @cueList() = *gCurrentCue\actionCues[i]
-						SetGadgetState(eventCueSelect(i), k)
-					EndIf
-					
-					k + 1
-				EndIf
-			Next
-			
-			AddGadgetItem(eventActionSelect(i), 0, "")
-			SetGadgetItemData(eventActionSelect(i), 0, 0)
-			
-			AddGadgetItem(eventActionSelect(i), 1 , "Fade out")
-			SetGadgetItemData(eventActionSelect(i), 1, #EVENT_FADE_OUT)
-			
-			AddGadgetItem(eventActionSelect(i), 2, "Stop")
-			SetGadgetItemData(eventActionSelect(i), 2, #EVENT_STOP)
-			
-			AddGadgetItem(eventActionSelect(i), 3, "Release loop")
-			SetGadgetItemData(eventActionSelect(i), 3, #EVENT_RELEASE)
-			
-			AddGadgetItem(eventActionSelect(i), 4, "Effect on")
-			SetGadgetItemData(eventActionSelect(i), 4, #EVENT_EFFECT_ON)
-			
-			AddGadgetItem(eventActionSelect(i), 5, "Effect off")
-			SetGadgetItemData(eventActionSelect(i), 5, #EVENT_EFFECT_OFF)
-			
-			If *gCurrentCue\actions[i] = #EVENT_FADE_OUT
-				SetGadgetState(eventActionSelect(i), 1)
-			ElseIf *gCurrentCue\actions[i] = #EVENT_STOP
-				SetGadgetState(eventActionSelect(i), 2)
-			ElseIf *gCurrentCue\actions[i] = #EVENT_RELEASE
-				SetGadgetState(eventActionSelect(i),3)
-			ElseIf *gCurrentCue\actions[i] = #EVENT_EFFECT_ON Or *gCurrentCue\actions[i] = #EVENT_EFFECT_OFF
-				If *gCurrentCue\actions[i] = #EVENT_EFFECT_ON
-					SetGadgetState(eventActionSelect(i), 4)
-				Else
-					SetGadgetState(eventActionSelect(i), 5)
-				EndIf
-				
-				DisableGadget(eventEffectSelect(i),0)
 	
-				If *gCurrentCue\actionCues[i] <> 0
-					AddGadgetItem(eventEffectSelect(i), 0, "")
-					SetGadgetItemData(eventEffectSelect(i), 0, 0)
-					
-					k = 1
-					ForEach *gCurrentCue\actionCues[i]\effects()
-						AddGadgetItem(eventEffectSelect(i),k,*gCurrentCue\actionCues[i]\effects()\name + " " + Str(*gCurrentCue\actionCues[i]\effects()\id))
-						SetGadgetItemData(eventEffectSelect(i),k,@*gCurrentCue\actionCues[i]\effects())
-						
-						If @*gCurrentCue\actionCues[i]\effects() = *gCurrentCue\actionEffects[i]
-							SetGadgetState(eventEffectSelect(i),k)
-						EndIf
-						
-						k + 1
-					Next
-				EndIf
-				
-			EndIf
-		Next i
-		
 		UpdatePosField()
 		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
 	
@@ -1637,6 +1693,7 @@ Procedure UpdateCueControls()
 		
 		HideEffectControls()
 		ShowEffectControls()
+		UpdateEventList()
 	EndIf
 
 EndProcedure
@@ -1764,35 +1821,37 @@ Procedure StartEvents(*cue.Cue)
 		*cue\startTime = ElapsedMilliseconds()
 		
 		If *cue\cueType = #TYPE_EVENT
-			For i = 0 To 5
-				If *cue\actionCues[i] <> 0
-					Select *cue\actions[i]
+			ForEach *cue\events()
+				If *cue\events()\target <> 0
+					Select *cue\events()\action
 						Case #EVENT_FADE_OUT
-							*cue\actionCues[i]\state = #STATE_FADING_OUT
-							BASS_ChannelSlideAttribute(*cue\actionCues[i]\stream,#BASS_ATTRIB_VOL,0,*cue\actionCues[i]\fadeOut * 1000)
+							*cue\events()\target\state = #STATE_FADING_OUT
+							BASS_ChannelSlideAttribute(*cue\events()\target\stream,#BASS_ATTRIB_VOL,0,*cue\events()\target\fadeOut * 1000)
 						Case #EVENT_STOP
-							StopCue(*cue\actionCues[i])
+							StopCue(*cue\events()\target)
 						Case #EVENT_RELEASE
-							If *cue\actionCues[i]\loopHandle <> 0
-								BASS_ChannelRemoveSync(*cue\actionCues[i]\stream,*cue\actionCues[i]\loopHandle)
-								*cue\actionCues[i]\loopHandle = 0
-								*cue\actionCues[i]\loopsDone = 0
+							If *cue\events()\target\loopHandle <> 0
+								BASS_ChannelRemoveSync(*cue\events()\target\stream,*cue\events()\target\loopHandle)
+								*cue\events()\target\loopHandle = 0
+								*cue\events()\target\loopsDone = 0
 							EndIf
 						Case #EVENT_EFFECT_ON
-							If *cue\actionEffects[i] <> 0
-								DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],0)
+							If *cue\events()\effect <> 0
+								DisableCueEffect(*cue\events()\target,*cue\events()\effect,0)
 							EndIf
 						Case #EVENT_EFFECT_OFF
-							If *cue\actionEffects[i] <> 0
-								DisableCueEffect(*cue\actionCues[i],*cue\actionEffects[i],1)
+							If *cue\events()\effect <> 0
+								DisableCueEffect(*cue\events()\target,*cue\events()\effect,1)
 							EndIf
 					EndSelect
 				EndIf
-			Next i
+			Next
 		ElseIf *cue\cueType = #TYPE_CHANGE
-			If *cue\actionCues[0] <> 0
-				BASS_ChannelSlideAttribute(*cue\actionCues[0]\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
-				BASS_ChannelSlideAttribute(*cue\actionCues[0]\stream,#BASS_ATTRIB_PAN,*cue\pan,*cue\fadeIn * 1000)
+			If ListSize(*cue\events()) > 0
+				FirstElement(*cue\events())
+				
+				BASS_ChannelSlideAttribute(*cue\events()\target\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
+				BASS_ChannelSlideAttribute(*cue\events()\target\stream,#BASS_ATTRIB_PAN,*cue\pan,*cue\fadeIn * 1000)
 			EndIf
 		EndIf
 		

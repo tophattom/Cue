@@ -22,6 +22,13 @@ Structure Effect
 EndStructure
 ;}
 
+;-Event structure
+Structure Event
+	*target.Cue
+	action.i
+	*effect.Effect
+EndStructure
+
 ;-Cue structure
 ;{
 Structure Cue
@@ -69,9 +76,7 @@ Structure Cue
 	volume.f
 	pan.f
 	
-	*actionCues.Cue[6]
-	actions.i[6]
-	*actionEffects.Effect[6]
+	List events.Event()
 	
 	List effects.Effect()
 
@@ -159,6 +164,7 @@ Enumeration
 	#StopImg
 	#ExplorerImg
 	#RefreshImg
+	#AddImg
 	
 	#StartOffset
 	#EndOffset
@@ -243,6 +249,13 @@ Enumeration 1
   #Text_18
   #Text_19
   #Text_20
+  #Text_31
+  #EventList
+  #EventTarget
+  #EventAction
+  #EventEffect
+  #EventAdd
+  #EventDelete
   #ChangeDur
   #EditorPlay
   #EditorPause
@@ -260,6 +273,8 @@ Enumeration 1
   #Text_26
   #Text_30
   #ZoomSlider
+  #Text_32
+  #ChangeTarget
   
   #EditorTabs
   
@@ -345,6 +360,8 @@ Global Dim gRecentFiles.s(#MAX_RECENT - 1)	;Viimeisimmät tiedostot
 Global gPlayState.i
 Global *gCurrentCue.Cue
 Global gCueAmount.i
+
+Global *gCurrentEvent.Event
 
 Global gCueCounter.l
 Global gEffectCounter.i
@@ -493,6 +510,10 @@ Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 	
 	With cueList()
 		\cueType = type
+		
+		If type = #TYPE_CHANGE
+			AddElement(\events())
+		EndIf
 		
 		If name = ""
 			\name = CreateCueName()
@@ -665,6 +686,17 @@ Procedure.f StringToSeconds(text.s)
 EndProcedure
 
 Procedure DeleteCue(*cue.Cue)
+	ForEach cueList()
+		If @cueList() <> *cue
+			ForEach cueList()\events()
+				If cueList()\events()\target = *cue
+					DeleteElement(cueList()\events())
+					Break
+				EndIf
+			Next
+		EndIf
+	Next
+	
 	If *cue\afterCue <> 0
 		ForEach *cue\afterCue\followCues()
 			If *cue\afterCue\followCues() = *cue
@@ -678,6 +710,8 @@ Procedure DeleteCue(*cue.Cue)
 			DeleteCueEffect(*cue,@*cue\effects())
 		Next
 	EndIf
+	
+	ClearList(*cue\events())
 	
 	GetCueListIndex(*cue)
 	DeleteElement(cueList())
@@ -1106,15 +1140,15 @@ Procedure SaveCueList(path.s,check=1)
 			WriteFloat(0,cueList()\pan)
 			
 			;"Action cuet"
-			For i = 0 To 5
-				If cueList()\actionCues[i] <> 0
-					WriteInteger(0,cueList()\actionCues[i]\id)
-				Else
-					WriteInteger(0,0)
-				EndIf
-				
-				WriteByte(0,cueList()\actions[i])
-			Next i
+; 			For i = 0 To 5
+; 				If cueList()\actionCues[i] <> 0
+; 					WriteInteger(0,cueList()\actionCues[i]\id)
+; 				Else
+; 					WriteInteger(0,0)
+; 				EndIf
+; 				
+; 				WriteByte(0,cueList()\actions[i])
+; 			Next i
 			
 			;Efektit
 			eAmount = ListSize(cueList()\effects())
@@ -1153,13 +1187,13 @@ Procedure SaveCueList(path.s,check=1)
 			EndIf
 			
 			;"Action efektit"
-			For i = 0 To 5
-				If cueList()\actionEffects[i] <> 0
-					WriteInteger(0,cueList()\actionEffects[i]\id)
-				Else
-					WriteInteger(0,0)
-				EndIf
-			Next i
+; 			For i = 0 To 5
+; 				If cueList()\actionEffects[i] <> 0
+; 					WriteInteger(0,cueList()\actionEffects[i]\id)
+; 				Else
+; 					WriteInteger(0,0)
+; 				EndIf
+; 			Next i
 			
 		Next
 		
@@ -1328,16 +1362,16 @@ Procedure SaveCueListXML(path.s,check=1)
 		If cueList()\cueType = #TYPE_EVENT Or cueList()\cueType = #TYPE_CHANGE
 			eventsNode = CreateXMLNode(cueNode)
 			SetXMLNodeName(eventsNode,"events")
-			For i = 0 To 5
+			ForEach cueList()\events()
 				eventNode = CreateXMLNode(eventsNode)
 				SetXMLNodeName(eventNode,"event")
-				SetXMLAttribute(eventNode,"action",Str(cueList()\actions[i]))
+				SetXMLAttribute(eventNode,"action",Str(cueList()\events()\action))
 				
 				;Kohde
 				tmpNode = CreateXMLNode(eventNode)
 				SetXMLNodeName(tmpNode,"target")
-				If cueList()\actionCues[i] <> 0
-					SetXMLNodeText(tmpNode,Str(cueList()\actionCues[i]\id))
+				If cueList()\events()\target <> 0
+					SetXMLNodeText(tmpNode,Str(cueList()\events()\target\id))
 				Else
 					SetXMLNodeText(tmpNode,"0")
 				EndIf
@@ -1345,12 +1379,12 @@ Procedure SaveCueListXML(path.s,check=1)
 				;Kohde-efekti
 				tmpNode = CreateXMLNode(eventNode)
 				SetXMLNodeName(tmpNode,"effect")
-				If cueList()\actionEffects[i] <> 0
-					SetXMLNodeText(tmpNode,Str(cueList()\actionEffects[i]\id))
+				If cueList()\events()\effect <> 0
+					SetXMLNodeText(tmpNode,Str(cueList()\events()\effect\id))
 				Else
 					SetXMLNodeText(tmpNode,"0")
 				EndIf
-			Next i
+			Next
 		EndIf
 		
 		;Efektit
@@ -1565,14 +1599,14 @@ Procedure LoadCueList(lPath.s)
 				\pan = ReadFloat(0)
 				
 				;"Action cuet"
-				For k = 0 To 5
-					tmpId = ReadInteger(0)
-					If tmpId <> 0
-						*prev\actionCues[k] = GetCueById(tmpId)
-					EndIf
-					
-					*prev\actions[k] = ReadByte(0)
-				Next k
+; 				For k = 0 To 5
+; 					tmpId = ReadInteger(0)
+; 					If tmpId <> 0
+; 						*prev\actionCues[k] = GetCueById(tmpId)
+; 					EndIf
+; 					
+; 					*prev\actions[k] = ReadByte(0)
+; 				Next k
 				ChangeCurrentElement(cueList(),*prev)
 				
 				;Efektit
@@ -1622,14 +1656,14 @@ Procedure LoadCueList(lPath.s)
 				ChangeCurrentElement(cueList(),*prev)
 				
 				;"action efektit"
-				If version >= 3.7
-					For i = 0 To 5
-						tmpId = ReadInteger(0)
-						If tmpId <> 0
-							*prev\actionEffects[i] = GetEffectById(tmpId)
-						EndIf
-					Next i
-				EndIf
+; 				If version >= 3.7
+; 					For i = 0 To 5
+; 						tmpId = ReadInteger(0)
+; 						If tmpId <> 0
+; 							*prev\actionEffects[i] = GetEffectById(tmpId)
+; 						EndIf
+; 					Next i
+; 				EndIf
 				ChangeCurrentElement(cueList(),*prev)
 						
 			EndWith
@@ -1797,25 +1831,24 @@ Procedure LoadCueListXML(lPath.s)
 										\pan = ValF(value)
 									Case "events"
 										eventNode = ChildXMLNode(attrNode)
-										i = 0
 										While eventNode <> 0
-											*prev\actions[i] = Val(GetXMLAttribute(eventNode,"action"))
+											AddElement(*prev\events())
+											
+											*prev\events()\action = Val(GetXMLAttribute(eventNode,"action"))
 											
 											tmpNode = ChildXMLNode(eventNode)
 											tmpId = Val(GetXMLNodeText(tmpNode))
 											Select GetXMLNodeName(tmpNode)
 												Case "target"
 													If tmpId <> 0
-														*prev\actionCues[i] = GetCueById(tmpId)
+														*prev\events()\target = GetCueById(tmpId)
 													EndIf
 												Case "effect"
 													If tmpId <> 0
-														*prev\actionEffects[i] = GetEffectById(tmpId)
+														*prev\events()\effect = GetEffectById(tmpId)
 													EndIf
 											EndSelect
-											
-											
-											i + 1
+
 											eventNode = NextXMLNode(eventNode)
 										Wend
 										
