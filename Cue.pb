@@ -135,9 +135,7 @@ Repeat ; Start of the event loop
 			If path <> ""
 				ClearCueList()
 				
-				CreateThread(@Open_LoadWindow(),0)
-				
-				If LoadCueList(path)
+				If LoadCueListXML(path)
 					gSavePath = path
 					
 					*gCurrentCue = FirstElement(cueList())
@@ -145,7 +143,7 @@ Repeat ; Start of the event loop
 					UpdateEditorList()
 					UpdateCueControls()
 				EndIf
-			EndIf		      
+			EndIf  
 		ElseIf MenuID = #MenuSave
 			If gSavePath = ""
 				check = 1
@@ -155,9 +153,8 @@ Repeat ; Start of the event loop
 			EndIf
 			
 			If gSavePath <> ""
-				SaveCueList(gSavePath,check)
+				SaveCueListXML(gSavePath,check)
 			EndIf
-			SaveCueListXML("tmp.xml")
 		ElseIf MenuID = #MenuSaveAs
 			gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
 			

@@ -92,7 +92,10 @@ Enumeration 1
 	#TYPE_VIDEO
 	#TYPE_EVENT
 	#TYPE_CHANGE
-	
+	#TYPE_NOTE
+EndEnumeration
+
+Enumeration 1
 	#STATE_STOPPED
 	#STATE_WAITING
 	#STATE_WAITING_END
@@ -101,19 +104,21 @@ Enumeration 1
 	#STATE_DONE
 	#STATE_FADING_OUT
 	#STATE_FADING_IN
-	
+EndEnumeration
+
+Enumeration 1
 	#START_MANUAL
 	#START_AFTER_START
 	#START_AFTER_END
 	#START_HOTKEY
-	
+EndEnumeration
+
+Enumeration 1
 	#EVENT_FADE_OUT
 	#EVENT_STOP
 	#EVENT_RELEASE
 	#EVENT_EFFECT_ON
 	#EVENT_EFFECT_OFF
-	
-	#TYPE_NOTE
 EndEnumeration
 
 ;Asetusvakiot
@@ -369,6 +374,7 @@ Declare StopCue(*cue.Cue)
 Declare UpdateWaveform(pos.f,mode=0)
 Declare StopProc(handle.i,channel.i,d,*user.Cue)
 Declare Min(a.f,b.f)
+Declare Open_LoadWindow(*value)
 
 Procedure SaveAppSettings()
 	If FileSize("settings.ini") = -1
@@ -580,7 +586,6 @@ Procedure LoadCueStream2(*cue.Cue)
     
     BASS_ChannelGetData(tmpStream,@buffer(0), length)
     
-   
     amount = ArraySize(buffer())
     tmpW = Min(4000,amount)
     s = amount / tmpW
@@ -1172,6 +1177,24 @@ Procedure SaveCueList(path.s,check=1)
 EndProcedure
 
 Procedure SaveCueListXML(path.s,check=1)
+	ForEach cueList()
+		StopCue(@cueList())
+	Next
+	
+	If GetExtensionPart(path) = ""
+		path = path + ".clf"
+	EndIf
+	
+	If check = 1
+		If FileSize(path) > -1
+			result = MessageRequester("Overwrite?","File " + path + " already found. Do you want to overwrite it?",#PB_MessageRequester_YesNo)
+			
+			If result <> #PB_MessageRequester_Yes
+				ProcedureReturn #False
+			EndIf
+		EndIf
+	EndIf
+	
 	xml = CreateXML(#PB_Any)
 	mainNode = CreateXMLNode(RootXMLNode(xml))
 	SetXMLNodeName(mainNode,"cuelist")
@@ -1255,7 +1278,7 @@ Procedure SaveCueListXML(path.s,check=1)
 			SetXMLNodeText(tmpNode,Str(cueList()\followCues()\id))
 		Next
 		
-		If cueList()\cueType = #TYPE_AUDIO
+		If cueList()\cueType = #TYPE_AUDIO Or cueList()\cueType = #TYPE_CHANGE
 			;Alku
 			tmpNode = CreateXMLNode(cueNode)
 			SetXMLNodeName(tmpNode,"startpos")
@@ -1302,7 +1325,7 @@ Procedure SaveCueListXML(path.s,check=1)
 		EndIf
 		
 		;Eventit
-		If cueList()\cueType = #TYPE_EVENT
+		If cueList()\cueType = #TYPE_EVENT Or cueList()\cueType = #TYPE_CHANGE
 			eventsNode = CreateXMLNode(cueNode)
 			SetXMLNodeName(eventsNode,"events")
 			For i = 0 To 5
@@ -1398,6 +1421,8 @@ Procedure SaveCueListXML(path.s,check=1)
 	Next
 
 	SaveXML(xml,path)
+	
+	ProcedureReturn #True
 EndProcedure
 
 Procedure LoadCueList(lPath.s)
@@ -1531,7 +1556,7 @@ Procedure LoadCueList(lPath.s)
 				\looped = ReadByte(0)
 				\loopStart = ReadFloat(0)
 				\loopEnd = ReadFloat(0)
-				\loopStart = ReadFloat(0)
+				\loopCount = ReadInteger(0)
 				
 				\fadeIn = ReadFloat(0)
 				\fadeOut = ReadFloat(0)
@@ -1626,6 +1651,262 @@ Procedure LoadCueList(lPath.s)
 	EndIf
 	
 	ProcedureReturn #True
+EndProcedure
+
+Procedure LoadCueListXML(lPath.s)
+	If LoadXML(0,lPath)
+		If XMLStatus(0) <> #PB_XML_Success
+			Message$ = "Error in the XML file:" + Chr(13)
+			Message$ + "Message: " + XMLError(0) + Chr(13)
+			Message$ + "Line: " + Str(XMLErrorLine(0)) + "   Character: " + Str(XMLErrorPosition(0))
+			MessageRequester("Error", Message$)
+		EndIf
+		
+		If GetXMLNodeName(MainXMLNode(0)) <> "cuelist"
+			MessageRequester("Error","File" + lPath + " is not a cue List file!")
+		EndIf
+		
+		gCuesLoaded = 0
+		CreateThread(@Open_LoadWindow(),0)
+		
+		currentNode = ChildXMLNode(MainXMLNode(0))
+		Repeat
+			If currentNode = 0
+				Break
+			EndIf
+			
+			Select GetXMLNodeName(currentNode)
+				Case "settings"		;---Asetukset
+					settingNode = ChildXMLNode(currentNode)
+					While settingNode <> 0
+						tmp = Val(GetXMLAttribute(settingNode,"type"))
+						tmpValue = Val(GetXMLAttribute(settingNode,"value"))
+						
+						gListSettings(tmp) = tmpValue
+						
+						settingNode = NextXMLNode(settingNode)
+					Wend
+				Case "ids"		;---Cuejen idt
+					gCueAmount = Val(GetXMLAttribute(currentNode,"amount"))
+					idNode = ChildXMLNode(currentNode)
+					While idNode <> 0
+						AddElement(cueList())
+						cueList()\id = Val(GetXMLNodeText(idNode))
+						
+						If cueList()\id > high
+							high = cueList()\id
+						EndIf
+						
+						cueList()\state = #STATE_STOPPED
+						
+						idNode = NextXMLNode(idNode)
+					Wend
+					
+					gCueCounter = high
+				Case "cues"		;---Cuejen tiedot
+					cueNode = ChildXMLNode(currentNode)
+					ForEach cueList()
+						*prev.Cue = @cueList()
+						
+						With cueList()
+							attrNode = ChildXMLNode(cueNode)
+							While attrNode <> 0
+								attr.s = GetXMLNodeName(attrNode)
+								value.s = GetXMLNodeText(attrNode)
+								
+								Select attr
+									Case "type"
+										\cueType = Val(value)
+									Case "name"
+										\name = value
+									Case "description"
+										\desc = value
+									Case "file"
+										\filePath = value
+										
+										If \filePath <> ""
+											If gListSettings(#SETTING_RELATIVE) = 1
+												fPath.s = GetPathPart(lPath) + \filePath
+											Else
+												fPath = \filePath
+											EndIf
+											
+											If FileSize(fPath) = -1
+												result = MessageRequester("File not found","File " + fPath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+												
+												If result = #PB_MessageRequester_Yes
+										    		pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
+										    		
+										    		path.s = OpenFileRequester("Select file","",pattern,0)
+										    		
+										    		If path
+										    			If gListSettings(#SETTING_RELATIVE) = 1
+										    				\filePath = RelativePath(GetPathPart(path),GetPathPart(lPath)) + GetFilePart(path)
+										    			Else
+										    				\filePath = path
+										    			EndIf
+										    			
+										    			LoadCueStream(@cueList(),fPath)
+										    		EndIf
+										    	EndIf
+										    Else
+										    	LoadCueStream(@cueList(),fPath)
+										    EndIf
+										EndIf
+									Case "startmode"
+										\startMode = Val(value)
+									Case "delay"
+										\delay = ValF(value)
+									Case "aftercue"
+										tmpId = Val(value)
+										
+										If tmpId <> 0
+											*prev\afterCue = GetCueById(tmpId)
+										EndIf
+										
+										ChangeCurrentElement(cueList(),*prev)
+									Case "followcues"
+										idNode = ChildXMLNode(attrNode)
+										While idNode <> 0
+											AddElement(*prev\followCues())
+											
+											*prev\followCues() = GetCueById(Val(GetXMLNodeText(idNode)))
+											idNode = NextXMLNode(idNode)
+										Wend
+										
+										ChangeCurrentElement(cueList(),*prev)
+									Case "startpos"
+										\startPos = ValF(value)
+									Case "endpos"
+										\endPos = ValF(value)
+									Case "looped"
+										\looped = Val(value)
+									Case "loopstart"
+										\loopStart = ValF(value)
+									Case "loopend"
+										\loopEnd = ValF(value)
+									Case "loopcount"
+										\loopCount = Val(value)
+									Case "fadein"
+										\fadeIn = ValF(value)
+									Case "fadeout"
+										\fadeOut = ValF(value)
+									Case "volume"
+										\volume = ValF(value)
+									Case "pan"
+										\pan = ValF(value)
+									Case "events"
+										eventNode = ChildXMLNode(attrNode)
+										i = 0
+										While eventNode <> 0
+											*prev\actions[i] = Val(GetXMLAttribute(eventNode,"action"))
+											
+											tmpNode = ChildXMLNode(eventNode)
+											tmpId = Val(GetXMLNodeText(tmpNode))
+											Select GetXMLNodeName(tmpNode)
+												Case "target"
+													If tmpId <> 0
+														*prev\actionCues[i] = GetCueById(tmpId)
+													EndIf
+												Case "effect"
+													If tmpId <> 0
+														*prev\actionEffects[i] = GetEffectById(tmpId)
+													EndIf
+											EndSelect
+											
+											
+											i + 1
+											eventNode = NextXMLNode(eventNode)
+										Wend
+										
+										ChangeCurrentElement(cueList(),*prev)
+									Case "effects"
+										effectNode = ChildXMLNode(attrNode)
+										While effectNode <> 0
+											eType = Val(GetXMLAttribute(effectNode,"type"))
+											tmpId = Val(GetXMLAttribute(effectNode,"id"))
+											
+											tmpNode = ChildXMLNode(effectNode)
+											tmpActive = Val(GetXMLNodeText(tmpNode))
+											
+											If eType = #BASS_FX_DX8_REVERB
+												revParams.BASS_DX8_REVERB
+												
+												tmpNode = NextXMLNode(tmpNode)
+												While tmpNode <> 0
+													tmpVal.f = ValF(GetXMLNodeText(tmpNode))
+													Select GetXMLNodeName(tmpNode)
+														Case "ingain"
+															revParams\fInGain = tmpVal
+														Case "reverbmix"
+															revParams\fReverbMix = tmpVal
+														Case "reverbtime"
+															revParams\fReverbTime = tmpVal
+														Case "hfrtr"
+															revParams\fHighFreqRTRatio = tmpVal
+													EndSelect
+													
+													tmpNode = NextXMLNode(tmpNode)
+												Wend
+												
+												AddCueEffect(@cueList(),eType,@revParams,0,tmpActive,tmpId)
+											ElseIf eType = #BASS_FX_DX8_PARAMEQ
+												eqParams.BASS_DX8_PARAMEQ
+												
+												tmpNode = NextXMLNode(tmpNode)
+												While tmpNode <> 0
+													tmpVal.f = ValF(GetXMLNodeText(tmpNode))
+													Select GetXMLNodeName(tmpNode)
+														Case "center"
+															eqParams\fCenter = tmpVal
+														Case "bandwidth"
+															eqParams\fBandwidth = tmpVal
+														Case "gain"
+															eqParams\fGain = tmpVal
+													EndSelect
+													
+													tmpNode = NextXMLNode(tmpNode)
+												Wend
+												
+												AddCueEffect(@cueList(),eType,0,@eqParams,tmpActive,tmpId)
+											ElseIf eType = #EFFECT_VST
+												tmpNode = NextXMLNode(tmpNode)
+												tmpPath.s = GetXMLNodeText(tmpNode)
+												
+												result = AddCueEffect(@cueList(),eType,0,0,tmpActive,tmpId,tmpPath)
+												
+												If result = #True
+													tmpNode = NextXMLNode(tmpNode)
+													i = 0
+													While tmpNode <> 0
+														tmpVal.f = ValF(GetXMLNodeText(tmpNode))
+														BASS_VST_SetParam(cueList()\effects()\handle,i,tmpVal)
+														
+														i + 1
+														tmpNode = NextXMLNode(tmpNode)
+													Wend
+													
+												EndIf
+											EndIf
+											
+											effectNode = NextXMLNode(effectNode)
+										Wend
+								EndSelect
+								
+								attrNode = NextXMLNode(attrNode)
+							Wend
+						EndWith
+						
+						cueNode = NextXMLNode(cueNode)
+						gCuesLoaded + 1
+					Next
+			EndSelect
+			
+			currentNode = NextXMLNode(currentNode)
+			
+		ForEver
+
+	EndIf
 EndProcedure
 
 Procedure ClearCueList()
