@@ -1455,6 +1455,9 @@ Procedure SaveCueListXML(path.s,check=1)
 	Next
 
 	SaveXML(xml,path)
+	FreeXML(xml)
+	
+	AddRecentFile(path)
 	
 	If ListSize(cueList()) > 0
 		FirstElement(cueList())
@@ -1943,10 +1946,14 @@ Procedure LoadCueListXML(lPath.s)
 			currentNode = NextXMLNode(currentNode)
 			
 		ForEver
+		
+		FreeXML(0)
+		
+		AddRecentFile(lPath)
 	Else
 		MessageRequester("Error","File " + lPath + " couldn't be loaded!")
 		ProcedureReturn #False
-	endif
+	EndIf
 	
 	If ListSize(cueList()) > 0
 		FirstElement(cueList())
