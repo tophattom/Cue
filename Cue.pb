@@ -129,6 +129,7 @@ Repeat ; Start of the event loop
 			gCueAmount = 0
 			gCueCounter = 0
 			gSavePath = ""
+			*gCurrentCue = 0
 			
 			UpdateMainCueList()
 			UpdateEditorList()
@@ -1895,101 +1896,105 @@ Procedure UpdateCues()
 EndProcedure
 
 Procedure UpdateMainCueList()
-	SetGadgetState(#CueList,-1)
-	
-	listAmount = CountGadgetItems(#CueList)
-	If gCueAmount > listAmount
-		For i = 1 To (gCueAmount - listAmount)
-			AddGadgetItem(#CueList,-1,"")
-		Next i
-	ElseIf gCueAmount < listAmount
-		For i = 1 To (listAmount - gCueAmount)
-			RemoveGadgetItem(#CueList,listAmount - i)
-		Next i
-	EndIf
-	
-	i = 0
-	
-	ForEach cueList()
-		Select cueList()\cueType
-			Case #TYPE_AUDIO
-				text.s = "Audio"
-				color = RGB(100,200,200)
-			Case #TYPE_VIDEO
-				text.s = "Video"
-			Case #TYPE_CHANGE
-				text.s = "Change"
-				color = RGB(200,100,200)
-			Case #TYPE_EVENT
-				text.s = "Event"
-				color = RGB(100,200,100)
-			Case #TYPE_NOTE
-				text.s = "Note"
-				color = RGB(240,190,0)
-		EndSelect
+	If ListSize(cueList()) = 0
+		ClearGadgetItems(#CueList)
+	Else
+		SetGadgetState(#CueList,-1)
 		
-		If cueList()\cueType <> #TYPE_NOTE
-			Select cueList()\startMode
-				Case #START_MANUAL
-					start.s = "Manual"
-				Case #START_HOTKEY
-					start.s = "Hotkey"
-				Case #START_AFTER_START
-					start.s = StrF(cueList()\delay / 1000,2) + " as "
-					If cueList()\afterCue <> 0
-						start = start + cueList()\afterCue\name
-					EndIf
-				Case #START_AFTER_END
-					start.s = StrF(cueList()\delay / 1000,2) + " ae "
-					If cueList()\afterCue <> 0
-						start = start + cueList()\afterCue\name
-					EndIf
+		listAmount = CountGadgetItems(#CueList)
+		If gCueAmount > listAmount
+			For i = 1 To (gCueAmount - listAmount)
+				AddGadgetItem(#CueList,-1,"")
+			Next i
+		ElseIf gCueAmount < listAmount
+			For i = 1 To (listAmount - gCueAmount)
+				RemoveGadgetItem(#CueList,listAmount - i)
+			Next i
+		EndIf
+		
+		i = 0
+		
+		ForEach cueList()
+			Select cueList()\cueType
+				Case #TYPE_AUDIO
+					text.s = "Audio"
+					color = RGB(100,200,200)
+				Case #TYPE_VIDEO
+					text.s = "Video"
+				Case #TYPE_CHANGE
+					text.s = "Change"
+					color = RGB(200,100,200)
+				Case #TYPE_EVENT
+					text.s = "Event"
+					color = RGB(100,200,100)
+				Case #TYPE_NOTE
+					text.s = "Note"
+					color = RGB(240,190,0)
 			EndSelect
 			
-			Select cueList()\state
-				Case #STATE_STOPPED
-					state.s = "Stopped"
-				Case #STATE_WAITING
-					state.s = "Waiting to start"
-				Case #STATE_WAITING_END
-					state.s = "Waiting to start"
-				Case #STATE_PLAYING
-					state.s = "Playing"
-				Case #STATE_DONE
-					state.s = "Done"
-				Case #STATE_PAUSED
-					state.s = "Paused"
-				Case #STATE_FADING_OUT
-					state.s = "Fading out"
-			EndSelect
-		Else
-			start.s = ""
-			state.s = ""
-		EndIf
-		
-		
-		
-		secs.f = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
-		
-		;AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start + Chr(10) + state + Chr(10) + "-" + SecondsToString(cueList()\endPos - secs))
-		SetGadgetItemText(#CueList, i, cueList()\name + "  " + cueList()\desc,0)
-		SetGadgetItemText(#CueList, i, text, 1)
-		SetGadgetItemText(#CueList, i, start, 2)
-		SetGadgetItemText(#CueList, i, state, 3)
-		
-		If cueList()\cueType <> #TYPE_NOTE
-			SetGadgetItemText(#CueList, i, "-" + SecondsToString(cueList()\endPos - secs),4)
-		EndIf
-		
-		SetGadgetItemData(#CueList, i, @cueList())
-		SetGadgetItemColor(#CueList, i, #PB_Gadget_BackColor, color, -1)
-		
-		If @cueList() = *gCurrentCue
-			SetGadgetState(#CueList,i)
-		EndIf
-		
-		i + 1
-	Next
+			If cueList()\cueType <> #TYPE_NOTE
+				Select cueList()\startMode
+					Case #START_MANUAL
+						start.s = "Manual"
+					Case #START_HOTKEY
+						start.s = "Hotkey"
+					Case #START_AFTER_START
+						start.s = StrF(cueList()\delay / 1000,2) + " as "
+						If cueList()\afterCue <> 0
+							start = start + cueList()\afterCue\name
+						EndIf
+					Case #START_AFTER_END
+						start.s = StrF(cueList()\delay / 1000,2) + " ae "
+						If cueList()\afterCue <> 0
+							start = start + cueList()\afterCue\name
+						EndIf
+				EndSelect
+				
+				Select cueList()\state
+					Case #STATE_STOPPED
+						state.s = "Stopped"
+					Case #STATE_WAITING
+						state.s = "Waiting to start"
+					Case #STATE_WAITING_END
+						state.s = "Waiting to start"
+					Case #STATE_PLAYING
+						state.s = "Playing"
+					Case #STATE_DONE
+						state.s = "Done"
+					Case #STATE_PAUSED
+						state.s = "Paused"
+					Case #STATE_FADING_OUT
+						state.s = "Fading out"
+				EndSelect
+			Else
+				start.s = ""
+				state.s = ""
+			EndIf
+			
+			
+			
+			secs.f = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
+			
+			;AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start + Chr(10) + state + Chr(10) + "-" + SecondsToString(cueList()\endPos - secs))
+			SetGadgetItemText(#CueList, i, cueList()\name + "  " + cueList()\desc,0)
+			SetGadgetItemText(#CueList, i, text, 1)
+			SetGadgetItemText(#CueList, i, start, 2)
+			SetGadgetItemText(#CueList, i, state, 3)
+			
+			If cueList()\cueType <> #TYPE_NOTE
+				SetGadgetItemText(#CueList, i, "-" + SecondsToString(cueList()\endPos - secs),4)
+			EndIf
+			
+			SetGadgetItemData(#CueList, i, @cueList())
+			SetGadgetItemColor(#CueList, i, #PB_Gadget_BackColor, color, -1)
+			
+			If @cueList() = *gCurrentCue
+				SetGadgetState(#CueList,i)
+			EndIf
+			
+			i + 1
+		Next
+	EndIf
 EndProcedure
 
 Procedure UpdatePosField()

@@ -23,11 +23,13 @@ EndStructure
 ;}
 
 ;-Event structure
+;{
 Structure Event
 	*target.Cue
 	action.i
 	*effect.Effect
 EndStructure
+;}
 
 ;-Cue structure
 ;{
@@ -1965,21 +1967,10 @@ EndProcedure
 
 Procedure ClearCueList()
 	ForEach cueList()
-		If cueList()\stream <> 0
-			BASS_StreamFree(cueList()\stream)
-		EndIf
-		
-		If cueList()\waveform <> 0
-			FreeImage(cueList()\waveform)
-		EndIf
-		
-		ForEach cueList()\events()
-			DeleteElement(cueList()\events())
-		Next
-		
+		DeleteCue(@cueList())
 	Next
 	
-	ClearList(cueList())
+	;ClearList(cueList())
 EndProcedure
 
 Procedure CreateProjectFolder(path.s)

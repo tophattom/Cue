@@ -14,10 +14,6 @@ Enumeration
   #PrefWindow
 EndEnumeration
 
-Global Dim eventCueSelect(5)
-Global Dim eventActionSelect(5)
-Global Dim eventEffectSelect(5)
-
 ;- Fonts
 
 
