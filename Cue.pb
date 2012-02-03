@@ -193,8 +193,6 @@ Repeat ; Start of the event loop
 						UpdateMainCueList()
 						UpdateEditorList()
 						UpdateCueControls()
-						
-						gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 					EndIf
 				EndIf
 			EndIf
