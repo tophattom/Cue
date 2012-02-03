@@ -141,8 +141,6 @@ Repeat ; Start of the event loop
 					If gSavePath <> ""
 						SaveCueListXML(gSavePath,check)
 					EndIf
-					
-					gSaved = #True
 				ElseIf result = #PB_MessageRequester_Cancel
 					skip = #True
 				EndIf
@@ -157,6 +155,8 @@ Repeat ; Start of the event loop
 				
 				UpdateMainCueList()
 				UpdateEditorList()
+				
+				gLastHash = 0
 			EndIf
 		ElseIf MenuID = #MenuOpen
 			skip = #False
@@ -175,8 +175,6 @@ Repeat ; Start of the event loop
 					If gSavePath <> ""
 						SaveCueListXML(gSavePath,check)
 					EndIf
-					
-					gSaved = #True
 				ElseIf result = #PB_MessageRequester_Cancel
 					skip = #True
 				EndIf
@@ -195,6 +193,8 @@ Repeat ; Start of the event loop
 						UpdateMainCueList()
 						UpdateEditorList()
 						UpdateCueControls()
+						
+						gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 					EndIf
 				EndIf
 			EndIf
