@@ -138,7 +138,6 @@ Repeat ; Start of the event loop
 					
 					If gSavePath <> ""
 						SaveCueListXML(gSavePath,check)
-						End
 					EndIf
 				EndIf
 			EndIf
@@ -165,7 +164,6 @@ Repeat ; Start of the event loop
 					
 					If gSavePath <> ""
 						SaveCueListXML(gSavePath,check)
-						End
 					EndIf
 				EndIf
 			EndIf
