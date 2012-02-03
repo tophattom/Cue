@@ -125,6 +125,24 @@ Repeat ; Start of the event loop
 		MenuID = EventMenu()
 		   
 		If MenuID = #MenuNew
+			If gSaved = #False And ListSize(cueList()) > 0
+				result = MessageRequester("Cue","Cue list has been modified. Do you want to save it?",#PB_MessageRequester_YesNoCancel)
+				
+				If result = #PB_MessageRequester_Yes
+					If gSavePath = ""
+						check = 1
+						gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+					Else
+						check = 0
+					EndIf
+					
+					If gSavePath <> ""
+						SaveCueListXML(gSavePath,check)
+						End
+					EndIf
+				EndIf
+			EndIf
+				
 			ClearCueList()
 			gCueAmount = 0
 			gCueCounter = 0
@@ -134,6 +152,24 @@ Repeat ; Start of the event loop
 			UpdateMainCueList()
 			UpdateEditorList()
 		ElseIf MenuID = #MenuOpen
+			If gSaved = #False And ListSize(cueList()) > 0
+				result = MessageRequester("Cue","Cue list has been modified. Do you want to save it?",#PB_MessageRequester_YesNoCancel)
+				
+				If result = #PB_MessageRequester_Yes
+					If gSavePath = ""
+						check = 1
+						gSavePath = SaveFileRequester("Save cue list","","Cue list files (*.clf) |*.clf",0)
+					Else
+						check = 0
+					EndIf
+					
+					If gSavePath <> ""
+						SaveCueListXML(gSavePath,check)
+						End
+					EndIf
+				EndIf
+			EndIf
+			
 			path.s = OpenFileRequester("Open cue list","","Cue list files (*.clf) |*.clf",0)
 			
 			If path <> ""
