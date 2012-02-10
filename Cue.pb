@@ -1897,8 +1897,10 @@ Procedure StartEvents(*cue.Cue)
 			If ListSize(*cue\events()) > 0
 				FirstElement(*cue\events())
 				
-				BASS_ChannelSlideAttribute(*cue\events()\target\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
-				BASS_ChannelSlideAttribute(*cue\events()\target\stream,#BASS_ATTRIB_PAN,*cue\pan,*cue\fadeIn * 1000)
+				If *cue\events()\target <> 0
+					BASS_ChannelSlideAttribute(*cue\events()\target\stream,#BASS_ATTRIB_VOL,*cue\volume,*cue\fadeIn * 1000)
+					BASS_ChannelSlideAttribute(*cue\events()\target\stream,#BASS_ATTRIB_PAN,*cue\pan,*cue\fadeIn * 1000)
+				EndIf
 			EndIf
 		EndIf
 		
