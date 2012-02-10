@@ -1,3 +1,5 @@
+;-Effect structure
+;{
 Structure Effect
 	handle.l
 	StructureUnion
@@ -13,7 +15,12 @@ Structure Effect
 	pluginPath.s
 	
 	active.i
+	defaultActive.i
+	
+	name.s
+	id.i
 EndStructure
+;}
 
 Structure VideoWindow
 	window.l
@@ -33,6 +40,17 @@ Structure VideoWindow
 EndStructure
 
 
+;-Event structure
+;{
+Structure Event
+	*target.Cue
+	action.i
+	*effect.Effect
+EndStructure
+;}
+
+;-Cue structure
+;{
 Structure Cue
 	cueType.i
 	
@@ -40,7 +58,11 @@ Structure Cue
 	desc.s
 	
 	stream.l
+	
 	filePath.s
+	absolutePath.s
+	relativePath.s
+	
 	waveform.i
 	length.i
 	
@@ -54,6 +76,8 @@ Structure Cue
 	
 	startPos.f
 	endPos.f
+	
+	stopHandle.l
 	
 	loopStart.f
 	loopEnd.f
@@ -72,8 +96,7 @@ Structure Cue
 	volume.f
 	pan.f
 	
-	*actionCues.Cue[6]
-	actions.i[6]
+	List events.Event()
 	
 	List effects.Effect()
 	
@@ -81,13 +104,25 @@ Structure Cue
 
 	id.l
 EndStructure
+;}
+
+;-Recent file structure
+;{
+Structure RecentFile
+	path.s
+	mItem.i
+EndStructure
+;}
 
 Enumeration 1
 	#TYPE_AUDIO
 	#TYPE_VIDEO
 	#TYPE_EVENT
 	#TYPE_CHANGE
-	
+	#TYPE_NOTE
+EndEnumeration
+
+Enumeration 1
 	#STATE_STOPPED
 	#STATE_WAITING
 	#STATE_WAITING_END
@@ -96,24 +131,37 @@ Enumeration 1
 	#STATE_DONE
 	#STATE_FADING_OUT
 	#STATE_FADING_IN
-	
+EndEnumeration
+
+Enumeration 1
 	#START_MANUAL
 	#START_AFTER_START
 	#START_AFTER_END
 	#START_HOTKEY
-	
+EndEnumeration
+
+Enumeration 1
 	#EVENT_FADE_OUT
 	#EVENT_STOP
 	#EVENT_RELEASE
+	#EVENT_EFFECT_ON
+	#EVENT_EFFECT_OFF
 EndEnumeration
 
 ;Asetusvakiot
-#SETTINGS = 1
+#SETTINGS = 1	;Listalle
 Enumeration
 	#SETTING_RELATIVE
 EndEnumeration
 
-#FORMAT_VERSION = 3.8
+#MAX_RECENT = 5
+#APP_SETTINGS = 2
+Enumeration
+	#SETTING_ADEVICE
+	#SETTING_FONTSIZE
+EndEnumeration
+
+#FORMAT_VERSION = 3.7
 
 
 ;Efektien s‰‰timet
@@ -140,7 +188,34 @@ Enumeration
 	#FullImg
 	#HorImg
 	#VerImg
+
+	#ExplorerImg
+	#RefreshImg
+	
+	#StartOffset
+	#EndOffset
+	#LoopArea
 EndEnumeration
+
+;Vakioita rajaimien avuksi
+Enumeration 1
+	#GRAB_START
+	#GRAB_END
+	#GRAB_POS
+	#GRAB_LOOP_START
+	#GRAB_LOOP_END
+	#GRAB_WAVEFORM
+EndEnumeration
+
+
+CreateImage(#StartOffset,1,120)
+CreateImage(#EndOffset,1,120)
+
+CreateImage(#LoopArea,1,120)
+StartDrawing(ImageOutput(#LoopArea))
+Box(0,0,1,120,$00FF00)
+StopDrawing()
+
 
 ;- Gadget Constants
 ;{
@@ -149,16 +224,18 @@ Enumeration 1
   #PlayButton
   #PauseButton
   #StopButton
-  #Listview_1
   #CueList
   #Frame3D_2
   #EditorButton
+  #SettingsButton
   
   #EditorList
   #AddAudio
   #AddChange
   #AddEvent
   #AddVideo
+  #AddNote
+  #ExplorerButton
   #MasterSlider
   #Text_2
   #CueNameField
@@ -198,6 +275,13 @@ Enumeration 1
   #Text_18
   #Text_19
   #Text_20
+  #Text_31
+  #EventList
+  #EventTarget
+  #EventAction
+  #EventEffect
+  #EventAdd
+  #EventDelete
   #ChangeDur
   #EditorPlay
   #EditorPause
@@ -212,12 +296,45 @@ Enumeration 1
   #LoopEnable
   #Position
   #Text_24
+  #Text_26
+  #Text_30
+  #ZoomSlider
+  #Text_32
+  #ChangeTarget
   
   #EditorTabs
   
   #AddEffect
   #Text_25
   #EffectType
+  #EffectPlay
+  #EffectPause
+  #EffectStop
+  #EffectScroll
+  
+  #CheckRelative
+  #SettingsOK
+  
+  #FileBrowser
+  #RefreshBrowser
+  
+  #AboutOk
+  #AboutText
+  #AboutLink
+  
+  #LoadBar
+  
+  #PrefAFrame
+  #PrefIFrame
+  #PrefGFrame
+  #Text_27
+  #SelectADevice
+  #Text_28
+  #FontSize
+  #PrefOk
+  #PrefCancel
+  #Text_29
+  #CuePrefix
   
   #OutputList
   #Text_26
@@ -234,20 +351,46 @@ Enumeration 1
   #AlignHor
   #AlignVer
   #FullButton
-  #Text_27
-  #Text_28
-  #Text_29
-  #Text_30
-  #Text_31
-  #Text_32
+  #Text_33
+  #Text_34
+  #Text_35
+  #Text_36
+  #Text_37
+  #Text_38
 EndEnumeration
 ;}
 
-;- Window Constants
+;- Menu constants
 ;{
 Enumeration
-  #MainWindow
-  #EditorWindow
+  #MenuBar
+EndEnumeration
+
+Enumeration	  
+  #Recent1
+  #Recent2
+  #Recent3
+  #Recent4
+  #Recent5
+  
+  #MenuNew
+  #MenuOpen
+  #MenuSave
+  #MenuSaveAs
+  #MenuImport
+  #MenuPref
+  #MenuExit
+  #MenuAbout
+
+  #PlaySc
+  #StopSc
+  
+  #DeleteSc
+  
+  #ExplorerSc
+  
+  #InSc
+  #OutSc
 EndEnumeration
 ;}
 
@@ -255,15 +398,22 @@ EndEnumeration
 
 
 Global NewList cueList.Cue()
-Global Dim gSettings(#SETTINGS - 1)
+Global NewList *gSelection.Cue()
+
+Global Dim gListSettings(#SETTINGS - 1)
+Global Dim gAppSettings(#APP_SETTINGS)	;Ohjelman asetukset
+
+Global Dim gRecentFiles.s(#MAX_RECENT - 1)	;Viimeisimm‰t tiedostot
 
 Global gPlayState.i
 Global *gCurrentCue.Cue
 Global gCueAmount.i
 
+Global *gCurrentEvent.Event
 Global *gCurrentOutput.VideoWindow
 
 Global gCueCounter.l
+Global gEffectCounter.i
 
 Global gEditor = #False
 
@@ -271,10 +421,135 @@ Global gControlsHidden = #False
 Global gLastType = 0
 
 Global gSavePath.s = ""
+Global gSaved
 
+Global gLoadThread
+Global gLoadMutex = CreateMutex()
 Global gDesktopAmount = ExamineDesktops()
 
+Global gCuesLoaded
+
+Global gLastHash
+
+Global gCueListFont
+
+Global gCueNaming.s	;Cuen nime‰misk‰yt‰ntˆ.		# = numero, $ = pieni kirjain, & = iso kirjain
+
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
+Declare.s RelativePath(absolutePath.s,relativeTo.s)
+Declare StopCue(*cue.Cue)
+Declare UpdateWaveform(pos.f,mode=0)
+Declare StopProc(handle.i,channel.i,d,*user.Cue)
+Declare Min(a.f,b.f)
+Declare Open_LoadWindow(*value)
+
+Procedure SaveAppSettings()
+	If FileSize("settings.ini") = -1
+		CreatePreferences("settings.ini")
+	EndIf
+	
+	If OpenPreferences("settings.ini")
+		PreferenceGroup("General")
+		WritePreferenceInteger("Audio device",gAppSettings(#SETTING_ADEVICE))
+		WritePreferenceInteger("Font size",gAppSettings(#SETTING_FONTSIZE))
+		WritePreferenceString("Cue naming",gCueNaming)
+		
+		PreferenceGroup("Recent files")
+		For i = 1 To #MAX_RECENT
+			WritePreferenceString("File " + Str(i),gRecentFiles(i - 1))
+		Next i
+	EndIf
+EndProcedure
+
+Procedure SetDefaultSettings()
+	gAppSettings(#SETTING_ADEVICE) = 1
+	gAppSettings(#SETTING_FONTSIZE) = 8
+	
+	gCueNaming = "Q#"
+	
+	SaveAppSettings()
+EndProcedure
+
+Procedure LoadAppSettings()
+	If FileSize("settings.ini") > -1
+		If OpenPreferences("settings.ini")
+			PreferenceGroup("General")
+			gAppSettings(#SETTING_ADEVICE) = ReadPreferenceInteger("Audio device",1)
+			BASS_SetDevice(gAppSettings(#SETTING_ADEVICE))
+			
+			gAppSettings(#SETTING_FONTSIZE) = ReadPreferenceInteger("Font size",8)
+			gCueListFont = LoadFont(#PB_Any,"Microsoft Sans Serif",gAppSettings(#SETTING_FONTSIZE))
+			
+			gCueNaming = ReadPreferenceString("Cue naming","Q#")
+			
+			PreferenceGroup("Recent files")
+			ExaminePreferenceKeys()
+			For i = 0 To #MAX_RECENT - 1
+				NextPreferenceKey()
+				If FileSize(PreferenceKeyValue()) > -1
+					gRecentFiles(i) = PreferenceKeyValue()
+				EndIf
+			Next i
+			
+			ClosePreferences()
+		EndIf
+		
+		SaveAppSettings()
+	Else
+		SetDefaultSettings()
+	EndIf
+EndProcedure
+
+Procedure AddRecentFile(path.s)
+	start = #MAX_RECENT - 1
+	
+	For i = 0 To #MAX_RECENT - 1
+		If gRecentFiles(i) = path
+			start = i
+			Break
+		EndIf
+	Next i
+	
+	For i = start - 1 To 0 Step -1
+		gRecentFiles(i + 1) = gRecentFiles(i)
+		SetMenuItemText(#MenuBar,i + 1,GetFilePart(gRecentFiles(i)))
+	Next i
+	
+	gRecentFiles(0) = path
+	SetMenuItemText(#MenuBar,0,GetFilePart(gRecentFiles(0)))
+	
+	SaveAppSettings()
+EndProcedure
+
+Procedure.s CreateCueName()
+	cueName.s = gCueNaming
+	
+	;#
+	cueName = ReplaceString(cueName,"#",Str(gCueCounter))
+	
+	;&
+	r = Round(gCueCounter / 27,#PB_Round_Down)
+
+	If r > 0
+		tmpS.s = Chr(64 + r)
+	EndIf
+	
+	tmpS = tmpS + Chr(64 + (gCueCounter - gCueCounter * r))
+	
+	cueName = ReplaceString(cueName,"&",tmpS)
+	
+	;$
+	tmpS = ""
+	If r > 0
+		tmpS = Chr(96 + r)
+	EndIf
+	
+	tmpS = tmpS + Chr(96 + (gCueCounter - gCueCounter * r))
+	
+	cueName = ReplaceString(cueName,"$",tmpS)
+	
+	ProcedureReturn cueName
+EndProcedure
 
 Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 	LastElement(cueList())
@@ -286,8 +561,12 @@ Procedure AddCue(type.i,name.s="",vol=1,pan=0,id=0)
 	With cueList()
 		\cueType = type
 		
+		If type = #TYPE_CHANGE
+			AddElement(\events())
+		EndIf
+		
 		If name = ""
-			\name = "Q" + Str(gCueCounter)
+			\name = CreateCueName()
 		Else
 			\name = name
 		EndIf
@@ -388,6 +667,72 @@ Procedure LoadCueStream(*cue.Cue,path.s)
 		
 	EndIf
 	
+    StopDrawing()
+EndProcedure
+
+Procedure LoadCueStream2(*cue.Cue)
+	LockMutex(gLoadMutex)
+	
+	path.s = *cue\filePath
+	
+	If *cue\stream <> 0
+    	BASS_StreamFree(*cue\stream)
+    EndIf
+    
+    *cue\stream = BASS_StreamCreateFile(0,@path,0,0,0)
+    
+    *cue\length = BASS_ChannelBytes2Seconds(*cue\stream,BASS_ChannelGetLength(*cue\stream,#BASS_POS_BYTE))
+	
+    *cue\startPos = 0
+    *cue\endPos = *cue\length
+    
+    *cue\stopHandle = BASS_ChannelSetSync(*cue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\endPos),@StopProc(),*cue)
+
+    ;****Aallon piirto
+    tmpStream.l = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE |#BASS_SAMPLE_FLOAT)
+    length.l = BASS_ChannelGetLength(tmpStream,#BASS_POS_BYTE)
+    Dim buffer.f(length / 4)
+    
+    BASS_ChannelGetData(tmpStream,@buffer(0), length)
+    
+    amount = ArraySize(buffer())
+    tmpW = Min(4000,amount)
+    s = amount / tmpW
+    pos = 0
+    
+    
+    If *cue\waveform = 0
+    	*cue\waveform = CreateImage(#PB_Any,tmpW,120)
+    EndIf
+    
+    StartDrawing(ImageOutput(*cue\waveform))
+    Box(0,0,tmpW,120,RGB(64,64,64))
+   	StopDrawing()
+    
+    For i = 0 To tmpW - 1
+    	StartDrawing(ImageOutput(*cue\waveform))
+    	maxValue.f = 0.0
+    	For k = (i * s) To (i * s + s)
+    		If buffer(k) > maxValue
+    			maxValue = buffer(k)
+    		EndIf
+    	Next k
+    	
+    	LineXY(i,60,i,60 + 55 * (maxValue),RGB(200,200,250))
+    	LineXY(i,60,i,60 - 55 * (maxValue),RGB(200,200,250))
+    	StopDrawing()
+    	
+    	If *gCurrentCue = *cue
+    		If i % 200 = 0
+    			UpdateWaveform(0)
+    		EndIf
+    		;SetGadgetState(#WaveImg,ImageID(*cue\waveform))
+    	EndIf
+    Next i
+    
+    UpdateWaveform(0)
+    
+    UnlockMutex(gLoadMutex)
 EndProcedure
 
 Procedure GetCueById(id.l)
@@ -429,6 +774,25 @@ Procedure.f StringToSeconds(text.s)
 EndProcedure
 
 Procedure DeleteCue(*cue.Cue)
+	ForEach cueList()
+		If @cueList() <> *cue
+			ForEach cueList()\events()
+				If cueList()\events()\target = *cue
+					DeleteElement(cueList()\events())
+					Break
+				EndIf
+			Next
+		EndIf
+	Next
+	
+	If *cue\afterCue <> 0
+		ForEach *cue\afterCue\followCues()
+			If *cue\afterCue\followCues() = *cue
+				DeleteElement(*cue\afterCue\followCues())
+			EndIf
+		Next
+	EndIf
+	
 	If ListSize(*cue\effects()) > 0
 		ForEach *cue\effects()
 			DeleteCueEffect(*cue,@*cue\effects())
@@ -441,7 +805,8 @@ Procedure DeleteCue(*cue.Cue)
 		Next
 	EndIf
 	
-	
+	ClearList(*cue\events())
+
 	GetCueListIndex(*cue)
 	DeleteElement(cueList())
 	gCueAmount - 1
@@ -471,7 +836,7 @@ Procedure Max(a.f,b.f)
 	EndIf
 EndProcedure
 
-Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.BASS_DX8_PARAMEQ=0,active=1,path.s="")
+Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.BASS_DX8_PARAMEQ=0,active=1,id=-1,path.s="")
 	If *cue\stream <> 0
 		amount = ListSize(*cue\effects())
 		
@@ -511,7 +876,6 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				
 			Next
 		EndIf
-				
 		
 		If eType = #EFFECT_VST And path = ""
 			path.s = OpenFileRequester("Select plugin file","","DLL files | *.dll",0)
@@ -537,10 +901,17 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 			
 		AddElement(*cue\effects())
 		amount + 1
+		gEffectCounter + 1
 		
 		*cue\effects()\priority = 0
 		*cue\effects()\type = eType
 		*cue\effects()\active = active
+		*cue\effects()\defaultActive = active
+		If id = -1
+			*cue\effects()\id = gEffectCounter
+		Else
+			*cue\effects()\id = id
+		EndIf
 		If eType <> #EFFECT_VST
 			*cue\effects()\handle = BASS_ChannelSetFX(*cue\stream,eType,0)
 		Else
@@ -550,26 +921,28 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 		
 		
 		;S‰‰timet
-		OpenGadgetList(#EditorTabs,1)
-		tmpY = 40 + (amount - 1) * 115
+		SetGadgetAttribute(#EffectScroll,#PB_ScrollArea_InnerHeight,GetGadgetAttribute(#EffectScroll,#PB_ScrollArea_InnerHeight) + 115)
+		OpenGadgetList(#EffectScroll,1)
+		tmpY = (amount - 1) * 115
 		Select eType
 			Case #BASS_FX_DX8_REVERB
-				text.s = "Reverb"
+				*cue\effects()\name = "Reverb"
+				text.s = "Reverb " + Str(gEffectCounter)
 				
 				*cue\effects()\gadgets[5] = TrackBarGadget(#PB_Any,75, tmpY + 40,170,30,0,960)		;Input gain [-96.0,0.0]
 				*cue\effects()\gadgets[6] = TrackBarGadget(#PB_Any,75, tmpY + 75,170,30,0,960) 		;Reverb mix [-96.0,0.0]
-				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,390, tmpY + 40,170,30,1,3000) 	;Reverb time [1,3000]
-				*cue\effects()\gadgets[8] = TrackBarGadget(#PB_Any,390, tmpY + 75,170,30,1,999)		;High freq rvrb time [0.001,0.999]
+				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,370, tmpY + 40,170,30,1,3000) 	;Reverb time [1,3000]
+				*cue\effects()\gadgets[8] = TrackBarGadget(#PB_Any,370, tmpY + 75,170,30,1,999)		;High freq rvrb time [0.001,0.999]
 				
 				*cue\effects()\gadgets[9] = StringGadget(#PB_Any,250,tmpY + 40,40,20,"",#PB_String_ReadOnly)
 				*cue\effects()\gadgets[10] = StringGadget(#PB_Any,250,tmpY + 75,40,20,"",#PB_String_ReadOnly)
-				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,565,tmpY + 40,40,20,"",#PB_String_ReadOnly)
-				*cue\effects()\gadgets[12] = StringGadget(#PB_Any,565,tmpY + 75,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,545,tmpY + 40,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[12] = StringGadget(#PB_Any,545,tmpY + 75,40,20,"",#PB_String_ReadOnly)
 				
 				*cue\effects()\gadgets[13] = TextGadget(#PB_Any,10,tmpY + 40,60,30,"Input gain (dB):")
 				*cue\effects()\gadgets[14] = TextGadget(#PB_Any,10,tmpY + 75,60,30,"Reverb mix (dB):")
-				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,330,tmpY + 40,60,30,"Reverb time (ms):")
-				*cue\effects()\gadgets[16] = TextGadget(#PB_Any,330,tmpY + 75,60,30,"High freq time ratio:")
+				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,310,tmpY + 40,60,30,"Reverb time (ms):")
+				*cue\effects()\gadgets[16] = TextGadget(#PB_Any,310,tmpY + 75,60,30,"High freq time ratio:")
 				
 				If *revParams = 0
 					*cue\effects()\revParam\fReverbTime = 1000
@@ -594,22 +967,23 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				SetGadgetText(*cue\effects()\gadgets[12],StrF(*cue\effects()\revParam\fHighFreqRTRatio,3))
 				
 			Case #BASS_FX_DX8_PARAMEQ
-				text.s = "Parametic EQ"
+				*cue\effects()\name = "Parametric EQ"
+				text.s = "Parametic EQ " + Str(gEffectCounter)
 				
 				info.BASS_CHANNELINFO
 				BASS_ChannelGetInfo(*cue\stream,@info.BASS_CHANNELINFO)
 				
 				*cue\effects()\gadgets[5] = TrackBarGadget(#PB_Any,75, tmpY + 40,170,30,80,Min(16000,info\freq / 3))	;Center
 				*cue\effects()\gadgets[6] = TrackBarGadget(#PB_Any,75, tmpY + 75,170,30,1,360) 							;Bandwidth [1,36]
-				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,390, tmpY + 40,170,30,0,300) 							;Gain [-15,15]
+				*cue\effects()\gadgets[7] = TrackBarGadget(#PB_Any,370, tmpY + 40,170,30,0,300) 							;Gain [-15,15]
 				
 				*cue\effects()\gadgets[9] = StringGadget(#PB_Any,250,tmpY + 40,40,20,"",#PB_String_ReadOnly)
 				*cue\effects()\gadgets[10] = StringGadget(#PB_Any,250,tmpY + 75,40,20,"",#PB_String_ReadOnly)
-				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,565,tmpY + 40,40,20,"",#PB_String_ReadOnly)
+				*cue\effects()\gadgets[11] = StringGadget(#PB_Any,545,tmpY + 40,40,20,"",#PB_String_ReadOnly)
 				
 				*cue\effects()\gadgets[13] = TextGadget(#PB_Any,10,tmpY + 40,60,30,"Center (Hz):")
 				*cue\effects()\gadgets[14] = TextGadget(#PB_Any,10,tmpY + 75,60,30,"Bandwidth (semitones):")
-				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,330,tmpY + 40,60,30,"Gain (dB):")
+				*cue\effects()\gadgets[15] = TextGadget(#PB_Any,310,tmpY + 40,60,30,"Gain (dB):")
 				
 				If *eqParams = 0
 					*cue\effects()\eqParam\fBandwidth = 12.0
@@ -634,28 +1008,35 @@ Procedure AddCueEffect(*cue.Cue,eType.i,*revParams.BASS_DX8_REVERB=0,*eqParams.B
 				vstInfo.BASS_VST_INFO
 				BASS_VST_GetInfo(*cue\effects()\handle,@vstInfo)
 				
-				text.s = vstInfo\effectName
+				*cue\effects()\name = vstInfo\effectName
+				text.s = vstInfo\effectName + " " + Str(gEffectCounter)
 				
 				If vstInfo\hasEditor = 1
 					*cue\effects()\gadgets[5] = OpenWindow(#PB_Any,0,0,vstInfo\editorWidth,vstInfo\editorHeight,*cue\name + " - " + vstInfo\effectName,#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
 					BASS_VST_EmbedEditor(*cue\effects()\handle,WindowID(*cue\effects()\gadgets[5]))
 					
-					OpenGadgetList(#EditorTabs,1)
+					OpenGadgetList(#EffectScroll,1)
 					
 					*cue\effects()\gadgets[6] = ButtonGadget(#PB_Any,10,tmpY + 40,70,30,"Open editor")
 				EndIf		
 		EndSelect
 		
-		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,660,115,text)
-		*cue\effects()\gadgets[#EGADGET_UP] = ButtonImageGadget(#PB_Any,625,tmpY + 10,30,30,ImageID(#UpImg))
-		*cue\effects()\gadgets[#EGADGET_DOWN] = ButtonImageGadget(#PB_Any,625,tmpY + 45,30,30,ImageID(#DownImg))
-		*cue\effects()\gadgets[#EGADGET_DELETE] = ButtonImageGadget(#PB_Any,625,tmpy + 80,30,30,ImageID(#DeleteImg))
+		*cue\effects()\gadgets[#EGADGET_FRAME] = Frame3DGadget(#PB_Any,5,tmpY,640,115,text)
+		*cue\effects()\gadgets[#EGADGET_UP] = ButtonImageGadget(#PB_Any,605,tmpY + 10,30,30,ImageID(#UpImg))
+		*cue\effects()\gadgets[#EGADGET_DOWN] = ButtonImageGadget(#PB_Any,605,tmpY + 45,30,30,ImageID(#DownImg))
+		*cue\effects()\gadgets[#EGADGET_DELETE] = ButtonImageGadget(#PB_Any,605,tmpy + 80,30,30,ImageID(#DeleteImg))
 		*cue\effects()\gadgets[#EGADGET_ACTIVE] = CheckBoxGadget(#PB_Any,10,tmpY + 15,60,20,"Active")
 		SetGadgetState(*cue\effects()\gadgets[#EGADGET_ACTIVE],1)
 		
-		ProcedureReturn #True
+		
+		For i = 0 To 16
+			If IsGadget(*cue\effects()\gadgets[i])
+				SetGadgetColor(*cue\effects()\gadgets[i],#PB_Gadget_BackColor,$FFFFFF)
+			EndIf
+		Next i
 		
 		CloseGadgetList()
+		ProcedureReturn #True	
 	EndIf
 EndProcedure
 
@@ -725,6 +1106,8 @@ Procedure DeleteCueEffect(*cue.Cue,*effect.Effect)
 			Break
 		EndIf
 	Next
+	
+	SetGadgetAttribute(#EffectScroll,#PB_ScrollArea3D_InnerHeight,GetGadgetAttribute(#EffectScroll,#PB_ScrollArea3D_InnerHeight) - 115)
 EndProcedure
 
 Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
@@ -756,6 +1139,16 @@ Procedure DisableCueEffect(*cue.Cue,*effect.Effect,value)
 		
 		*effect\active = #True
 	EndIf
+EndProcedure
+
+Procedure GetEffectById(id.l)
+	ForEach cueList()
+		ForEach cueList()\effects()
+			If cueList()\effects()\id = id
+				ProcedureReturn @cueList()\effects()
+			EndIf
+		Next
+	Next
 EndProcedure
 
 Procedure AddCueOutput(*cue.Cue,name.s="",x=0,y=0,w=0,h=0,monitor=0,active=0)
@@ -809,6 +1202,10 @@ Procedure DeleteCueOutput(*cue.Cue,*output.VideoWindow)
 EndProcedure
 
 Procedure SaveCueList(path.s,check=1)
+	ForEach cueList()
+		StopCue(@cueList())
+	Next
+	
 	If GetExtensionPart(path) = ""
 		path = path + ".clf"
 	EndIf
@@ -825,18 +1222,24 @@ Procedure SaveCueList(path.s,check=1)
 	
 	If CreateFile(0,path)
 		;CLF
-		WriteByte(0,67)
-		WriteByte(0,76)
-		WriteByte(0,70)
+		WriteByte(0,67)	;C
+		WriteByte(0,76)	;L
+		WriteByte(0,70)	;F
 		
 		;Tiedostoformaatin versio
 		WriteFloat(0,#FORMAT_VERSION)
+		
+		;Listan asetukset
+		WriteInteger(0,#SETTINGS)
+		For i = 0 To #SETTINGS - 1
+			WriteInteger(0, gListSettings(i))
+		Next i
 		
 		;Cuejen lukum‰‰r‰
 		WriteInteger(0,gCueAmount)
 		
 		;**** Data
-		;Kirjoitetaan id:t alkuun
+		;Kirjoitetaan id:t alkuksi, jotta niiden perusteella voidaan hakea osoitteet
 		ForEach cueList()
 			WriteInteger(0,cueList()\id)
 		Next
@@ -860,6 +1263,7 @@ Procedure SaveCueList(path.s,check=1)
 			EndIf
 			
 			;Cuen j‰lkeiset cuet
+			Debug "Follow cues (" + cueList()\name + "): " + Str(ListSize(cueList()\followCues()))
 			WriteInteger(0,ListSize(cueList()\followCues()))
 			ForEach cueList()\followCues()
 				WriteInteger(0,cueList()\followCues()\id)
@@ -880,15 +1284,15 @@ Procedure SaveCueList(path.s,check=1)
 			WriteFloat(0,cueList()\pan)
 			
 			;"Action cuet"
-			For i = 0 To 5
-				If cueList()\actionCues[i] <> 0
-					WriteInteger(0,cueList()\actionCues[i]\id)
-				Else
-					WriteInteger(0,0)
-				EndIf
-				
-				WriteByte(0,cueList()\actions[i])
-			Next i
+; 			For i = 0 To 5
+; 				If cueList()\actionCues[i] <> 0
+; 					WriteInteger(0,cueList()\actionCues[i]\id)
+; 				Else
+; 					WriteInteger(0,0)
+; 				EndIf
+; 				
+; 				WriteByte(0,cueList()\actions[i])
+; 			Next i
 			
 			;Efektit
 			eAmount = ListSize(cueList()\effects())
@@ -900,6 +1304,7 @@ Procedure SaveCueList(path.s,check=1)
 						Debug "Effect type: " + Str(\type)
 						WriteByte(0,\type)
 						WriteByte(0,\active)
+						WriteInteger(0,\id)
 						
 						If \type = #BASS_FX_DX8_REVERB
 							WriteFloat(0,\revParam\fInGain)
@@ -947,17 +1352,284 @@ Procedure SaveCueList(path.s,check=1)
 		Next
 		
 		CloseFile(0)
+		
+		AddRecentFile(path)
 	EndIf
-
+	
+	If ListSize(cueList()) > 0
+		FirstElement(cueList())
+		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+	EndIf
+	
 	ProcedureReturn #True
 EndProcedure
 
-Procedure LoadCueList(path.s)
+Procedure SaveCueListXML(path.s,check=1)
+	ForEach cueList()
+		StopCue(@cueList())
+	Next
+	
 	If GetExtensionPart(path) = ""
 		path = path + ".clf"
 	EndIf
 	
-	If ReadFile(0,path)
+	If check = 1
+		If FileSize(path) > -1
+			result = MessageRequester("Overwrite?","File " + path + " already found. Do you want to overwrite it?",#PB_MessageRequester_YesNo)
+			
+			If result <> #PB_MessageRequester_Yes
+				ProcedureReturn #False
+			EndIf
+		EndIf
+	EndIf
+	
+	xml = CreateXML(#PB_Any)
+	mainNode = CreateXMLNode(RootXMLNode(xml))
+	SetXMLNodeName(mainNode,"cuelist")
+	
+	;Listan asetukset
+	setNode = CreateXMLNode(mainNode)
+	SetXMLNodeName(setNode,"settings")
+	SetXMLAttribute(setNode,"amount",Str(#SETTINGS))
+	For i = 0 To #SETTINGS - 1
+		tmpNode = CreateXMLNode(setNode)
+		SetXMLNodeName(tmpNode,"setting")
+		SetXMLAttribute(tmpNode,"type",Str(i))
+		SetXMLAttribute(tmpNode,"value",Str(gListSettings(i)))
+	Next i
+	
+	;Kirjoitetaan idt alkuun, jotta cuet voidaan luoda ennen tietojen asetusta
+	idNode = CreateXMLNode(mainNode)
+	SetXMLNodeName(idNode,"ids")
+	SetXMLAttribute(idNode,"amount",Str(gCueAmount))
+	ForEach cueList()
+		tmpNode = CreateXMLNode(idNode)
+		SetXMLNodeName(tmpNode,"cueid")
+		SetXMLNodeText(tmpNode,Str(cueList()\id))
+	Next
+	
+	;Cuejen tiedot
+	cuesNode = CreateXMLNode(mainNode)
+	SetXMLNodeName(cuesNode,"cues")
+	SetXMLAttribute(cuesNode,"amount",Str(gCueAmount))
+	ForEach cueList()
+		cueNode = CreateXMLNode(cuesNode)
+		SetXMLNodeName(cueNode,"cue")
+		SetXMLAttribute(cueNode,"id",Str(cueList()\id))
+		
+		;Cuen tyyppi
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"type")
+		SetXMLNodeText(tmpNode,Str(cueList()\cueType))
+		
+		;Nimi
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"name")
+		SetXMLNodeText(tmpNode,cueList()\name)
+		
+		;Kuvaus
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"description")
+		SetXMLNodeText(tmpNode,cueList()\desc)
+		
+		;Tiedostopolku
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"file")
+		SetXMLNodeText(tmpNode,cueList()\filePath)
+		
+		;Aloitustapa
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"startmode")
+		SetXMLNodeText(tmpNode,Str(cueList()\startMode))
+		
+		;Viive
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"delay")
+		SetXMLNodeText(tmpNode,StrF(cueList()\delay))
+		
+		;After cue
+		tmpNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(tmpNode,"aftercue")
+		If cueList()\afterCue <> 0
+			SetXMLNodeText(tmpNode,Str(cueList()\afterCue\id))
+		Else
+			SetXMLNodeText(tmpNode,"")
+		EndIf
+		
+		;Cuen j‰lkeiset cuet
+		followNode = CreateXMLNode(cueNode)
+		SetXMLNodeName(followNode,"followcues")
+		SetXMLAttribute(followNode,"amount",Str(ListSize(cueList()\followCues())))
+		ForEach cueList()\followCues()
+			tmpNode = CreateXMLNode(followNode)
+			SetXMLNodeName(tmpNode,"cueid")
+			SetXMLNodeText(tmpNode,Str(cueList()\followCues()\id))
+		Next
+		
+		If cueList()\cueType = #TYPE_AUDIO Or cueList()\cueType = #TYPE_CHANGE
+			;Alku
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"startpos")
+			SetXMLNodeText(tmpNode,StrF(cueList()\startPos))
+			;Loppu
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"endpos")
+			SetXMLNodeText(tmpNode,StrF(cueList()\endPos))
+			
+			;Looppi
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"looped")
+			SetXMLNodeText(tmpNode,Str(cueList()\looped))
+			;Loopin alku
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"loopstart")
+			SetXMLNodeText(tmpNode,StrF(cueList()\loopStart))
+			;Loopin loppu
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"loopend")
+			SetXMLNodeText(tmpNode,StrF(cueList()\loopEnd))
+			;Looppien m‰‰r‰
+			tmpNode	= CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"loopcount")
+			SetXMLNodeText(tmpNode,Str(cueList()\loopCount))
+			
+			;Fade in
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"fadein")
+			SetXMLNodeText(tmpNode,StrF(cueList()\fadeIn))
+			;Fade out
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"fadeout")
+			SetXMLNodeText(tmpNode,StrF(cueList()\fadeOut))
+			
+			;Volume
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"volume")
+			SetXMLNodeText(tmpNode,StrF(cueList()\volume))
+			;Pannaus
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"pan")
+			SetXMLNodeText(tmpNode,StrF(cueList()\pan))
+		EndIf
+		
+		;Eventit
+		If cueList()\cueType = #TYPE_EVENT Or cueList()\cueType = #TYPE_CHANGE
+			eventsNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(eventsNode,"events")
+			ForEach cueList()\events()
+				eventNode = CreateXMLNode(eventsNode)
+				SetXMLNodeName(eventNode,"event")
+				SetXMLAttribute(eventNode,"action",Str(cueList()\events()\action))
+				
+				;Kohde
+				tmpNode = CreateXMLNode(eventNode)
+				SetXMLNodeName(tmpNode,"target")
+				If cueList()\events()\target <> 0
+					SetXMLNodeText(tmpNode,Str(cueList()\events()\target\id))
+				Else
+					SetXMLNodeText(tmpNode,"0")
+				EndIf
+
+				;Kohde-efekti
+				tmpNode = CreateXMLNode(eventNode)
+				SetXMLNodeName(tmpNode,"effect")
+				If cueList()\events()\effect <> 0
+					SetXMLNodeText(tmpNode,Str(cueList()\events()\effect\id))
+				Else
+					SetXMLNodeText(tmpNode,"0")
+				EndIf
+			Next
+		EndIf
+		
+		;Efektit
+		If cueList()\cueType = #TYPE_AUDIO
+			effectsNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(effectsNode,"effects")
+			SetXMLAttribute(effectsNode,"amount",Str(ListSize(cueList()\effects())))
+			
+			ForEach cueList()\effects()
+				With cueList()\effects()
+					effectNode = CreateXMLNode(effectsNode)
+					SetXMLNodeName(effectNode,"effect")
+					SetXMLAttribute(effectNode,"type",Str(\type))
+					SetXMLAttribute(effectNode,"id",Str(\id))
+					
+					;Aktiivisuus
+					tmpNode = CreateXMLNode(effectNode)
+					SetXMLNodeName(tmpNode,"active")
+					SetXMLNodeText(tmpNode,Str(\active))
+					
+					;Arvot
+					If \type = #BASS_FX_DX8_REVERB
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"ingain")
+						SetXMLNodeText(tmpNode,StrF(\revParam\fInGain))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"reverbmix")
+						SetXMLNodeText(tmpNode,StrF(\revParam\fReverbMix))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"reverbtime")
+						SetXMLNodeText(tmpNode,StrF(\revParam\fReverbTime))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"hfrtr")
+						SetXMLNodeText(tmpNode,StrF(\revParam\fHighFreqRTRatio))
+					ElseIf \type = #BASS_FX_DX8_PARAMEQ
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"center")
+						SetXMLNodeText(tmpNode,StrF(\eqParam\fCenter))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"bandwidth")
+						SetXMLNodeText(tmpNode,StrF(\eqParam\fBandwidth))
+						
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"gain")
+						SetXMLNodeText(tmpNode,StrF(\eqParam\fGain))
+					ElseIf \type = #EFFECT_VST
+						tmpNode = CreateXMLNode(effectNode)
+						SetXMLNodeName(tmpNode,"vstpath")
+						SetXMLNodeText(tmpNode,\pluginPath)
+
+						pAmount = BASS_VST_GetParamCount(\handle)
+						For i = 0 To pAmount - 1
+							info.BASS_VST_PARAM_INFO
+							BASS_VST_GetParamInfo(\handle,i,@info)
+							
+							tmpNode = CreateXMLNode(effectNode)
+							SetXMLNodeName(tmpNode,info\name)
+							SetXMLNodeText(tmpNode,StrF(BASS_VST_GetParam(\handle,i)))
+						Next i
+					EndIf
+				EndWith
+			Next		
+		EndIf
+	Next
+
+	SaveXML(xml,path)
+	FreeXML(xml)
+	
+	AddRecentFile(path)
+	
+	If ListSize(cueList()) > 0
+		FirstElement(cueList())
+		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+	EndIf
+	
+	ProcedureReturn #True
+EndProcedure
+
+Procedure LoadCueList(lPath.s)
+	If GetExtensionPart(lPath) = ""
+		lPath = lPath + ".clf"
+	EndIf
+	
+	Debug ""
+	Debug "*** LOADING ***"
+	
+	If ReadFile(0,lPath)
 		;Onko oikea tiedostotunniste
 		tmp.s = Chr(ReadByte(0)) + Chr(ReadByte(0)) + Chr(ReadByte(0))
 		
@@ -970,13 +1642,24 @@ Procedure LoadCueList(path.s)
 		;Tiedostoformaatin versio
 		version.f = ReadFloat(0)
 		
+		;Asetukset
+		If version >= 3.6
+			sAmount = ReadInteger(0)
+			For i = 0 To sAmount - 1
+				gListSettings(i) = ReadInteger(0)	
+			Next i
+		EndIf
+		
+		Debug gListSettings(#SETTING_RELATIVE)
+		
 		;Cuejen m‰‰r‰
 		tmpAmount = ReadInteger(0)
-		Debug "Amount: " + Str(tmpAmount)
+		Debug "Cue mount: " + Str(tmpAmount)
 		
 		gCueAmount = 0
 		gCueCounter = 0
-		
+		gCuesLoaded = 0
+
 		high = 0
 		;Luetaan idt ja luodaan cuet
 		For i = 1 To tmpAmount
@@ -994,11 +1677,13 @@ Procedure LoadCueList(path.s)
 		
 		gCueCounter = high
 		
-		Debug ListSize(cueList())
+		Debug "Cue amount: "  + Str(ListSize(cueList()))
 		
 		;Luetaan cuejen tiedot
 		ForEach cueList()
 			With cueList()
+				Debug ""
+				Debug "Current index: " + Str(ListIndex(cueList()))
 				\cueType = ReadByte(0)
 				Debug "Type: " + Str(\cueType)
 				
@@ -1006,58 +1691,86 @@ Procedure LoadCueList(path.s)
 				\desc = ReadString(0)
 				
 				\filePath = ReadString(0)
-				If \filePath <> ""
-					If \cueType = #TYPE_AUDIO
-						If FileSize(\filePath) = -1
-							result = MessageRequester("File not found","File " + \filePath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
-							
-							If result = #PB_MessageRequester_Yes
-					    		pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
-					    		
-					    		path.s = OpenFileRequester("Select file","",pattern,0)
-					    		
-					    		If path
-					    			\filePath = path
-					    			LoadCueStream(@cueList(),\filePath)
-					    		EndIf
+				If \cueType = #TYPE_AUDIO And \filePath <> ""
+					If gListSettings(#SETTING_RELATIVE) = 1
+						fPath.s = GetPathPart(lPath) + \filePath
+					Else
+						fPath = \filePath
+					EndIf
+					
+					If FileSize(fPath) = -1
+						result = MessageRequester("File not found","File " + fPath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+						
+						If result = #PB_MessageRequester_Yes
+				    		pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
+				    		
+				    		path.s = OpenFileRequester("Select file","",pattern,0)
+				    		
+				    		If path
+				    			If gListSettings(#SETTING_RELATIVE) = 1
+				    				\filePath = RelativePath(GetPathPart(path),GetPathPart(lPath)) + GetFilePart(path)
+				    			Else
+				    				\filePath = path
+				    			EndIf
+				    			
+				    			LoadCueStream(@cueList(),fPath)
+				    		EndIf
+				    	EndIf
+				    Else
+				    	LoadCueStream(@cueList(),fPath)
+				    EndIf
+				ElseIf \cueType = #TYPE_VIDEO
+					If gListSettings(#SETTING_RELATIVE) = 1
+						fPath.s = GetPathPart(lPath) + \filePath
+					Else
+						fPath = \filePath
+					EndIf
+
+					If FileSize(fPath) = -1
+						result = MessageRequester("File not found","File " + fPath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+						
+						If result = #PB_MessageRequester_Yes
+					    	pattern.s = "Video files |*.*"
+					    	
+					    	path.s = OpenFileRequester("Select file","",pattern,0)
+					    	
+					    	If path
+					    		If gListSettings(#SETTING_RELATIVE) = 1
+				    				\filePath = RelativePath(GetPathPart(path),GetPathPart(lPath)) + GetFilePart(path)
+				    			Else
+				    				\filePath = path
+				    			EndIf
+
+					    		LoadCueStream(@cueList(),\filePath)
 					    	EndIf
-					    Else
-					    	LoadCueStream(@cueList(),\filePath)
-					    EndIf
-					ElseIf \cueType = #TYPE_VIDEO
-						If FileSize(\filePath) = -1
-							result = MessageRequester("File not found","File " + \filePath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
-							
-							If result = #PB_MessageRequester_Yes
-					    		pattern.s = "Video files |*.*"
-					    		
-					    		path.s = OpenFileRequester("Select file","",pattern,0)
-					    		
-					    		If path
-					    			\filePath = path
-					    			LoadCueStream(@cueList(),\filePath)
-					    		EndIf
-					    	EndIf
-					    Else
-					    	LoadCueStream(@cueList(),\filePath)
-					    EndIf
+					  	EndIf
+					Else
+					    LoadCueStream(@cueList(),\filePath)
 					EndIf
 				EndIf
 				
 				\startMode = ReadByte(0)
 				\delay = ReadFloat(0)
 				
+				*prev.Cue = @cueList()
+				
 				tmpId = ReadInteger(0)
 				If tmpId <> 0
-					\afterCue = GetCueById(ReadInteger(0))
+					*prev\afterCue = GetCueById(tmpId)
+					
+					Debug "After cue id: " + Str(*prev\afterCue\id)
+					Debug "After cue name: " + *prev\afterCue\name
 				EndIf
+				ChangeCurrentElement(cueList(),*prev)
 					
 				;Cuen j‰lkeiset cuet
 				tmpA = ReadInteger(0)
-				*prev.Cue = @cueList()
+				Debug "Follow cues (" + \name + "): " + Str(tmpA)
+				
 				For k = 1 To tmpA
 					AddElement(*prev\followCues())
 					*prev\followCues() = GetCueById(ReadInteger(0))
+					Debug "Follow cue: " + *prev\followCues()\name
 				Next k
 				ChangeCurrentElement(cueList(),*prev)
 				
@@ -1067,7 +1780,7 @@ Procedure LoadCueList(path.s)
 				\looped = ReadByte(0)
 				\loopStart = ReadFloat(0)
 				\loopEnd = ReadFloat(0)
-				\loopStart = ReadFloat(0)
+				\loopCount = ReadInteger(0)
 				
 				\fadeIn = ReadFloat(0)
 				\fadeOut = ReadFloat(0)
@@ -1076,14 +1789,14 @@ Procedure LoadCueList(path.s)
 				\pan = ReadFloat(0)
 				
 				;"Action cuet"
-				For k = 0 To 5
-					tmpId = ReadInteger(0)
-					If tmpId <> 0
-						*prev\actionCues[k] = GetCueById(tmpId)
-					EndIf
-					
-					*prev\actions[k] = ReadByte(0)
-				Next k
+; 				For k = 0 To 5
+; 					tmpId = ReadInteger(0)
+; 					If tmpId <> 0
+; 						*prev\actionCues[k] = GetCueById(tmpId)
+; 					EndIf
+; 					
+; 					*prev\actions[k] = ReadByte(0)
+; 				Next k
 				ChangeCurrentElement(cueList(),*prev)
 				
 				;Efektit
@@ -1095,6 +1808,12 @@ Procedure LoadCueList(path.s)
 						Debug "Effect type: " + Str(tmpType)
 						tmpActive = ReadByte(0)
 						
+						If version >= 3.7
+							tmpId = ReadInteger(0)
+						Else
+							tmpId = -1
+						EndIf
+						
 						If tmpType = #BASS_FX_DX8_REVERB
 							revParams.BASS_DX8_REVERB
 							revParams\fInGain = ReadFloat(0)
@@ -1102,17 +1821,17 @@ Procedure LoadCueList(path.s)
 							revParams\fReverbTime = ReadFloat(0)
 							revParams\fHighFreqRTRatio = ReadFloat(0)
 							
-							AddCueEffect(@cueList(),tmpType,@revParams,0,tmpActive)
+							AddCueEffect(@cueList(),tmpType,@revParams,0,tmpActive,tmpId)
 						ElseIf tmpType = #BASS_FX_DX8_PARAMEQ
 							eqParams.BASS_DX8_PARAMEQ
 							eqParams\fCenter = ReadFloat(0)
 							eqParams\fBandwidth = ReadFloat(0)
 							eqParams\fGain = ReadFloat(0)
 							
-							AddCueEffect(@cueList(),tmpType,0,@eqParams,tmpActive)
+							AddCueEffect(@cueList(),tmpType,0,@eqParams,tmpActive,tmpId)
 						ElseIf tmpType = #EFFECT_VST
 							tmpPath.s = ReadString(0)
-							result = AddCueEffect(@cueList(),tmpType,0,0,tmpActive,tmpPath)
+							result = AddCueEffect(@cueList(),tmpType,0,0,tmpActive,tmpId,tmpPath)
 							
 							If result = #True
 								pAmount = ReadInteger(0)
@@ -1146,12 +1865,289 @@ Procedure LoadCueList(path.s)
 				ChangeCurrentElement(cueList(),*prev)
 	
 			EndWith
+			
+			gCuesLoaded + 1
 		Next
 		
 		CloseFile(0)
+		
+		AddRecentFile(lPath)
 	Else
 		MessageRequester("Error","Couldn't open file " + path + "!")
 		ProcedureReturn #False
+	EndIf
+	
+	If ListSize(cueList()) > 0
+		FirstElement(cueList())
+		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+	EndIf
+	
+	ProcedureReturn #True
+EndProcedure
+
+Procedure LoadCueListXML(lPath.s)
+	If LoadXML(0,lPath)
+		If XMLStatus(0) <> #PB_XML_Success
+			Message$ = "Error in the XML file:" + Chr(13)
+			Message$ + "Message: " + XMLError(0) + Chr(13)
+			Message$ + "Line: " + Str(XMLErrorLine(0)) + "   Character: " + Str(XMLErrorPosition(0))
+			MessageRequester("Error", Message$)
+		EndIf
+		
+		If GetXMLNodeName(MainXMLNode(0)) <> "cuelist"
+			MessageRequester("Error","File" + lPath + " is not a cue List file!")
+		EndIf
+		
+		gCuesLoaded = 0
+		CreateThread(@Open_LoadWindow(),0)
+		
+		currentNode = ChildXMLNode(MainXMLNode(0))
+		Repeat
+			If currentNode = 0
+				Break
+			EndIf
+			
+			Select GetXMLNodeName(currentNode)
+				Case "settings"		;---Asetukset
+					settingNode = ChildXMLNode(currentNode)
+					While settingNode <> 0
+						tmp = Val(GetXMLAttribute(settingNode,"type"))
+						tmpValue = Val(GetXMLAttribute(settingNode,"value"))
+						
+						gListSettings(tmp) = tmpValue
+						
+						settingNode = NextXMLNode(settingNode)
+					Wend
+				Case "ids"		;---Cuejen idt
+					gCueAmount = Val(GetXMLAttribute(currentNode,"amount"))
+					idNode = ChildXMLNode(currentNode)
+					While idNode <> 0
+						AddElement(cueList())
+						cueList()\id = Val(GetXMLNodeText(idNode))
+						
+						If cueList()\id > high
+							high = cueList()\id
+						EndIf
+						
+						cueList()\state = #STATE_STOPPED
+						
+						idNode = NextXMLNode(idNode)
+					Wend
+					
+					gCueCounter = high
+				Case "cues"		;---Cuejen tiedot
+					cueNode = ChildXMLNode(currentNode)
+					ForEach cueList()
+						*prev.Cue = @cueList()
+						
+						With cueList()
+							attrNode = ChildXMLNode(cueNode)
+							While attrNode <> 0
+								attr.s = GetXMLNodeName(attrNode)
+								value.s = GetXMLNodeText(attrNode)
+								
+								Select attr
+									Case "type"
+										\cueType = Val(value)
+									Case "name"
+										\name = value
+									Case "description"
+										\desc = value
+									Case "file"
+										\filePath = value
+										
+										If \filePath <> ""
+											If gListSettings(#SETTING_RELATIVE) = 1
+												fPath.s = GetPathPart(lPath) + \filePath
+											Else
+												fPath = \filePath
+											EndIf
+											
+											If FileSize(fPath) = -1
+												result = MessageRequester("File not found","File " + fPath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+												
+												If result = #PB_MessageRequester_Yes
+										    		pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
+										    		
+										    		path.s = OpenFileRequester("Select file","",pattern,0)
+										    		
+										    		If path
+										    			If gListSettings(#SETTING_RELATIVE) = 1
+										    				\filePath = RelativePath(GetPathPart(path),GetPathPart(lPath)) + GetFilePart(path)
+										    			Else
+										    				\filePath = path
+										    			EndIf
+										    			
+										    			LoadCueStream(@cueList(),fPath)
+										    		EndIf
+										    	EndIf
+										    Else
+										    	LoadCueStream(@cueList(),fPath)
+										    EndIf
+										EndIf
+									Case "startmode"
+										\startMode = Val(value)
+									Case "delay"
+										\delay = ValF(value)
+									Case "aftercue"
+										tmpId = Val(value)
+										
+										If tmpId <> 0
+											*prev\afterCue = GetCueById(tmpId)
+										EndIf
+										
+										ChangeCurrentElement(cueList(),*prev)
+									Case "followcues"
+										idNode = ChildXMLNode(attrNode)
+										While idNode <> 0
+											AddElement(*prev\followCues())
+											
+											*prev\followCues() = GetCueById(Val(GetXMLNodeText(idNode)))
+											idNode = NextXMLNode(idNode)
+										Wend
+										
+										ChangeCurrentElement(cueList(),*prev)
+									Case "startpos"
+										\startPos = ValF(value)
+									Case "endpos"
+										\endPos = ValF(value)
+									Case "looped"
+										\looped = Val(value)
+									Case "loopstart"
+										\loopStart = ValF(value)
+									Case "loopend"
+										\loopEnd = ValF(value)
+									Case "loopcount"
+										\loopCount = Val(value)
+									Case "fadein"
+										\fadeIn = ValF(value)
+									Case "fadeout"
+										\fadeOut = ValF(value)
+									Case "volume"
+										\volume = ValF(value)
+									Case "pan"
+										\pan = ValF(value)
+									Case "events"
+										eventNode = ChildXMLNode(attrNode)
+										While eventNode <> 0
+											AddElement(*prev\events())
+											
+											*prev\events()\action = Val(GetXMLAttribute(eventNode,"action"))
+											
+											tmpNode = ChildXMLNode(eventNode)
+											tmpId = Val(GetXMLNodeText(tmpNode))
+											Select GetXMLNodeName(tmpNode)
+												Case "target"
+													If tmpId <> 0
+														*prev\events()\target = GetCueById(tmpId)
+													EndIf
+												Case "effect"
+													If tmpId <> 0
+														*prev\events()\effect = GetEffectById(tmpId)
+													EndIf
+											EndSelect
+
+											eventNode = NextXMLNode(eventNode)
+										Wend
+										
+										ChangeCurrentElement(cueList(),*prev)
+									Case "effects"
+										effectNode = ChildXMLNode(attrNode)
+										While effectNode <> 0
+											eType = Val(GetXMLAttribute(effectNode,"type"))
+											tmpId = Val(GetXMLAttribute(effectNode,"id"))
+											
+											tmpNode = ChildXMLNode(effectNode)
+											tmpActive = Val(GetXMLNodeText(tmpNode))
+											
+											If eType = #BASS_FX_DX8_REVERB
+												revParams.BASS_DX8_REVERB
+												
+												tmpNode = NextXMLNode(tmpNode)
+												While tmpNode <> 0
+													tmpVal.f = ValF(GetXMLNodeText(tmpNode))
+													Select GetXMLNodeName(tmpNode)
+														Case "ingain"
+															revParams\fInGain = tmpVal
+														Case "reverbmix"
+															revParams\fReverbMix = tmpVal
+														Case "reverbtime"
+															revParams\fReverbTime = tmpVal
+														Case "hfrtr"
+															revParams\fHighFreqRTRatio = tmpVal
+													EndSelect
+													
+													tmpNode = NextXMLNode(tmpNode)
+												Wend
+												
+												AddCueEffect(@cueList(),eType,@revParams,0,tmpActive,tmpId)
+											ElseIf eType = #BASS_FX_DX8_PARAMEQ
+												eqParams.BASS_DX8_PARAMEQ
+												
+												tmpNode = NextXMLNode(tmpNode)
+												While tmpNode <> 0
+													tmpVal.f = ValF(GetXMLNodeText(tmpNode))
+													Select GetXMLNodeName(tmpNode)
+														Case "center"
+															eqParams\fCenter = tmpVal
+														Case "bandwidth"
+															eqParams\fBandwidth = tmpVal
+														Case "gain"
+															eqParams\fGain = tmpVal
+													EndSelect
+													
+													tmpNode = NextXMLNode(tmpNode)
+												Wend
+												
+												AddCueEffect(@cueList(),eType,0,@eqParams,tmpActive,tmpId)
+											ElseIf eType = #EFFECT_VST
+												tmpNode = NextXMLNode(tmpNode)
+												tmpPath.s = GetXMLNodeText(tmpNode)
+												
+												result = AddCueEffect(@cueList(),eType,0,0,tmpActive,tmpId,tmpPath)
+												
+												If result = #True
+													tmpNode = NextXMLNode(tmpNode)
+													i = 0
+													While tmpNode <> 0
+														tmpVal.f = ValF(GetXMLNodeText(tmpNode))
+														BASS_VST_SetParam(cueList()\effects()\handle,i,tmpVal)
+														
+														i + 1
+														tmpNode = NextXMLNode(tmpNode)
+													Wend
+													
+												EndIf
+											EndIf
+											
+											effectNode = NextXMLNode(effectNode)
+										Wend
+								EndSelect
+								
+								attrNode = NextXMLNode(attrNode)
+							Wend
+						EndWith
+						
+						cueNode = NextXMLNode(cueNode)
+						gCuesLoaded + 1
+					Next
+			EndSelect
+			
+			currentNode = NextXMLNode(currentNode)
+			
+		ForEver
+		
+		FreeXML(0)
+		
+		AddRecentFile(lPath)
+	Else
+		MessageRequester("Error","File " + lPath + " couldn't be loaded!")
+		ProcedureReturn #False
+	EndIf
+	
+	If ListSize(cueList()) > 0
+		FirstElement(cueList())
+		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 	EndIf
 	
 	ProcedureReturn #True
@@ -1159,16 +2155,10 @@ EndProcedure
 
 Procedure ClearCueList()
 	ForEach cueList()
-		If cueList()\stream <> 0
-			BASS_StreamFree(cueList()\stream)
-		EndIf
-		
-		If cueList()\waveform <> 0
-			FreeImage(cueList()\waveform)
-		EndIf
+		DeleteCue(@cueList())
 	Next
 	
-	ClearList(cueList())
+	;ClearList(cueList())
 EndProcedure
 
 Procedure CreateProjectFolder(path.s)
@@ -1196,3 +2186,133 @@ Procedure CreateProjectFolder(path.s)
 		SaveCueList(gSavePath)
 	EndIf
 EndProcedure
+
+Procedure.s RelativePath(absolutePath.s,relativeTo.s)
+	absCount = CountString(absolutePath,"\") + 1
+	If Right(absolutePath,1) = "\"
+		absCount - 1
+	EndIf
+	
+	relCount = CountString(relativeTo,"\") + 1
+	If Right(relativeTo,1) = "\"
+		relCount - 1
+	EndIf
+	
+	Dim absoluteDirs.s(absCount - 1)
+	Dim relativeDirs.s(relCount - 1)
+	
+	For i = 0 To absCount - 1
+		absoluteDirs(i) = StringField(absolutePath,i + 1,"\")
+		Debug absoluteDirs(i)
+	Next i
+	
+	
+	For i = 0 To relCount - 1
+		relativeDirs(i) = StringField(relativeTo,i + 1,"\")
+		Debug relativeDirs(i)
+	Next i
+	
+	Define sameCounter = 0
+	While sameCounter < relCount And sameCounter < absCount And relativeDirs(sameCounter) = absoluteDirs(sameCounter)
+		sameCounter + 1
+	Wend
+	
+	If sameCounter = 0
+		ProcedureReturn absolutePath ;No relative link
+	EndIf
+	
+	Dim relPath.s(0)
+	Define returnString.s
+	For i = sameCounter To relCount - 1
+		ReDim relPath(ArraySize(relPath()) + 1)
+		relPath(ArraySize(relPath())) = "..\"
+	Next i
+	
+	For i = sameCounter To absCount - 1
+		ReDim relPath(ArraySize(relPath()) + 1)
+		relPath(ArraySize(relPath())) = absoluteDirs(i) + "\"
+	Next i
+	
+	;ReDim relPath(ArraySize(relPath()) - 1)
+	
+	For i = 0 To ArraySize(relPath())
+		returnString = returnString + relPath(i)
+	Next i
+	
+	ProcedureReturn returnString
+EndProcedure
+
+Procedure ChangePathsToRelative()
+	ForEach cueList()
+		cueList()\filePath = RelativePath(GetPathPart(cueList()\filePath),GetPathPart(gSavePath)) + GetFilePart(cueList()\filePath)
+	Next
+EndProcedure
+
+Procedure Triangle(x1,y1,x2,y2,x3,y3,fill=0)
+	LineXY(x1,y1,x2,y2)
+    LineXY(x2,y2,x3,y3)
+    LineXY(x3,y3,x1,y1)
+
+    If fill = 1
+        If y2<y1
+            tmp=y1
+            y1=y2
+            y2=tmp
+            
+            tmp=x1
+            x1=x2
+            x2=tmp
+        EndIf
+        
+        If y3<y1
+            tmp=y1
+            y1=y3
+            y3=tmp
+            
+            tmp=x1
+            x1=x3
+            x3=tmp
+        EndIf
+        
+        If y3<y2
+            tmp=y2
+            y2=y3
+            y3=tmp
+            
+            tmp=x2
+            x2=x3
+            x3=tmp
+        EndIf
+        
+        dy1=y2-y1
+        dx1=x2-x1
+        dy2=y3-y1
+        dx2=x3-x1
+        
+        If dy1
+            For i = y1 To y2
+                ax=x1+((i-y1)*dx1)/dy1
+                bx=x1+((i-y1)*dx2)/dy2
+                LineXY(ax,i,bx,i)
+            Next i
+        EndIf
+        
+        dy1=y3-y2
+        dx1=x3-x2
+        
+        If dy1
+            For i = y2 To y3
+                ax=x2+((i-y2)*dx1)/dy1
+                bx=x1+((i-y1)*dx2)/dy2
+                LineXY(ax,i,bx,i)
+            Next i
+        EndIf
+    EndIf
+EndProcedure
+
+
+
+
+	
+		
+		
