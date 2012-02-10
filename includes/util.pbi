@@ -337,7 +337,7 @@ Enumeration 1
   #CuePrefix
   
   #OutputList
-  #Text_26
+  #Text_39
   #AddOutput
   #DeleteOutput
   #OutputMonitor

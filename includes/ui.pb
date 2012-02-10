@@ -15,7 +15,7 @@ Enumeration
 EndEnumeration
 
 ;- Fonts
-
+Global gCueListFont
 
 Procedure Open_MainWindow()
 	winRect.RECT
@@ -232,13 +232,13 @@ Procedure Open_EditorWindow()
       ComboBoxGadget(#ChangeTarget, 65, 245, 200, 20)
       
       ;Video cue
-      TextGadget(#Text_26, 5, 290, 50, 20, "Outputs:")
+      TextGadget(#Text_39, 5, 290, 50, 20, "Outputs:")
       ListViewGadget(#OutputList, 5, 310, 100, 100)
       
       ButtonImageGadget(#AddOutput, 5, 415, 30, 30, ImageID(#AddImg))
       ButtonImageGadget(#DeleteOutput, 75, 415, 30, 30, ImageID(#DeleteImg))
       
-      TextGadget(#Text_27, 120, 310, 40, 20, "Monitor:")
+      TextGadget(#Text_33, 120, 310, 40, 20, "Monitor:")
       ComboBoxGadget(#OutputMonitor, 165, 310, 125, 20)
       
       info.DISPLAY_DEVICE
@@ -250,20 +250,20 @@ Procedure Open_EditorWindow()
       Next i
       
       
-      TextGadget(#Text_32, 120, 355, 40, 20, "Name:")
+      TextGadget(#Text_34, 120, 355, 40, 20, "Name:")
       StringGadget(#OutputName, 160, 355, 130, 20, "")
       
-      TextGadget(#Text_28, 140, 385, 20, 20, "X:")
+      TextGadget(#Text_35, 140, 385, 20, 20, "X:")
       StringGadget(#OutputX, 160, 385, 40, 20, "")
-      TextGadget(#Text_29, 230, 385, 20, 20, "Y:")
+      TextGadget(#Text_36, 230, 385, 20, 20, "Y:")
       StringGadget(#OutputY, 250, 385, 40, 20, "")
       ButtonImageGadget(#AlignHor, 300, 385, 20, 20, ImageID(#HorImg))
       ButtonImageGadget(#AlignVer, 325, 385, 20, 20, ImageID(#VerImg))
       ButtonImageGadget(#FullButton, 350, 385, 20, 20, ImageID(#FullImg))
       
-      TextGadget(#Text_30, 120, 415, 40, 20, "Width:")
+      TextGadget(#Text_37, 120, 415, 40, 20, "Width:")
       StringGadget(#OutputW, 160, 415, 40, 20, "")
-      TextGadget(#Text_31, 210, 415, 40, 20, "Height:")
+      TextGadget(#Text_38, 210, 415, 40, 20, "Height:")
       StringGadget(#OutputH, 250, 415, 40, 20, "")
       CheckBoxGadget(#KeepRatio, 300, 415, 70, 20, "Keep ratio")
       

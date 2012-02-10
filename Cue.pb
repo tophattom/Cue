@@ -543,8 +543,10 @@ Repeat ; Start of the event loop
     			EndIf
     			
     			Select *gCurrentCue\cueType
-    				Case #TYPE_AUDIO, #TYPE_VIDEO
-						gLoadThread = CreateThread(@LoadCueStream2(),*gCurrentCue)	
+    				Case #TYPE_AUDIO
+    					gLoadThread = CreateThread(@LoadCueStream2(),*gCurrentCue)	
+    				Case #TYPE_VIDEO
+    					LoadCueStream(*gCurrentCue,path)
     			EndSelect
     			
     			If *gCurrentCue\desc = ""
@@ -559,8 +561,6 @@ Repeat ; Start of the event loop
     				UpdateOutputList()
     			EndIf
     		EndIf
-    	ElseIf GadgetID = #Image_1
-      
     	ElseIf GadgetID = #ModeSelect ;--- Aloitustapa
     		*gCurrentCue\startMode = GetGadgetItemData(#ModeSelect,GetGadgetState(#ModeSelect))
     		
@@ -1127,6 +1127,7 @@ Repeat ; Start of the event loop
 					HideOutputControls()
 				Else
 					ShowOutputControls()
+					UpdateCueControls()
 					
 					If GetGadgetState(#KeepRatio) = 1
 						ratio.f = *gCurrentOutput\width / *gCurrentOutput\height
@@ -1264,7 +1265,6 @@ Repeat ; Start of the event loop
 			
 			ExplorerTreeGadget(#FileBrowser, 0, 24, WindowWidth(#ExplorerWindow), WindowHeight(#ExplorerWindow) - 24, tmpPath)
 		EndIf
-	EndIf
 	
 	If Event = #PB_Event_CloseWindow
 		eWindow = EventWindow()
@@ -1552,7 +1552,7 @@ Procedure HideCueControls()
 	HideGadget(#EventDelete, 1)
 
 	HideGadget(#OutputList, 1)
-	HideGadget(#Text_26, 1)
+	HideGadget(#Text_39, 1)
 	HideGadget(#AddOutput, 1)
 	HideGadget(#DeleteOutput, 1)
 
@@ -1620,7 +1620,7 @@ Procedure ShowCueControls()
 				
 				If *gCurrentCue\cueType = #TYPE_VIDEO
 					HideGadget(#OutputList, 0)
-					HideGadget(#Text_26, 0)
+					HideGadget(#Text_39, 0)
 					HideGadget(#AddOutput, 0)
 					HideGadget(#DeleteOutput, 0)
 					
@@ -1777,12 +1777,12 @@ Procedure UpdateEventList()
 EndProcedure
 
 Procedure HideOutputControls()
-	HideGadget(#Text_27, 1)
-	HideGadget(#Text_28, 1)
-	HideGadget(#Text_29, 1)
-	HideGadget(#Text_30, 1)
-	HideGadget(#Text_31, 1)
-	HideGadget(#Text_32, 1)
+	HideGadget(#Text_33, 1)
+	HideGadget(#Text_34, 1)
+	HideGadget(#Text_35, 1)
+	HideGadget(#Text_36, 1)
+	HideGadget(#Text_37, 1)
+	HideGadget(#Text_38, 1)
 	HideGadget(#OutputMonitor, 1)
 	HideGadget(#OutputX, 1)
 	HideGadget(#OutputY, 1)
@@ -1797,14 +1797,22 @@ Procedure HideOutputControls()
 EndProcedure
 
 Procedure ShowOutputControls()
-	HideGadget(#Text_27, 0)
-	HideGadget(#Text_28, 0)
-	HideGadget(#Text_29, 0)
-	HideGadget(#Text_30, 0)
-	HideGadget(#Text_31, 0)
-	HideGadget(#Text_32, 0)
+	HideGadget(#Text_33, 0)
+	HideGadget(#Text_34, 0)
+	HideGadget(#Text_35, 0)
+	HideGadget(#Text_36, 0)
+	HideGadget(#Text_37, 0)
+	HideGadget(#Text_38, 0)
 	HideGadget(#OutputMonitor, 0)
 	HideGadget(#OutputX, 0)
+	HideGadget(#OutputY, 0)
+	HideGadget(#OutputW, 0)
+	HideGadget(#OutputH, 0)
+	HideGadget(#OutputName, 0)
+	HideGadget(#AlignHor, 0)
+	HideGadget(#AlignVer, 0)
+	HideGadget(#FullButton, 0)
+	HideGadget(#KeepRatio, 0)
 EndProcedure
 
 Procedure UpdateCueControls()
@@ -1908,6 +1916,18 @@ Procedure UpdateCueControls()
 	
 		UpdatePosField()
 		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
+		
+		;Videon ulostulot
+		If *gCurrentOutput <> 0
+			SetGadgetText(#OutputName,*gCurrentOutput\name)
+			SetGadgetText(#OutputX,Str(*gCurrentOutput\x))
+			SetGadgetText(#OutputY,Str(*gCurrentOutput\y))
+			SetGadgetText(#OutputW,Str(*gCurrentOutput\width))
+			SetGadgetText(#OutputH,Str(*gCurrentOutput\height))
+			SetGadgetState(#OutputActive,*gCurrentOutput\active)
+			SetGadgetState(#OutputMonitor,*gCurrentOutput\monitor)
+		EndIf
+		
 	
 		If *gCurrentCue\cueType = #TYPE_AUDIO
 			If GetGadgetState(#EffectType) > -1 And *gCurrentCue\stream <> 0
@@ -2192,6 +2212,7 @@ Procedure UpdateMainCueList()
 					color = RGB(100,200,200)
 				Case #TYPE_VIDEO
 					text.s = "Video"
+					color = RGB(200,100,100)
 				Case #TYPE_CHANGE
 					text.s = "Change"
 					color = RGB(200,100,200)
@@ -2269,7 +2290,11 @@ Procedure UpdateMainCueList()
 EndProcedure
 
 Procedure UpdatePosField()
-	pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
+	If *gCurrentCue\cueType = #TYPE_AUDIO
+		pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
+	ElseIf *gCurrentCue\cueType = #TYPE_VIDEO
+		pos.f = xVideo_ChannelGetPosition(*gCurrentCue\stream,#xVideo_POS_MILISEC) / 1000.0
+	EndIf
 	SetGadgetText(#Position, SecondsToString(pos))
 	
 	UpdateWaveform(pos)
@@ -2485,16 +2510,6 @@ Procedure UpdateWaveform(pos.f,mode=0)
 		LineXY(posX + drawX,0,posX + drawX,120)
 		StopDrawing()
 	EndIf
-EndProcedure
-
-Procedure UpdatePosField()
-	If *gCurrentCue\cueType = #TYPE_AUDIO
-		pos.f = BASS_ChannelBytes2Seconds(*gCurrentCue\stream,BASS_ChannelGetPosition(*gCurrentCue\stream,#BASS_POS_BYTE))
-	ElseIf *gCurrentCue\cueType = #TYPE_VIDEO
-		pos.f = xVideo_ChannelGetPosition(*gCurrentCue\stream,#xVideo_POS_MILISEC) / 1000.0
-	EndIf
-	
-	SetGadgetText(#Position, SecondsToString(pos))
 EndProcedure
 
 Procedure UpdateOutputList()
