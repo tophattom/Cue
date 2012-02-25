@@ -43,6 +43,7 @@ Procedure Open_MainWindow()
       MenuItem(#MenuSaveAs, "Save As..." + Chr(9) + "Ctrl+Alt+S")
       MenuBar()
       MenuItem(#MenuImport, "Import cues...")
+      DisableMenuItem(#MenuBar,#MenuImport,1)
       MenuBar()
       MenuItem(#MenuPref, "Preferences...")
       MenuBar()
@@ -323,7 +324,7 @@ Procedure Open_PrefWindow()
 		Frame3DGadget(#PrefGFrame,10, 150, 620, 60, "General")
 		
 		TextGadget(#Text_29,20,170,60,20,"Cue naming:")
-		StringGadget(#CuePrefix,90,170,60,20,gCueNaming)
+		StringGadget(#CuePrefix,90,170,60,20,gCueNaming) : GadgetToolTip(#CuePrefix,"# = number, $ = lower Case letter, & = upper case letter")
 		
 		
 		ButtonGadget(#PrefOk,590,440,40,30,"OK")
