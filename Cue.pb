@@ -597,7 +597,7 @@ Repeat ; Start of the event loop
 	    		SetGadgetState(#EffectPause,0)
 	    		
 	    		UpdatePosField()
-	    	endif
+	    	EndIf
       	ElseIf GadgetID = #StartPos ;--- Rajaus, fade, pan, volume
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
       		
@@ -2025,18 +2025,22 @@ Procedure UpdateMainCueList()
 				state.s = ""
 			EndIf
 			
-			
-			
-			secs.f = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
-			
-			;AddGadgetItem(#CueList, i, cueList()\name + "  " + cueList()\desc + Chr(10) + text + Chr(10) + start + Chr(10) + state + Chr(10) + "-" + SecondsToString(cueList()\endPos - secs))
 			SetGadgetItemText(#CueList, i, cueList()\name + "  " + cueList()\desc,0)
 			SetGadgetItemText(#CueList, i, text, 1)
 			SetGadgetItemText(#CueList, i, start, 2)
 			SetGadgetItemText(#CueList, i, state, 3)
 			
 			If cueList()\cueType <> #TYPE_NOTE
-				SetGadgetItemText(#CueList, i, "-" + SecondsToString(cueList()\endPos - secs),4)
+				If cueList()\state = #STATE_WAITING Or cueList()\state = #STATE_WAITING_END
+					secs.f = (cueList()\delay - (ElapsedMilliseconds() - cueList()\startTime)) / 1000
+					tmpS.s = "- " + SecondsToString(secs)
+				Else
+					secs.f = BASS_ChannelBytes2Seconds(cueList()\stream,BASS_ChannelGetPosition(cueList()\stream,#BASS_POS_BYTE))
+					tmpS.s = SecondsToString(cueList()\endPos - secs)
+				EndIf
+			
+			
+				SetGadgetItemText(#CueList, i,tmpS,4)
 			EndIf
 			
 			SetGadgetItemData(#CueList, i, @cueList())
