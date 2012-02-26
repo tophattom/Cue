@@ -1235,33 +1235,38 @@ Repeat ; Start of the event loop
 				StopCue(@cueList())
 			Next
 			
-	    	*gCurrentCue = AddCue(#TYPE_AUDIO)
-			UpdateEditorList()
+			tmpFiles.s = EventDropFiles()
+			count.i = CountString(tmpFiles,Chr(10)) + 1
 			
-	    	path.s = StringField(EventDropFiles(),1,Chr(10))
-			If path
-	    		*gCurrentCue\absolutePath = path
-	    			
-	    		If gListSettings(#SETTING_RELATIVE) = 1
-	    			*gCurrentCue\relativePath = RelativePath(GetPathPart(gSavePath),GetPathPart(path)) + GetFilePart(path)
-	    			*gCurrentCue\filePath = *gCurrentCue\relativePath
-	    		Else
-	    			*gCurrentCue\filePath = *gCurrentCue\absolutePath
-	    		EndIf
-	    			
-	    		Select *gCurrentCue\cueType
-	    			Case #TYPE_AUDIO
-	    				gLoadThread = CreateThread(@LoadCueStream2(),*gCurrentCue)
-	    		EndSelect
-	    			
-	    		If *gCurrentCue\desc = ""
-	    			file.s = GetFilePart(path)
-	    			*gCurrentCue\desc = Mid(file,0,Len(file) - 4)
-	    		EndIf
-	    			
-	    		UpdateCueControls()
-	    		UpdateEditorList()
-	    	EndIf
+			For i = 1 To count
+		    	*gCurrentCue = AddCue(#TYPE_AUDIO)
+				UpdateEditorList()
+				
+		    	path.s = StringField(EventDropFiles(),i,Chr(10))
+				If path
+		    		*gCurrentCue\absolutePath = path
+		    			
+		    		If gListSettings(#SETTING_RELATIVE) = 1
+		    			*gCurrentCue\relativePath = RelativePath(GetPathPart(gSavePath),GetPathPart(path)) + GetFilePart(path)
+		    			*gCurrentCue\filePath = *gCurrentCue\relativePath
+		    		Else
+		    			*gCurrentCue\filePath = *gCurrentCue\absolutePath
+		    		EndIf
+		    			
+		    		Select *gCurrentCue\cueType
+		    			Case #TYPE_AUDIO
+		    				gLoadThread = CreateThread(@LoadCueStream2(),*gCurrentCue)
+		    		EndSelect
+		    			
+		    		If *gCurrentCue\desc = ""
+		    			file.s = GetFilePart(path)
+		    			*gCurrentCue\desc = Mid(file,0,Len(file) - 4)
+		    		EndIf
+		    			
+		    		UpdateCueControls()
+		    		UpdateEditorList()
+		    	EndIf
+		    Next i
 	    ElseIf GadgetID = #CueList
 	    	path.s = StringField(EventDropFiles(),1,Chr(10))
 	    	
