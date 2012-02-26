@@ -1743,7 +1743,152 @@ EndProcedure
 
 
 
+Procedure LoadCueListSCSQ(lPath.s)
+	If LoadXML(0,lPath)
+		If XMLStatus(0) <> #PB_XML_Success
+			Message$ = "Error in the XML file:" + Chr(13)
+			Message$ + "Message: " + XMLError(0) + Chr(13)
+			Message$ + "Line: " + Str(XMLErrorLine(0)) + "   Character: " + Str(XMLErrorPosition(0))
+			MessageRequester("Error", Message$)
+		EndIf
+		
+		If GetXMLNodeName(MainXMLNode(0)) <> "Production"
+			MessageRequester("Error","Unknown file format!")
+		EndIf
+		
+		gCuesLoaded = 0
+		;CreateThread(@Open_LoadWindow(),0)
+		
+		currentNode = ChildXMLNode(MainXMLNode(0))
+		Repeat
+			If currentNode = 0
+				Break
+			EndIf
+			
+			Select GetXMLNodeName(currentNode)
+				Case "Cue"
+					*gCurrentCue = AddCue(0)
+					
+					attrNode = ChildXMLNode(currentNode)
+					While attrNode <> 0
+						attr.s = GetXMLNodeName(attrNode)
+						value.s = GetXMLNodeText(attrNode)
+						
+						Select attr
+							Case "CueId"
+								*gCurrentCue\name = value
+							Case "Description"
+								*gCurrentCue\desc = value
+							Case "AutoActivateTime"
+								*gCurrentCue\delay = ValF(value)
+							Case "AutoActivatePosn"
+								Select value
+									Case "start"
+										*gCurrentCue\startMode = #START_AFTER_START
+									Case "end"
+										*gCurrentCue\startMode = #START_AFTER_END
+								EndSelect
+							Case "AutoActivateCue"
+								ForEach cueList()
+									If @cueList() <> *gCurrentCue
+										If cueList()\name = value
+											*gCurrentCue\afterCue = @cueList()
+											
+											AddElement(cueList()\followCues())
+											cueList()\followCues() = *gCurrentCue
+										EndIf
+									EndIf
+								Next
+							Case "Sub"
+								If *gCurrentCue\cueType = 0									
+									subNode = ChildXMLNode(attrNode)
+									While subNode <> 0
+										Select GetXMLNodeName(subNode)
+											Case "SubType"
+												Select GetXMLNodeText(subNode)
+													Case "F"
+														*gCurrentCue\cueType = #TYPE_AUDIO
+													Case "S"
+														*gCurrentCue\cueType = #TYPE_EVENT
+													Case "L"
+														*gCurrentCue\cueType = #TYPE_CHANGE
+												EndSelect
+											Case "AudioFile"
+												tmpNode = ChildXMLNode(subNode)
+												While tmpNode <> 0
+													Select GetXMLNodeName(tmpNode)
+														Case "FileName"
+															fPath.s = GetXMLNodeText(tmpNode)
+															fPath = ReplaceString(fPath,"$(Cue)",GetPathPart(lPath))
+															
+															*gCurrentCue\filePath = fPath
+															
+															If FileSize(fPath) = -1
+																result = MessageRequester("File not found","File " + fPath + " not found!" + Chr(10) + "Do you want to locate it?",#PB_MessageRequester_YesNo)
+																
+																If result = #PB_MessageRequester_Yes
+														    		pattern.s = "Audio files (*.mp3,*.wav,*.ogg,*.aiff) |*.mp3;*.wav;*.ogg;*.aiff"
+														    		
+														    		path.s = OpenFileRequester("Select file","",pattern,0)
+														    		
+														    		If path
+														    			If gListSettings(#SETTING_RELATIVE) = 1
+														    				*gCurrentCue\filePath = RelativePath(GetPathPart(path),GetPathPart(lPath)) + GetFilePart(path)
+														    			Else
+														    				*gCurrentCue\filePath = path
+														    			EndIf
+														    			
+														    			LoadCueStream(*gCurrentCue,fPath)
+														    		EndIf
+														    	EndIf
+														    Else
+														    	LoadCueStream(@cueList(),fPath)
+														    EndIf
+														Case "FadeInTime"
+															*gCurrentCue\fadeIn = ValF(GetXMLNodeText(tmpNode)) / 1000
+														Case "FadeOutTime"
+															*gCurrentCue\fadeOut = ValF(GetXMLNodeText(tmpNode)) / 1000
+														Case "DBLevel0"
+															dB.f = ValF(GetXMLNodeText(tmpNode))
+															
+															*gCurrentCue\volume = Pow(Pow(10,(dB * -1) / 10),-1)
+														Case "LoopStart"
+															*gCurrentCue\looped = 1
+															*gCurrentCue\loopStart = Val(GetXMLNodeText(tmpNode)) / 1000
+														Case "LoopEnd"
+															*gCurrentCue\looped = 1
+															*gCurrentCue\loopEnd = Val(GetXMLNodeText(tmpNode)) / 1000
+													EndSelect
 
-	
+													tmpNode = NextXMLNode(tmpNode)
+												Wend
+										EndSelect
+			
+										subNode = NextXMLNode(subNode)
+									Wend
+								EndIf
+						EndSelect
+						
+						attrNode = NextXMLNode(attrNode)
+					Wend
+			EndSelect
+			
+			currentNode = NextXMLNode(currentNode)
+		ForEver
+		
+		ProcedureReturn #True
+	EndIf
+EndProcedure
+
+							
+					
+					
+					
+					
+					
+					
+					
+					
+					
 		
 		

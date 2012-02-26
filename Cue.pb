@@ -181,18 +181,29 @@ Repeat ; Start of the event loop
 			EndIf
 			
 			If skip = #False
-				path.s = OpenFileRequester("Open cue list","","Cue list files (*.clf) |*.clf",0)
+				path.s = OpenFileRequester("Open cue list","","Cue list files (*.clf) |*.clf;*.scsq",0)
 				
 				If path <> ""
 					ClearCueList()
 					
-					If LoadCueListXML(path)
-						gSavePath = path
-						
-						*gCurrentCue = FirstElement(cueList())
-						UpdateMainCueList()
-						UpdateEditorList()
-						UpdateCueControls()
+					If Right(path,4) = ".clf"
+						If LoadCueListXML(path)
+							gSavePath = path
+							
+							*gCurrentCue = FirstElement(cueList())
+							UpdateMainCueList()
+							UpdateEditorList()
+							UpdateCueControls()
+						EndIf
+					Else
+						If LoadCueListSCSQ(path)
+							gSavePath = path
+							
+							*gCurrentCue = FirstElement(cueList())
+							UpdateMainCueList()
+							UpdateEditorList()
+							UpdateCueControls()
+						EndIf
 					EndIf
 				EndIf
 			EndIf
