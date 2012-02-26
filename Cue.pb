@@ -563,18 +563,20 @@ Repeat ; Start of the event loop
     		
     		UpdateCueControls()
     	ElseIf GadgetID = #EditorPlay Or GadgetID = #EffectPlay ;--- Esikuuntelu
-    		If *gCurrentCue\state = #STATE_PAUSED
-    			PauseCue(*gCurrentCue)
-    		ElseIf *gCurrentCue\state <> #STATE_PLAYING
-    			PlayCue(*gCurrentCue)
-    		EndIf
-    		
-    		SetGadgetState(#EditorPause,0)
-    		SetGadgetState(#EditorPlay,1)
-    		SetGadgetState(#EffectPause,0)
-    		SetGadgetState(#EffectPlay,1)
-    	ElseIf GadgetID = #EditorPause Or GadgetID = #EffectPause
-    		If *gCurrentCue\state <> #STATE_STOPPED
+    		If *gCurrentCue <> 0
+	    		If *gCurrentCue\state = #STATE_PAUSED
+	    			PauseCue(*gCurrentCue)
+	    		ElseIf *gCurrentCue\state <> #STATE_PLAYING
+	    			PlayCue(*gCurrentCue)
+	    		EndIf
+	    		
+	    		SetGadgetState(#EditorPause,0)
+	    		SetGadgetState(#EditorPlay,1)
+	    		SetGadgetState(#EffectPause,0)
+	    		SetGadgetState(#EffectPlay,1)
+	    	EndIf
+	    ElseIf GadgetID = #EditorPause Or GadgetID = #EffectPause
+    		If *gCurrentCue <> 0 And *gCurrentCue\state <> #STATE_STOPPED
 	    		PauseCue(*gCurrentCue)
 	    		
 	    		If *gCurrentCue\state = #STATE_PAUSED
@@ -585,15 +587,17 @@ Repeat ; Start of the event loop
 	    			SetGadgetState(#EffectPlay,1)
 	    		EndIf
 	    	EndIf
-    	ElseIf GadgetID = #EditorStop Or GadgetID = #EffectStop
-    		StopCue(*gCurrentCue)
-    		
-    		SetGadgetState(#EditorPlay,0)
-    		SetGadgetState(#EditorPause,0)
-    		SetGadgetState(#EffectPlay,0)
-    		SetGadgetState(#EffectPause,0)
-    		
-    		UpdatePosField()
+	    ElseIf GadgetID = #EditorStop Or GadgetID = #EffectStop
+	    	If *gCurrentCue <> 0
+	    		StopCue(*gCurrentCue)
+	    		
+	    		SetGadgetState(#EditorPlay,0)
+	    		SetGadgetState(#EditorPause,0)
+	    		SetGadgetState(#EffectPlay,0)
+	    		SetGadgetState(#EffectPause,0)
+	    		
+	    		UpdatePosField()
+	    	endif
       	ElseIf GadgetID = #StartPos ;--- Rajaus, fade, pan, volume
       		*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#StartPos))
       		
