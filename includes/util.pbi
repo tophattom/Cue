@@ -1799,12 +1799,15 @@ Procedure LoadCueListSCSQ(lPath.s)
 										EndIf
 									EndIf
 								Next
-							Case "Sub"
-								If *gCurrentCue\cueType = 0									
+							Case "Sub"								
 									subNode = ChildXMLNode(attrNode)
 									While subNode <> 0
 										Select GetXMLNodeName(subNode)
 											Case "SubType"
+												If *gCurrentCue\cueType > 0
+													*gCurrentCue = AddCue(0)
+												EndIf
+												
 												Select GetXMLNodeText(subNode)
 													Case "F"
 														*gCurrentCue\cueType = #TYPE_AUDIO
@@ -1812,7 +1815,60 @@ Procedure LoadCueListSCSQ(lPath.s)
 														*gCurrentCue\cueType = #TYPE_EVENT
 													Case "L"
 														*gCurrentCue\cueType = #TYPE_CHANGE
+														*tmpEvent.Event = AddElement(*gCurrentCue\events())
+													Case "N"
+														*gCurrentCue\cueType = #TYPE_NOTE
+														*gCurrentCue\startMode = #START_AFTER_START
 												EndSelect
+											Case "SubDescription"
+												*gCurrentCue\desc = GetXMLNodeText(subNode)
+											Case "SFRCueType","SFRCueType1","SFRCueType2","SFRCueType3","SFRCueType4"
+												If GetXMLNodeText(subNode) = "sel"
+													*tmpEvent.Event = AddElement(*gCurrentCue\events())
+												Else
+													*tmpEvent.Event = 0
+												EndIf
+											Case "SFRCue0","SFRCue1","SFRCue2","SFRCue3","SFRCue4"
+												If *tmpEvent <> 0
+													ForEach cueList()
+														If @cueList() <> *gCurrentCue
+															If cueList()\name = GetXMLNodeText(subNode)
+																*tmpEvent\target = @cueList()
+															EndIf
+														EndIf
+													Next
+												EndIf
+											Case "SFRAction0","SFRAction1","SFRAction2","SFRAction3","SFRAction4"
+												If *tmpEvent <> 0
+													Select GetXMLNodeText(subNode)
+														Case "stop"
+															*tmpEvent\action = #EVENT_STOP
+														Case "fadeout"
+															*tmpEvent\action = #EVENT_FADE_OUT
+														Case "release"
+															*tmpEvent\action = #EVENT_RELEASE
+													EndSelect
+												EndIf
+											Case "LCCue"
+												If *tmpEvent <> 0
+													ForEach cueList()
+														If @cueList() <> *gCurrentCue
+															If cueList()\name = GetXMLNodeText(subNode)
+																*tmpEvent\target = @cueList()
+															EndIf
+														EndIf
+													Next
+												EndIf
+											Case "LCReqdDBLevel0"
+												dB.f = ValF(GetXMLNodeText(subNode))
+															
+												*gCurrentCue\volume = Pow(Pow(10,(dB * -1) / 10),-1)
+											Case "LCReqdPan0"
+												pan.f = ValF(GetXMLNodeText(subNode))
+												
+												*gCurrentCue\pan = ((pan * 2) - 1000) / 1000.0
+											Case "LCTime0"
+												*gCurrentCue\fadeIn = ValF(GetXMLNodeText(subNode)) / 1000.0
 											Case "AudioFile"
 												tmpNode = ChildXMLNode(subNode)
 												While tmpNode <> 0
@@ -1866,7 +1922,6 @@ Procedure LoadCueListSCSQ(lPath.s)
 			
 										subNode = NextXMLNode(subNode)
 									Wend
-								EndIf
 						EndSelect
 						
 						attrNode = NextXMLNode(attrNode)
