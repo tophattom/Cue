@@ -1841,6 +1841,9 @@ Procedure LoadCueListSCSQ(lPath.s)
 											Case "SFRCueType","SFRCueType1","SFRCueType2","SFRCueType3","SFRCueType4"
 												If GetXMLNodeText(subNode) = "sel"
 													*tmpEvent.Event = AddElement(*gCurrentCue\events())
+												ElseIf GetXMLNodeText(subNode) = "all"
+													*tmpEvent.Event = AddElement(*gCurrentCue\events())
+													*tmpEvent\target = #TARGET_ALL
 												Else
 													*tmpEvent.Event = 0
 												EndIf
@@ -1891,7 +1894,7 @@ Procedure LoadCueListSCSQ(lPath.s)
 													Select GetXMLNodeName(tmpNode)
 														Case "FileName"
 															fPath.s = GetXMLNodeText(tmpNode)
-															fPath = ReplaceString(fPath,"$(Cue)",GetPathPart(lPath))
+															fPath = ReplaceString(fPath,"$(Cue)",Left(GetPathPart(lPath),Len(GetPathPart(lPath)) - 1))
 															
 															*gCurrentCue\filePath = fPath
 															
@@ -1929,7 +1932,13 @@ Procedure LoadCueListSCSQ(lPath.s)
 															*gCurrentCue\loopStart = Val(GetXMLNodeText(tmpNode)) / 1000
 														Case "LoopEnd"
 															*gCurrentCue\looped = 1
-															*gCurrentCue\loopEnd = Val(GetXMLNodeText(tmpNode)) / 1000
+															
+															tmpVal.f = ValF(GetXMLNodeText(tmpNode)) / 1000
+															If tmpVal > -1
+																*gCurrentCue\loopEnd = Val(GetXMLNodeText(tmpNode)) / 1000
+															Else
+																*gCurrentCue\loopEnd = *gCurrentCue\length
+															EndIf
 													EndSelect
 
 													tmpNode = NextXMLNode(tmpNode)
