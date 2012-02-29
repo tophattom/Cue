@@ -94,6 +94,18 @@ Structure RecentFile
 EndStructure
 ;}
 
+
+;-Hotkey structure
+;{
+Structure Hotkey
+	itemId.i
+	
+	*target.Cue
+	
+	key.i
+EndStructure
+;}
+
 Enumeration 1
 	#TYPE_AUDIO
 	#TYPE_VIDEO
@@ -195,6 +207,19 @@ Box(0,0,1,120,$00FF00)
 StopDrawing()
 
 
+;- Window Constants
+;{
+Enumeration
+  #MainWindow
+  #EditorWindow
+  #SettingsWindow
+  #ExplorerWindow
+  #AboutWindow
+  #LoadWindow
+  #PrefWindow
+EndEnumeration
+;}
+
 ;- Gadget Constants
 ;{
 Enumeration 1
@@ -247,6 +272,8 @@ Enumeration 1
   #DeleteButton
   #Text_16
   #CueSelect
+  #Text_33
+  #HotkeyField
   #Text_17
   #StartDelay
   #WaveImg
@@ -355,6 +382,8 @@ EndEnumeration
 
 Global NewList cueList.Cue()
 Global NewList *gSelection.Cue()
+
+Global NewList gHotkeys.Hotkey()
 
 Global Dim gListSettings(#SETTINGS - 1)
 Global Dim gAppSettings(#APP_SETTINGS)	;Ohjelman asetukset
@@ -1747,8 +1776,68 @@ Procedure Triangle(x1,y1,x2,y2,x3,y3,fill=0)
     EndIf
 EndProcedure
 
+Procedure AddHotkey(*cue.Cue,key.i)
+	ForEach gHotkeys()
+		If gHotkeys()\key = key And gHotkeys()\target <> *cue
+			MessageRequester("Cue","Selected key is already mapped to " + gHotkeys()\target\name + "!")
+			SetGadgetState(#HotkeyField, 0)
+			
+			ProcedureReturn #False
+		EndIf
+	Next
+	
+	tmp = 6400
+	ForEach gHotkeys()
+		If gHotkeys()\target = *cue
+			RemoveKeyboardShortcut(#MainWindow,gHotkeys()\key)
+			
+			gHotkeys()\key = key
+			AddKeyboardShortcut(#MainWindow,gHotkeys()\key,gHotkeys()\itemId)
+			
+			ProcedureReturn #True
+		EndIf
+		
+		If gHotkeys()\itemId < tmp
+			tmp = gHotkeys()\itemId
+		EndIf
+	Next
+	
+	tmp - 1
+	
+	AddElement(gHotkeys())
+	
+	gHotkeys()\itemId = tmp
+	gHotkeys()\target = *cue
+	gHotkeys()\key = key
+	
+	AddKeyboardShortcut(#MainWindow,key,tmp)
+	
+	ProcedureReturn #True
+EndProcedure
 
+Procedure RemoveHotkey(*cue.Cue)
+	ForEach gHotkeys()
+		If gHotkeys()\target = *cue
+			RemoveKeyboardShortcut(#MainWindow,gHotkeys()\key)
+			
+			*tmpH.Hotkey = NextElement(gHotkeys())
+			
+			DeleteElement(gHotkeys())
+			
+			Break
+		EndIf
+	Next
+	
+	While NextElement(gHotkeys())
+		RemoveKeyboardShortcut(#MainWindow,gHotkeys()\key)
+		
+		gHotkeys()\itemId + 1
+		AddKeyboardShortcut(#MainWindow,gHotkeys()\key,gHotkeys()\itemId)
+	Wend
+EndProcedure
 
+	
+			
 
 	
 		

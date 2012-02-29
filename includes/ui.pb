@@ -1,19 +1,6 @@
 ;
 ; PureBasic Visual Designer v3.95 build 1485 (PB4Code)
 
-
-;- Window Constants
-;
-Enumeration
-  #MainWindow
-  #EditorWindow
-  #SettingsWindow
-  #ExplorerWindow
-  #AboutWindow
-  #LoadWindow
-  #PrefWindow
-EndEnumeration
-
 ;- Fonts
 
 
@@ -181,6 +168,9 @@ Procedure Open_EditorWindow()
       
       TextGadget(#Text_16, 235, 155, 40, 20, "Cue:")
       ComboBoxGadget(#CueSelect, 275, 155, 200, 20)
+      
+      TextGadget(#Text_33, 235, 155, 100, 20, "Key (combination):")
+      ShortcutGadget(#HotkeyField,335,155,140,20,0)
       
       TextGadget(#Text_17, 495, 155, 40, 20, "Delay:")
       StringGadget(#StartDelay, 535, 155, 50, 20, "") : GadgetToolTip(#StartDelay,"Delay before cue starts")

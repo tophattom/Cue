@@ -336,9 +336,17 @@ Repeat ; Start of the event loop
 				EndIf
 			EndIf
 		Next i
+		
+		;--- Hotkey cuet
+		ForEach gHotkeys()
+			If MenuID = gHotkeys()\itemId
+				PlayCue(gHotkeys()\target)
+			EndIf
+		Next
 	EndIf
 	;}
 	
+	;
 	;- Selaimen koko
 	;{
 	If Event = #PB_Event_SizeWindow
@@ -362,11 +370,13 @@ Repeat ; Start of the event loop
 	If Event = #PB_Event_Gadget
 		If GadgetID = #PlayButton
 			If *gCurrentCue <> 0
-				If *gCurrentCue\cueType = #TYPE_AUDIO
-					PlayCue(*gCurrentCue)
-				ElseIf *gCurrentCue\cueType = #TYPE_EVENT Or *gCurrentCue\cueType = #TYPE_CHANGE
-					StartEvents(*gCurrentCue)
-				EndIf
+				If *gCurrentCue\startMode = #START_MANUAL
+					If *gCurrentCue\cueType = #TYPE_AUDIO
+						PlayCue(*gCurrentCue)
+					ElseIf *gCurrentCue\cueType = #TYPE_EVENT Or *gCurrentCue\cueType = #TYPE_CHANGE
+						StartEvents(*gCurrentCue)
+					EndIf
+				endif
 
 				GetCueListIndex(*gCurrentCue)
 				
@@ -715,6 +725,14 @@ Repeat ; Start of the event loop
 					AddElement(*tmp\followCues())
 					*tmp\followCues() = *gCurrentCue
 				EndIf
+			EndIf
+		ElseIf GadgetID = #HotkeyField
+			tmpKey.i = GetGadgetState(#HotkeyField)
+			
+			If tmpKey <> 0
+				AddHotkey(*gCurrentCue,tmpKey)
+			Else
+				RemoveHotkey(*gCurrentCue)
 			EndIf
 		ElseIf GadgetID = #ChangeDur
 			*gCurrentCue\fadeIn = Val(GetGadgetText(#ChangeDur))
@@ -1387,6 +1405,8 @@ Procedure HideCueControls()
 	HideGadget(#Text_16,1)
 	HideGadget(#Text_17,1)
 	HideGadget(#CueSelect,1)
+	HideGadget(#Text_33, 1)
+	HideGadget(#HotkeyField, 1)
 	HideGadget(#StartDelay,1)
 	HideGadget(#CueFileField,1)
 	HideGadget(#OpenCueFile,1)
@@ -1453,9 +1473,7 @@ Procedure ShowCueControls()
 		If *gCurrentCue\cueType <> #TYPE_NOTE
 			HideGadget(#ModeSelect,0)
 			HideGadget(#Text_8,0)
-			HideGadget(#Text_16,0)
 			HideGadget(#Text_17,0)
-			HideGadget(#CueSelect,0)
 			HideGadget(#StartDelay,0)
 		EndIf
 		
@@ -1708,7 +1726,11 @@ Procedure UpdateCueControls()
 			
 		ClearGadgetItems(#CueSelect)
 		If *gCurrentCue\startMode = #START_AFTER_END Or *gCurrentCue\startMode = #START_AFTER_START
-			DisableGadget(#CueSelect, 0)
+			HideGadget(#CueSelect, 0)
+			HideGadget(#Text_16, 0)
+			HideGadget(#HotkeyField, 1)
+			HideGadget(#Text_33, 1)
+			
 			i = 0
 			ForEach cueList()
 				If @cueList() <> *gCurrentCue And cueList()\cueType <> #TYPE_NOTE
@@ -1723,8 +1745,24 @@ Procedure UpdateCueControls()
 				EndIf
 								
 			Next
+		ElseIf *gCurrentCue\startMode = #START_HOTKEY
+			HideGadget(#HotkeyField, 0)
+			HideGadget(#Text_33, 0)
+			HideGadget(#CueSelect, 1)
+			HideGadget(#Text_16, 1)
+			
+			SetGadgetState(#HotkeyField, 0)
+			
+			ForEach gHotkeys()
+				If gHotkeys()\target = *gCurrentCue
+					SetGadgetState(#HotkeyField, gHotkeys()\key)
+				EndIf
+			Next
 		Else
-			DisableGadget(#CueSelect, 1)
+			HideGadget(#CueSelect, 1)
+			HideGadget(#Text_16, 1)
+			HideGadget(#HotkeyField, 1)
+			HideGadget(#Text_33, 1)
 		EndIf
 		
 		Select *gCurrentCue\startMode
