@@ -1768,6 +1768,7 @@ Procedure LoadCueListSCSQ(lPath.s)
 			Select GetXMLNodeName(currentNode)
 				Case "Cue"
 					*gCurrentCue = AddCue(0)
+					*parentCue.Cue = *gCurrentCue
 					
 					attrNode = ChildXMLNode(currentNode)
 					While attrNode <> 0
@@ -1804,8 +1805,15 @@ Procedure LoadCueListSCSQ(lPath.s)
 									While subNode <> 0
 										Select GetXMLNodeName(subNode)
 											Case "SubType"
-												If *gCurrentCue\cueType > 0
+												If *gCurrentCue\cueType > 0	;Cue on SCS:n sub-cue
 													*gCurrentCue = AddCue(0)
+													
+													;Koska Cuessa ei ole vastaavaa ominaisuutta, laitetaan uusi cue alkamaan automaattisesti
+													*gCurrentCue\startMode = #START_AFTER_START
+													*gCurrentCue\afterCue = *parentCue
+													
+													AddElement(*parentCue\followCues())
+													*parentCue\followCues() = *gCurrentCue
 												EndIf
 												
 												Select GetXMLNodeText(subNode)
@@ -1820,6 +1828,8 @@ Procedure LoadCueListSCSQ(lPath.s)
 														*gCurrentCue\cueType = #TYPE_NOTE
 														*gCurrentCue\startMode = #START_AFTER_START
 												EndSelect
+											Case "RelStartTime"
+												*gCurrentCue\delay = ValF(GetXMLNodeText(subNode))
 											Case "SubDescription"
 												*gCurrentCue\desc = GetXMLNodeText(subNode)
 											Case "SFRCueType","SFRCueType1","SFRCueType2","SFRCueType3","SFRCueType4"
