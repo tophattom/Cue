@@ -1070,6 +1070,10 @@ Repeat ; Start of the event loop
 		ElseIf GadgetID = #EventAction
 			*gCurrentEvent\action = GetGadgetState(#EventAction) + 1
 			
+			If *gCurrentEvent\target = #TARGET_ALL And (*gCurrentEvent\action >= #EVENT_RELEASE)
+				*gCurrentEvent\action = 0
+			EndIf
+			
 			UpdateEventList()
 			ShowEventControls()
 		ElseIf GadgetID = #EventEffect
@@ -1564,7 +1568,15 @@ Procedure ShowEventControls()
 	HideGadget(#EventAction, 0)
 
 	ClearGadgetItems(#EventTarget)
-	i = 0
+	
+	AddGadgetItem(#EventTarget,0,"All earlier cues")
+	SetGadgetItemData(#EventTarget,0,#TARGET_ALL)
+	
+	If *gCurrentEvent\target = #TARGET_ALL
+		SetGadgetState(#EventTarget,0)
+	EndIf
+	
+	i = 1
 	ForEach cueList()
 		If @cueList() <> *gCurrentCue
 			AddGadgetItem(#EventTarget,i,cueList()\name + " " + cueList()\desc)
@@ -1580,7 +1592,7 @@ Procedure ShowEventControls()
 	
 	SetGadgetState(#EventAction,*gCurrentEvent\action - 1)
 	
-	If (*gCurrentEvent\action = #EVENT_EFFECT_ON Or *gCurrentEvent\action = #EVENT_EFFECT_OFF) And *gCurrentEvent\target <> 0
+	If (*gCurrentEvent\action = #EVENT_EFFECT_ON Or *gCurrentEvent\action = #EVENT_EFFECT_OFF) And *gCurrentEvent\target <> 0 And *gCurrentEvent\target <> #TARGET_ALL
 		HideGadget(#Text_31, 0)
 		HideGadget(#EventEffect, 0)
 		
@@ -1620,7 +1632,11 @@ Procedure UpdateEventList()
 		EndSelect
 		
 		If *gCurrentCue\events()\target <> 0
-			text = text + " " + *gCurrentCue\events()\target\name
+			If *gCurrentCue\events()\target = #TARGET_ALL
+				text = text + " all"
+			Else
+				text = text + " " + *gCurrentCue\events()\target\name
+			EndIf
 		EndIf
 		
 		AddGadgetItem(#EventList,i,text)
@@ -1881,10 +1897,39 @@ Procedure StartEvents(*cue.Cue)
 				If *cue\events()\target <> 0
 					Select *cue\events()\action
 						Case #EVENT_FADE_OUT
-							*cue\events()\target\state = #STATE_FADING_OUT
-							BASS_ChannelSlideAttribute(*cue\events()\target\stream,#BASS_ATTRIB_VOL,0,*cue\events()\target\fadeOut * 1000)
+							If *cue\events()\target = #TARGET_ALL
+								FirstElement(cueList())
+								Repeat
+									If @cueList() = *cue
+										Break
+									EndIf
+									
+									If cueList()\state <> #STATE_STOPPED
+										cueList()\state = #STATE_FADING_OUT
+										BASS_ChannelSlideAttribute(cueList()\stream,#BASS_ATTRIB_VOL,0,cueList()\fadeOut * 1000)
+									EndIf
+									
+									NextElement(cueList())
+								ForEver
+							Else
+								*cue\events()\target\state = #STATE_FADING_OUT
+								BASS_ChannelSlideAttribute(*cue\events()\target\stream,#BASS_ATTRIB_VOL,0,*cue\events()\target\fadeOut * 1000)
+							EndIf
 						Case #EVENT_STOP
-							StopCue(*cue\events()\target)
+							If *cue\events()\target = #TARGET_ALL
+								FirstElement(cueList())
+								Repeat
+									If @cueList() = *cue
+										Break
+									EndIf
+									
+									StopCue(@cueList())
+									
+									NextElement(cueList())
+								ForEver
+							Else
+								StopCue(*cue\events()\target)
+							EndIf
 						Case #EVENT_RELEASE
 							If *cue\events()\target\loopHandle <> 0
 								BASS_ChannelRemoveSync(*cue\events()\target\stream,*cue\events()\target\loopHandle)

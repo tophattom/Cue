@@ -126,6 +126,8 @@ Enumeration 1
 	#EVENT_RELEASE
 	#EVENT_EFFECT_ON
 	#EVENT_EFFECT_OFF
+	
+	#TARGET_ALL
 EndEnumeration
 
 ;Asetusvakiot
