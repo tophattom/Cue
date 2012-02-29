@@ -341,6 +341,13 @@ Repeat ; Start of the event loop
 		ForEach gHotkeys()
 			If MenuID = gHotkeys()\itemId
 				PlayCue(gHotkeys()\target)
+				
+				UpdateMainCueList()
+				
+				If gSaved = #True
+					FirstElement(cueList())
+					gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+				EndIf
 			EndIf
 		Next
 	EndIf
