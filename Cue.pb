@@ -376,7 +376,7 @@ Repeat ; Start of the event loop
 					ElseIf *gCurrentCue\cueType = #TYPE_EVENT Or *gCurrentCue\cueType = #TYPE_CHANGE
 						StartEvents(*gCurrentCue)
 					EndIf
-				endif
+				EndIf
 
 				GetCueListIndex(*gCurrentCue)
 				
@@ -2080,6 +2080,11 @@ Procedure UpdateMainCueList()
 						start.s = "Manual"
 					Case #START_HOTKEY
 						start.s = "Hotkey"
+						ForEach gHotkeys()
+							If gHotkeys()\target = @cueList()
+								start = start + " (" + GetShortcutText(gHotkeys()\key) + ")"
+							EndIf
+						Next
 					Case #START_AFTER_START
 						start.s = StrF(cueList()\delay / 1000,2) + " as "
 						If cueList()\afterCue <> 0

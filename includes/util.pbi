@@ -425,6 +425,7 @@ Declare UpdateWaveform(pos.f,mode=0)
 Declare StopProc(handle.i,channel.i,d,*user.Cue)
 Declare Min(a.f,b.f)
 Declare Open_LoadWindow(*value)
+Declare AddHotkey(*cue.Cue,key.i)
 
 Procedure SaveAppSettings()
 	If FileSize("settings.ini") = -1
@@ -1172,6 +1173,18 @@ Procedure SaveCueListXML(path.s,check=1)
 		SetXMLNodeName(tmpNode,"startmode")
 		SetXMLNodeText(tmpNode,Str(cueList()\startMode))
 		
+		;Hotkey, jos on
+		If cueList()\startMode = #START_HOTKEY
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"hotkey")
+			
+			ForEach gHotkeys()
+				If gHotkeys()\target = @cueList()
+					SetXMLNodeText(tmpNode,Str(gHotkeys()\key))
+				EndIf
+			Next
+		EndIf
+		
 		;Viive
 		tmpNode = CreateXMLNode(cueNode)
 		SetXMLNodeName(tmpNode,"delay")
@@ -1453,6 +1466,8 @@ Procedure LoadCueListXML(lPath.s)
 										EndIf
 									Case "startmode"
 										\startMode = Val(value)
+									Case "hotkey"
+										AddHotkey(@cueList(),Val(value))
 									Case "delay"
 										\delay = ValF(value)
 									Case "aftercue"
@@ -1622,6 +1637,11 @@ EndProcedure
 Procedure ClearCueList()
 	ForEach cueList()
 		DeleteCue(@cueList())
+	Next
+	
+	ForEach gHotkeys()
+		RemoveKeyboardShortcut(#MainWindow,gHotkeys()\key)
+		DeleteElement(gHotkeys())
 	Next
 	
 	;ClearList(cueList())
@@ -1836,7 +1856,27 @@ Procedure RemoveHotkey(*cue.Cue)
 	Wend
 EndProcedure
 
-	
+;From http://www.purebasic.fr/english/viewtopic.php?f=13&t=41327#p317760
+Procedure.s GetShortcutText(state)
+  Protected result$
+  If state&#PB_Shortcut_Control
+    result$ = "CTRL "
+  EndIf
+  If state&#PB_Shortcut_Shift
+    result$ + "SHIFT "
+  EndIf
+  If state&#PB_Shortcut_Alt
+    result$ + "ALT "
+  EndIf
+  state&~(#PB_Shortcut_Shift|#PB_Shortcut_Control|#PB_Shortcut_Alt)
+  Select state
+    Case '0' To '9', 'A' To 'Z'
+      result$ + Chr(state)
+    Case #PB_Shortcut_F1 To #PB_Shortcut_F24
+      result$ + "F" + Str(state - #PB_Shortcut_F1 + 1)
+  EndSelect
+  ProcedureReturn result$
+EndProcedure
 			
 
 	
