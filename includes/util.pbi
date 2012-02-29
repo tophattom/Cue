@@ -126,6 +126,8 @@ Enumeration 1
 	#EVENT_RELEASE
 	#EVENT_EFFECT_ON
 	#EVENT_EFFECT_OFF
+	
+	#TARGET_ALL
 EndEnumeration
 
 ;Asetusvakiot
@@ -553,6 +555,8 @@ Procedure LoadCueStream(*cue.Cue,path.s)
     *cue\startPos = 0
     *cue\endPos = *cue\length
     
+    *cue\stopHandle = BASS_ChannelSetSync(*cue\stream,#BASS_SYNC_POS,BASS_ChannelSeconds2Bytes(*cue\stream,*cue\endPos),@StopProc(),*cue)
+    
     ;****Aallon piirto
     tmpStream.l = BASS_StreamCreateFile(0,@path,0,0,#BASS_STREAM_DECODE | #BASS_SAMPLE_FLOAT)
     length.l = BASS_ChannelGetLength(tmpStream,#BASS_POS_BYTE)
@@ -561,16 +565,18 @@ Procedure LoadCueStream(*cue.Cue,path.s)
     BASS_ChannelGetData(tmpStream,@buffer(0), length)
     
     amount = ArraySize(buffer())
-    s = amount / #WAVEFORM_W
+    tmpW = Min(4000,amount)
+    s = amount / tmpW
     pos = 0
     
+    
     If *cue\waveform = 0
-    	*cue\waveform = CreateImage(#PB_Any,#WAVEFORM_W,120)
+    	*cue\waveform = CreateImage(#PB_Any,tmpW,120)
     EndIf
     
     StartDrawing(ImageOutput(*cue\waveform))
-    Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
-    For i = 0 To #WAVEFORM_W - 1
+    Box(0,0,tmpW,120,RGB(64,64,64))
+    For i = 0 To tmpW - 1
     	maxValue.f = 0.0
     	For k = (i * s) To (i * s + s)
     		If buffer(k) > maxValue
