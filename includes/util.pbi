@@ -1857,23 +1857,24 @@ Procedure RemoveHotkey(*cue.Cue)
 EndProcedure
 
 ;From http://www.purebasic.fr/english/viewtopic.php?f=13&t=41327#p317760
+;Modified by Jaakko Rinta-Filppula
 Procedure.s GetShortcutText(state)
   Protected result$
   If state&#PB_Shortcut_Control
     result$ = "CTRL "
   EndIf
   If state&#PB_Shortcut_Shift
-    result$ + "SHIFT "
+    result$ + "+ SHIFT "
   EndIf
   If state&#PB_Shortcut_Alt
-    result$ + "ALT "
+    result$ + "+ ALT "
   EndIf
   state&~(#PB_Shortcut_Shift|#PB_Shortcut_Control|#PB_Shortcut_Alt)
   Select state
     Case '0' To '9', 'A' To 'Z'
-      result$ + Chr(state)
+      result$ + "+ " +Chr(state)
     Case #PB_Shortcut_F1 To #PB_Shortcut_F24
-      result$ + "F" + Str(state - #PB_Shortcut_F1 + 1)
+      result$ + "+ " + "F" + Str(state - #PB_Shortcut_F1 + 1)
   EndSelect
   ProcedureReturn result$
 EndProcedure
