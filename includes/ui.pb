@@ -54,7 +54,7 @@ Procedure Open_MainWindow()
         ButtonGadget(#PauseButton, 110, 20, 80, 50, "Pause")
         ButtonGadget(#StopButton, 200, 20, 80, 50, "Stop all") : GadgetToolTip(#StopButton,"Stop all cues")
 
-        ListIconGadget(#CueList, 10, 90, 1004, 648, "Cue", 334, #PB_ListIcon_FullRowSelect | #PB_ListIcon_AlwaysShowSelection) : SetGadgetFont(#CueList,FontID(gCueListFont))
+        ListIconGadget(#CueList, 10, 90, 1004, 628, "Cue", 334, #PB_ListIcon_FullRowSelect | #PB_ListIcon_AlwaysShowSelection) : SetGadgetFont(#CueList,FontID(gCueListFont))
         AddGadgetColumn(#CueList, 1, "Cue type", 166)
         AddGadgetColumn(#CueList, 2, "Start mode", 166)
         AddGadgetColumn(#CueList, 3, "State", 166)
@@ -70,6 +70,9 @@ Procedure Open_MainWindow()
         
         ;EndIf
         
+        If CreateStatusBar(#StatusBar,WindowID(#MainWindow))
+        	AddStatusBarField(#PB_Ignore)
+        EndIf
         
   EndIf
 EndProcedure

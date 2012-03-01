@@ -197,6 +197,9 @@ Enumeration 1
 	#GRAB_WAVEFORM
 EndEnumeration
 
+;Kauanko teksti näkyy tilarivillä
+#STATUS_DELAY = 3000
+
 
 CreateImage(#StartOffset,1,120)
 CreateImage(#EndOffset,1,120)
@@ -346,7 +349,8 @@ EndEnumeration
 ;- Menu constants
 ;{
 Enumeration
-  #MenuBar
+	#MenuBar
+	#StatusBar
 EndEnumeration
 
 Enumeration	  
@@ -418,6 +422,8 @@ Global gCueListFont
 
 Global gCueNaming.s	;Cuen nimeämiskäytäntö.		# = numero, $ = pieni kirjain, & = iso kirjain
 
+Global gLastStatus, gStatusClear = #True
+
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
 Declare StopCue(*cue.Cue)
@@ -426,6 +432,7 @@ Declare StopProc(handle.i,channel.i,d,*user.Cue)
 Declare Min(a.f,b.f)
 Declare Open_LoadWindow(*value)
 Declare AddHotkey(*cue.Cue,key.i)
+Declare SetStatus(text.s)
 
 Procedure SaveAppSettings()
 	If FileSize("settings.ini") = -1
@@ -1361,6 +1368,8 @@ Procedure SaveCueListXML(path.s,check=1)
 		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 	EndIf
 	
+	SetStatus("Cue list succesfully saved to " + path + "!")
+	
 	ProcedureReturn #True
 EndProcedure
 
@@ -1631,6 +1640,8 @@ Procedure LoadCueListXML(lPath.s)
 		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 	EndIf
 	
+	SetStatus("Cue list " + lPath + " loaded!")
+	
 	ProcedureReturn #True
 EndProcedure
 
@@ -1861,20 +1872,20 @@ EndProcedure
 Procedure.s GetShortcutText(state)
   Protected result$
   If state&#PB_Shortcut_Control
-    result$ = "CTRL "
+    result$ = "CTRL + "
   EndIf
   If state&#PB_Shortcut_Shift
-    result$ + "+ SHIFT "
+    result$ + "SHIFT + "
   EndIf
   If state&#PB_Shortcut_Alt
-    result$ + "+ ALT "
+    result$ + "ALT + "
   EndIf
   state&~(#PB_Shortcut_Shift|#PB_Shortcut_Control|#PB_Shortcut_Alt)
   Select state
     Case '0' To '9', 'A' To 'Z'
-      result$ + "+ " +Chr(state)
+      result$+Chr(state)
     Case #PB_Shortcut_F1 To #PB_Shortcut_F24
-      result$ + "+ " + "F" + Str(state - #PB_Shortcut_F1 + 1)
+      result$ + "F" + Str(state - #PB_Shortcut_F1 + 1)
   EndSelect
   ProcedureReturn result$
 EndProcedure

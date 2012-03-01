@@ -119,6 +119,12 @@ Repeat ; Start of the event loop
 		EndIf
 	EndIf
 	
+	;- Tyhjennetään tilarivi
+	If gStatusClear = #False And ElapsedMilliseconds() > gLastStatus + #STATUS_DELAY
+		StatusBarText(#StatusBar,0,"")
+		gStatusClear = #True
+	EndIf
+	
 	;- Valikot
 	;{
 	If Event = #PB_Event_Menu
@@ -361,7 +367,7 @@ Repeat ; Start of the event loop
 			ResizeGadget(#FileBrowser,0,24,WindowWidth(#ExplorerWindow),WindowHeight(#ExplorerWindow) - 24)
 			ResizeGadget(#RefreshBrowser,WindowWidth(#ExplorerWindow) - 22,2,#PB_Ignore,#PB_Ignore)
 		ElseIf WindowID = #MainWindow
-			ResizeGadget(#CueList,#PB_Ignore,#PB_Ignore,WindowWidth(#MainWindow) - 20,WindowHeight(#MainWindow) - 120)
+			ResizeGadget(#CueList,#PB_Ignore,#PB_Ignore,WindowWidth(#MainWindow) - 20,WindowHeight(#MainWindow) - 120 - StatusBarHeight(#StatusBar))
 			ResizeGadget(#MasterSlider,Max(510,WindowWidth(#MainWindow) - 300),#PB_Ignore,#PB_Ignore,#PB_Ignore)
 			ResizeGadget(#Text_2,Max(510,WindowWidth(#MainWindow) - 300),#PB_Ignore,#PB_Ignore,#PB_Ignore)
 			
@@ -2374,4 +2380,11 @@ Procedure UpdateWaveform(pos.f,mode=0)
 		StopDrawing()
 	EndIf
 EndProcedure
+
+Procedure SetStatus(text.s)
+	StatusBarText(#StatusBar,0,text)
+	gLastStatus = ElapsedMilliseconds()
+	gStatusClear = #False
+EndProcedure
+
 
