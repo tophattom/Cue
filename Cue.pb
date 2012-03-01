@@ -3,6 +3,7 @@
 
 IncludeFile "includes\bass.pbi"
 IncludeFile "includes\bassvst.pbi"
+IncludeFile "includes\hotkeys.pbi"
 IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
 

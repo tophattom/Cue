@@ -1808,6 +1808,15 @@ Procedure Triangle(x1,y1,x2,y2,x3,y3,fill=0)
 EndProcedure
 
 Procedure AddHotkey(*cue.Cue,key.i)
+	For i = 0 To #RESERVED_HOTKEYS - 1
+		If key = gReservedHK(i)
+			MessageRequester("Cue","Selected key is reserved for the application!")
+			SetGadgetState(#HotkeyField, 0)
+			
+			ProcedureReturn #False
+		EndIf
+	Next i
+	
 	ForEach gHotkeys()
 		If gHotkeys()\key = key And gHotkeys()\target <> *cue
 			MessageRequester("Cue","Selected key is already mapped to " + gHotkeys()\target\name + "!")
