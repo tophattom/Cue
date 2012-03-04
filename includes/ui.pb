@@ -98,9 +98,9 @@ Procedure Open_EditorWindow()
     LoadImage(#ExplorerImg,"Images/explorer.ico")
     LoadImage(#AddImg,"Images/add.ico")
     
-    CreateImage(#BlankWave, #WAVEFORM_W, 120)
+    CreateImage(#BlankWave, #WAVEFORM_W, #WAVEFORM_H)
     StartDrawing(ImageOutput(#BlankWave))
-    Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
+    Box(0,0,#WAVEFORM_W,#WAVEFORM_H,RGB(64,64,64))
     StopDrawing()
     
     ButtonImageGadget(#DeleteButton, 180, 670, 30, 30, ImageID(#DeleteImg)) : GadgetToolTip(#DeleteButton,"Delete current cue(s) (Ctrl+Delete)")
@@ -179,17 +179,17 @@ Procedure Open_EditorWindow()
       StringGadget(#StartDelay, 535, 155, 50, 20, "") : GadgetToolTip(#StartDelay,"Delay before cue starts")
       
       ;ImageGadget(#WaveImg, 5, 335, #WAVEFORM_W, 120, 0)
-      CanvasGadget(#WaveImg, 5, 335,#WAVEFORM_W, 120)
+      CanvasGadget(#WaveImg, 5, 335,#WAVEFORM_W, #CANVAS_H)
 
-      ButtonImageGadget(#EditorPlay, 5, 460, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorPause, 40, 460, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorStop, 75, 460, 30, 30, ImageID(#StopImg))
+      ButtonImageGadget(#EditorPlay, 5, 335 + #CANVAS_H + 10, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorPause, 40, 335 + #CANVAS_H + 10, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorStop, 75, 335 + #CANVAS_H + 10, 30, 30, ImageID(#StopImg))
       
-      TextGadget(#Text_30,5 + #WAVEFORM_W - 340,460,40,20,"Zoom:")
-      TrackBarGadget(#ZoomSlider,5 + #WAVEFORM_W - 300,460,200,30,0,1000)
+      TextGadget(#Text_30,5 + #WAVEFORM_W - 340,335 + #CANVAS_H + 10,40,20,"Zoom:")
+      TrackBarGadget(#ZoomSlider,5 + #WAVEFORM_W - 300,335 + #CANVAS_H + 10,200,30,0,1000)
       
-      TextGadget(#Text_24, 5 +#WAVEFORM_W - 95, 460, 40, 20, "Position:")
-      StringGadget(#Position, 5 + #WAVEFORM_W - 50, 460, 50, 20, "", #PB_String_ReadOnly) : GadgetToolTip(#Position,"Current cue position")
+      TextGadget(#Text_24, 5 +#WAVEFORM_W - 95, 335 + #CANVAS_H + 10, 40, 20, "Position:")
+      StringGadget(#Position, 5 + #WAVEFORM_W - 50, 335 + #CANVAS_H + 10, 50, 20, "", #PB_String_ReadOnly) : GadgetToolTip(#Position,"Current cue position")
       
       ;Event cue
       TextGadget(#Text_18, 5, 245, 40, 20, "Events:")

@@ -382,6 +382,8 @@ EndEnumeration
 ;}
 
 #WAVEFORM_W = 660
+#WAVEFORM_H = 120
+#CANVAS_H = 120
 
 
 Global NewList cueList.Cue()

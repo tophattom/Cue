@@ -2219,6 +2219,8 @@ Procedure UpdateWaveform(pos.f,mode=0)
 			drawX = Max(#WAVEFORM_W - drawW,Min(0,drawX))
 		EndIf
 		
+		
+
 		If *lastCue <> *gCurrentCue
 			If (startX + drawX) > #WAVEFORM_W
 				ResizeImage(#StartOffset,#WAVEFORM_W,#PB_Ignore)
@@ -2342,18 +2344,18 @@ Procedure UpdateWaveform(pos.f,mode=0)
 		EndIf
 
 		StartDrawing(CanvasOutput(#WaveImg))
-		DrawImage(ImageID(*gCurrentCue\waveform),0 + drawX,0,drawW,120)
+		DrawImage(ImageID(*gCurrentCue\waveform),0 + drawX,0,drawW,#WAVEFORM_H)
 		
 
 		;Rajaimet
 		FrontColor($00FFFF)
 		
 		DrawAlphaImage(ImageID(#StartOffset),0,0,128)
-		LineXY(startX + drawX,0,startX + drawX,120)	;Alku
+		LineXY(startX + drawX,0,startX + drawX,#WAVEFORM_H)	;Alku
 		Triangle(startX + drawX,0,startX + 7 + drawX,5,startX + drawX,10,1)
 
 		DrawAlphaImage(ImageID(#EndOffset),Max(0,endX + drawX),0,128)
-		LineXY(endX + drawX,0,endX + drawX,120)		;Loppu
+		LineXY(endX + drawX,0,endX + drawX,#WAVEFORM_H)		;Loppu
 		Triangle(endX + drawX,0,endX - 7 + drawX,5,endX + drawX,10,1)
 		
 		;Loopin rajaimet
@@ -2367,17 +2369,18 @@ Procedure UpdateWaveform(pos.f,mode=0)
 			EndIf
 			DrawAlphaImage(ImageID(#LoopArea),tmpX,0,60)
 			
-			LineXY(loopStartX + drawX,0,loopStartX + drawX,120)
-			Triangle(loopStartX + drawX,110,loopStartX + 7 + drawX,115,loopStartX + drawX,120,1)
+			LineXY(loopStartX + drawX,0,loopStartX + drawX,#WAVEFORM_H)
+			Triangle(loopStartX + drawX,#WAVEFORM_H - 10,loopStartX + 7 + drawX,#WAVEFORM_H - 5,loopStartX + drawX,#WAVEFORM_H,1)
 			
 			LineXY(loopEndX + drawX,0,loopEndX + drawX,120)
-			Triangle(loopEndX + drawX,110,loopEndX - 7 + drawX,115,loopEndX + drawX,120,1)
+			Triangle(loopEndX + drawX,#WAVEFORM_H - 10,loopEndX - 7 + drawX,#WAVEFORM_H - 5,loopEndX + drawX,#WAVEFORM_H,1)
 		EndIf
 
 		;Sijainti
 		FrontColor($0000FF)
 		Triangle(posX - 5 + drawX,0,posX + 5 + drawX,0,posX + drawX,8,1)
-		LineXY(posX + drawX,0,posX + drawX,120)
+		LineXY(posX + drawX,0,posX + drawX,#WAVEFORM_H)
+		
 		StopDrawing()
 	EndIf
 EndProcedure
