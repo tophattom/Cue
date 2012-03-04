@@ -246,6 +246,7 @@ Procedure Open_EditorWindow()
       
       CloseGadgetList()
       CloseGadgetList()
+
       
     ;EndIf
   EndIf

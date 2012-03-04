@@ -88,7 +88,7 @@ Repeat ; Start of the event loop
 	
 	UpdateCues()
 	
-	If GetGadgetState(#EditorPlay) = 1
+	If GetGadgetState(#EditorPlay) = 1 And GetGadgetState(#EditorTabs) = 0
 		UpdatePosField()
 	EndIf
 	
