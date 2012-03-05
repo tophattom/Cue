@@ -220,6 +220,8 @@ Enumeration
   #AboutWindow
   #LoadWindow
   #PrefWindow
+  
+  #FSWindow
 EndEnumeration
 ;}
 
@@ -343,6 +345,10 @@ Enumeration 1
   #PrefCancel
   #Text_29
   #CuePrefix
+  
+  #SearchQuery
+  #SearchButton
+  #SearchResult
 EndEnumeration
 ;}
 
@@ -378,6 +384,8 @@ Enumeration
   
   #InSc
   #OutSc
+  
+  #SearchSc
 EndEnumeration
 ;}
 

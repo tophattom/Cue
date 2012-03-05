@@ -85,6 +85,7 @@ Procedure Open_EditorWindow()
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_E,#ExplorerSc)
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_I,#InSc)
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_O,#OutSc)
+  	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_F,#SearchSc)
   	
   	ListViewGadget(#EditorList, 10, 50, 200, 615,#PB_ListView_MultiSelect)
   	EnableGadgetDrop(#EditorList,#PB_Drop_Files,#PB_Drag_Copy)
@@ -324,5 +325,48 @@ Procedure Open_PrefWindow()
 		
 		ButtonGadget(#PrefOk,590,440,40,30,"OK")
 		ButtonGadget(#PrefCancel,535,440,50,30,"Cancel")
+	EndIf
+EndProcedure
+
+Procedure Open_FSWindow(*dat)
+	If OpenWindow(#FSWindow,0,0,400,700,"Freesound.org",#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
+		
+		StringGadget(#SearchQuery,10,10,300,20,"")
+		ButtonGadget(#SearchButton,320,10,60,20,"Search")
+		
+		ListIconGadget(#SearchResult,10,40,380,650,"Filename",375)
+		
+		Repeat
+			wEvent = WindowEvent()
+			GadgetID = EventGadget()
+			
+			If wEvent = #PB_Event_Gadget
+				If GadgetID = #SearchButton
+					query.s = GetGadgetText(#SearchQuery)
+					
+					tmpThread = CreateThread(@FreeSound_Search(),@query)
+					
+					While IsThread(tmpThread)
+						SetWindowTitle(#FSWindow,"Loading...")
+						
+						Delay(100)
+					Wend
+					
+					SetWindowTitle(#FSWindow,"Freesound.org")
+					
+					i = 0
+					ForEach gSearchResult()
+						AddGadgetItem(#SearchResult,i,"")
+						SetGadgetItemText(#SearchResult,i,gSearchResult()\originalFilename,0)
+						
+						i + 1
+					Next
+				EndIf
+			ElseIf wEvent = #PB_Event_CloseWindow
+				Break
+			EndIf
+		ForEver
+		
+		CloseWindow(#FSWindow)
 	EndIf
 EndProcedure

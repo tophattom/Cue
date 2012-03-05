@@ -5,6 +5,7 @@ IncludeFile "includes\bass.pbi"
 IncludeFile "includes\bassvst.pbi"
 IncludeFile "includes\hotkeys.pbi"
 IncludeFile "includes\util.pbi"
+IncludeFile "includes\freesound.pbi"
 IncludeFile "includes\ui.pb"
 
 Declare UpdateEditorList()
@@ -300,6 +301,8 @@ Repeat ; Start of the event loop
       	ElseIf MenuID = #ExplorerSc
       		Event = #PB_Event_Gadget
       		GadgetID = #ExplorerButton
+      	ElseIf MenuID = #SearchSc
+      		CreateThread(@Open_FSWindow(),0)
       	ElseIf MenuID = #InSc
       		If *gCurrentCue <> 0
       			*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#Position))
