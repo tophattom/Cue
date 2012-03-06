@@ -134,6 +134,7 @@ Global gResultsFound.i
 Global gResultPages.i
 
 Global gCurrentFS.FreeSound_Sound
+Global gCurrentFSImg.i
 
 
 
@@ -265,7 +266,7 @@ Procedure ParseSoundResponse(*ret.FreeSound_Sound,file.s="",xml=0)
 					While resNode <> 0
 						ReDim *ret\tags(i)
 						
-						*ret\tags(i) = GetXMLNodeText(resNode)
+						*ret\tags(i) = myTrim(GetXMLNodeText(resNode))
 						
 						i + 1
 						resNode = NextXMLNode(resNode)

@@ -328,6 +328,21 @@ Procedure Open_PrefWindow()
 	EndIf
 EndProcedure
 
+Procedure Open_FSInfoWindow()
+	If OpenWindow(#FSInfoWindow,0,0,500,600,"Sound info: " + gCurrentFS\originalFilename,#PB_Window_Tool | #PB_Window_SystemMenu | #PB_Window_ScreenCentered)
+		EditorGadget(#SoundInfo,10,10,480,580,#PB_Editor_ReadOnly)
+		SetGadgetAttribute(#SoundInfo,#PB_Editor_ColumnWidth,470)
+		
+		AddGadgetItem(#SoundInfo,-1,"Filename:")
+		AddGadgetItem(#SoundInfo,-1,gCurrentFS\originalFilename)
+		AddGadgetItem(#SoundInfo,-1,"")
+		
+		AddGadgetItem(#SoundInfo,-1,"Description:")
+		AddGadgetItem(#SoundInfo,-1,gCurrentFS\description)
+	EndIf
+EndProcedure
+
+		
 Procedure Open_FSWindow(*dat)
 	If OpenWindow(#FSWindow,0,0,400,700,"Freesound.org",#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
 		
@@ -338,9 +353,12 @@ Procedure Open_FSWindow(*dat)
 		
 		CreatePopupMenu(#SearchPopup)
 		MenuItem(#FSPreview,"Preview")
+		MenuItem(#FSInfo,"Sound info")
 		
 		
 		*selectedSound.FreeSound_Sound
+		
+		Define searchThread,infoThread
 		
 		Repeat
 			wEvent = WindowEvent()
@@ -364,6 +382,19 @@ Procedure Open_FSWindow(*dat)
 						
 						BASS_ChannelPlay(tmpStream,1)
 					EndIf
+				ElseIf MenuID = #FSInfo
+					If *selectedSound <> 0
+						;ClearStructure(@gCurrentFS,FreeSound_Sound)
+						
+						id = *selectedSound\id
+						infoThread = CreateThread(@FreeSound_GetSoundInfo(),@id)
+						
+						While IsThread(infoThread)
+							Delay(100)
+						Wend
+						
+						Open_FSInfoWindow()
+					EndIf
 				EndIf
 			EndIf
 			
@@ -371,9 +402,9 @@ Procedure Open_FSWindow(*dat)
 				If GadgetID = #SearchButton
 					query.s = GetGadgetText(#SearchQuery)
 					
-					tmpThread = CreateThread(@FreeSound_Search(),@query)
+					searchThread = CreateThread(@FreeSound_Search(),@query)
 					
-					While IsThread(tmpThread)
+					While IsThread(searchThread)
 						SetWindowTitle(#FSWindow,"Loading...")
 						
 						Delay(100)

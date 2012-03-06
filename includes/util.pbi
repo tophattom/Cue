@@ -222,6 +222,7 @@ Enumeration
   #PrefWindow
   
   #FSWindow
+  #FSInfoWindow
 EndEnumeration
 ;}
 
@@ -349,6 +350,8 @@ Enumeration 1
   #SearchQuery
   #SearchButton
   #SearchResult
+  
+  #SoundInfo
 EndEnumeration
 ;}
 
@@ -389,6 +392,8 @@ Enumeration
   
   #SearchSc
   #FSPreview
+  #FSInfo
+
 EndEnumeration
 ;}
 
