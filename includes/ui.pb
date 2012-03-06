@@ -334,11 +334,38 @@ Procedure Open_FSWindow(*dat)
 		StringGadget(#SearchQuery,10,10,300,20,"")
 		ButtonGadget(#SearchButton,320,10,60,20,"Search")
 		
-		ListIconGadget(#SearchResult,10,40,380,650,"Filename",375)
+		ListIconGadget(#SearchResult,10,40,380,650,"Filename",375,#PB_ListIcon_FullRowSelect)
+		
+		CreatePopupMenu(#SearchPopup)
+		MenuItem(#FSPreview,"Preview")
+		
+		
+		*selectedSound.FreeSound_Sound
 		
 		Repeat
 			wEvent = WindowEvent()
 			GadgetID = EventGadget()
+			MenuID = EventMenu()
+			EventType = EventType()
+			
+			If wEvent = #PB_Event_Menu
+				If MenuID = #FSPreview
+					If *selectedSound <> 0
+						If tmpStream <> 0
+							BASS_ChannelStop(tmpStream)
+							BASS_StreamFree(tmpStream)
+						EndIf
+							
+						tmpStream = BASS_StreamCreateURL(*selectedSound\previews[#PREVIEW_LQ_MP3],0,#BASS_STREAM_AUTOFREE | #BASS_STREAM_BLOCK,#Null,0)
+						
+						If tmpStream = 0
+							Debug BASS_ErrorGetCode()
+						EndIf
+						
+						BASS_ChannelPlay(tmpStream,1)
+					EndIf
+				EndIf
+			EndIf
 			
 			If wEvent = #PB_Event_Gadget
 				If GadgetID = #SearchButton
@@ -354,13 +381,23 @@ Procedure Open_FSWindow(*dat)
 					
 					SetWindowTitle(#FSWindow,"Freesound.org")
 					
+					ClearGadgetItems(#SearchResult)
+					
 					i = 0
 					ForEach gSearchResult()
 						AddGadgetItem(#SearchResult,i,"")
 						SetGadgetItemText(#SearchResult,i,gSearchResult()\originalFilename,0)
 						
+						SetGadgetItemData(#SearchResult,i,@gSearchResult())
+						
 						i + 1
 					Next
+				ElseIf gadgetID = #SearchResult
+					*selectedSound = GetGadgetItemData(#SearchResult,GetGadgetState(#SearchResult))
+					
+					If EventType = #PB_EventType_RightClick
+						DisplayPopupMenu(#SearchPopup,WindowID(#FSWindow))
+					EndIf
 				EndIf
 			ElseIf wEvent = #PB_Event_CloseWindow
 				Break

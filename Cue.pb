@@ -41,6 +41,8 @@ HideCueControls()
 
 BASS_Init(gAppSettings(#SETTING_ADEVICE),44100,0,WindowID(#MainWindow),#Null)
 
+BASS_SetConfig(#BASS_CONFIG_NET_TIMEOUT,20000)
+
 BASS_PluginLoad("basswma.dll",0)
 BASS_PluginLoad("bassflac.dll",0)
 BASS_PluginLoad("bass_aac.dll",0)
@@ -66,7 +68,6 @@ If paramCount > 0
 	Next i
 EndIf
 ;}
-
 
 Repeat ; Start of the event loop
 	Event = WindowEvent() ; This line waits until an event is received from Windows

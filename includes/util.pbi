@@ -357,6 +357,8 @@ EndEnumeration
 Enumeration
 	#MenuBar
 	#StatusBar
+	
+	#SearchPopup
 EndEnumeration
 
 Enumeration	  
@@ -386,6 +388,7 @@ Enumeration
   #OutSc
   
   #SearchSc
+  #FSPreview
 EndEnumeration
 ;}
 

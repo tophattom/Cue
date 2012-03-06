@@ -67,7 +67,7 @@ EndEnumeration
 Enumeration 0
 	#PREVIEW_HQ_MP3
 	#PREVIEW_LQ_MP3
-	#PREVIEQ_HQ_OGG
+	#PREVIEW_HQ_OGG
 	#PREVIEW_LQ_OGG
 EndEnumeration
 
@@ -137,6 +137,35 @@ Global gCurrentFS.FreeSound_Sound
 
 
 
+;define the whitespace as desired
+#whitespace$ = " " + Chr($9) + Chr($A) + Chr($B) + Chr($C) + Chr($D) + Chr($1C) + Chr($1D) + Chr($1E) + Chr($1F)
+ 
+Procedure.s myLTrim(source.s)
+  Protected i, *ptrChar.Character, length = Len(source)
+  *ptrChar = @source
+  For i = 1 To length
+    If Not FindString(#whitespace$, Chr(*ptrChar\c))
+      ProcedureReturn Right(source, length + 1 - i)
+    EndIf
+    *ptrChar + SizeOf(Character)
+  Next
+EndProcedure
+ 
+Procedure.s myRTrim(source.s)
+  Protected i, *ptrChar.Character, length = Len(source)
+  *ptrChar = @source + (length - 1) * SizeOf(Character)
+  For i = length To 1 Step - 1
+    If Not FindString(#whitespace$, Chr(*ptrChar\c))
+      ProcedureReturn Left(source, i)
+    EndIf
+    *ptrChar - SizeOf(Character)
+  Next
+EndProcedure
+ 
+Procedure.s myTrim(source.s)
+  ProcedureReturn myRTrim(myLTrim(source))
+EndProcedure
+
 Procedure.s URI(uri.s,Map *args.s())
 	If MapSize(*args()) > 0
 		ForEach *args()
@@ -167,7 +196,7 @@ Procedure ParseSoundResponse(*ret.FreeSound_Sound,file.s="",xml=0)
 	EndIf
 	
 	If xml
-		FormatXML(xml,#PB_XML_ReduceSpace)
+		;FormatXML(xml,#PB_XML_ReduceSpace)
 		
 		If XMLStatus(xml) <> #PB_XML_Success
 			Message$ = "Error in the XML file:" + Chr(13)
@@ -189,7 +218,7 @@ Procedure ParseSoundResponse(*ret.FreeSound_Sound,file.s="",xml=0)
 		currentNode = ChildXMLNode(MainXMLNode(xml))
 		While currentNode <> 0
 			attr.s = GetXMLNodeName(currentNode)
-			value.s = Trim(GetXMLNodeText(currentNode))
+			value.s = myTrim(GetXMLNodeText(currentNode))
 			
 			Select attr
 				Case "id"
@@ -203,7 +232,7 @@ Procedure ParseSoundResponse(*ret.FreeSound_Sound,file.s="",xml=0)
 				Case "preview-lq-mp3"
 					*ret\previews[#PREVIEW_LQ_MP3] = value
 				Case "preview-hq-ogg"
-					*ret\previews[#PREVIEQ_HQ_OGG] = value
+					*ret\previews[#PREVIEW_HQ_OGG] = value
 				Case "preview-lq-ogg"
 					*ret\previews[#PREVIEW_LQ_OGG] = value
 				Case "serve"
@@ -287,6 +316,8 @@ Procedure ParseSearchResponse()
 			MessageRequester("Error","No valid response!")
 		EndIf
 		
+		ClearList(gSearchResult())
+
 		currentNode = ChildXMLNode(MainXMLNode(0))
 		While currentNode <> 0
 			Select GetXMLNodeName(currentNode)
@@ -321,7 +352,7 @@ EndProcedure
 
 
 Procedure FreeSound_Search(*query.s)
-	url.s = URLEncoder(#BASE_URI + #URI_SOUNDS_SEARCH + "?q=" + *query + "&format=xml&api_key=" + #API_KEY)
+	url.s = URLEncoder(#BASE_URI + #URI_SOUNDS_SEARCH + "?q=" + *query + "&id,original_filename&format=xml&api_key=" + #API_KEY)
 	
 	HTTP_GET(url,gResponseFile)
 	
@@ -343,7 +374,6 @@ Procedure FreeSound_GetSoundInfo(*dat)
 	FormatResponse()
 	ParseSoundResponse(@gCurrentFS,gResponseFile)
 EndProcedure
-
 
 InitNetwork()
 
