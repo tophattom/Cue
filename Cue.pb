@@ -302,7 +302,7 @@ Repeat ; Start of the event loop
       	ElseIf MenuID = #ExplorerSc
       		Event = #PB_Event_Gadget
       		GadgetID = #ExplorerButton
-      	ElseIf MenuID = #SearchSc
+      	ElseIf MenuID = #FreesoundSc
       		CreateThread(@Open_FSWindow(),0)
       	ElseIf MenuID = #InSc
       		If *gCurrentCue <> 0

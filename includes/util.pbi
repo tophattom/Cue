@@ -351,6 +351,10 @@ Enumeration 1
   #SearchButton
   #SearchResult
   
+  #FSStop
+  #FSSeek
+  #FSPosition
+  
   #SoundInfo
 EndEnumeration
 ;}
@@ -390,6 +394,7 @@ Enumeration
   #InSc
   #OutSc
   
+  #FreesoundSc
   #SearchSc
   #FSPreview
   #FSInfo

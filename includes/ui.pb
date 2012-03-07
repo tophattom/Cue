@@ -85,7 +85,7 @@ Procedure Open_EditorWindow()
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_E,#ExplorerSc)
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_I,#InSc)
   	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_O,#OutSc)
-  	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_F,#SearchSc)
+  	AddKeyboardShortcut(#EditorWindow,#PB_Shortcut_Control | #PB_Shortcut_F,#FreesoundSc)
   	
   	ListViewGadget(#EditorList, 10, 50, 200, 615,#PB_ListView_MultiSelect)
   	EnableGadgetDrop(#EditorList,#PB_Drop_Files,#PB_Drag_Copy)
@@ -358,8 +358,14 @@ EndProcedure
 Procedure Open_FSWindow(*dat)
 	If OpenWindow(#FSWindow,0,0,700,500,"Freesound.org",#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
 		
+		AddKeyboardShortcut(#FSWindow,#PB_Shortcut_Return,#SearchSc)
+		
 		StringGadget(#SearchQuery,10,10,300,20,"")
 		ButtonGadget(#SearchButton,320,10,60,20,"Search")
+		
+		TrackBarGadget(#FSSeek,390,5,200,30,0,1000)
+		StringGadget(#FSPosition,600,10,50,20,SecondsToString(0),#PB_String_ReadOnly)
+		ButtonImageGadget(#FSStop,660,5,30,30,ImageID(#StopImg))
 		
 		ListIconGadget(#SearchResult,10,40,680,450,"Filename",300,#PB_ListIcon_FullRowSelect)
 		AddGadgetColumn(#SearchResult,1,"Filetype",100)
@@ -380,6 +386,12 @@ Procedure Open_FSWindow(*dat)
 			MenuID = EventMenu()
 			EventType = EventType()
 			
+			If tmpStream <> 0
+				pos.f = BASS_ChannelBytes2Seconds(tmpStream,BASS_ChannelGetPosition(tmpStream,#BASS_POS_BYTE))
+				
+				SetGadgetText(#FSPosition,SecondsToString(pos))
+			EndIf
+			
 			If wEvent = #PB_Event_Menu
 				If MenuID = #FSPreview
 					If *selectedSound <> 0
@@ -388,17 +400,14 @@ Procedure Open_FSWindow(*dat)
 							BASS_StreamFree(tmpStream)
 						EndIf
 							
-						tmpStream = BASS_StreamCreateURL(*selectedSound\previews[#PREVIEW_LQ_MP3],0,#BASS_STREAM_AUTOFREE | #BASS_STREAM_BLOCK,#Null,0)
-						
-						If tmpStream = 0
-							Debug BASS_ErrorGetCode()
-						EndIf
-						
+						tmpStream = BASS_StreamCreateURL(*selectedSound\previews[#PREVIEW_LQ_MP3],0,#BASS_STREAM_AUTOFREE,#Null,0)
+
 						BASS_ChannelPlay(tmpStream,1)
 					EndIf
 				ElseIf MenuID = #FSInfo
 					If *selectedSound <> 0
-						;ClearStructure(@gCurrentFS,FreeSound_Sound)
+						ClearStructure(@gCurrentFS,FreeSound_Sound)
+						Dim gCurrentFS\tags(0)
 						
 						id = *selectedSound\id
 						infoThread = CreateThread(@FreeSound_GetSoundInfo(),@id)
@@ -413,6 +422,9 @@ Procedure Open_FSWindow(*dat)
 						
 						Open_FSInfoWindow()
 					EndIf
+				ElseIf MenuID = #SearchSc	;- Pikanäppäimet
+					wEvent = #PB_Event_Gadget
+					GadgetID = #SearchButton
 				EndIf
 			EndIf
 			
@@ -457,6 +469,26 @@ Procedure Open_FSWindow(*dat)
 						
 						i + 1
 					Next
+				ElseIf	GadgetID = #FSSeek
+					If tmpStream <> 0
+						length.f = BASS_ChannelBytes2Seconds(tmpStream,BASS_ChannelGetLength(tmpStream,#BASS_POS_BYTE))
+						
+						pos.f = BASS_ChannelSeconds2Bytes(tmpStream,GetGadgetState(#FSSeek) * length / 1000)
+						
+						BASS_ChannelSetPosition(tmpStream,pos,#BASS_POS_BYTE)
+					EndIf
+				ElseIf	GadgetID = #FSStop
+					If tmpStream <> 0
+						If tmpStream <> 0
+							BASS_ChannelStop(tmpStream)
+							BASS_StreamFree(tmpStream)
+							
+							tmpStream = 0
+							
+							SetGadgetText(#FSPosition,SecondsToString(0))
+							SetGadgetState(#FSSeek,0)
+						EndIf
+					EndIf
 				ElseIf gadgetID = #SearchResult
 					*selectedSound = GetGadgetItemData(#SearchResult,GetGadgetState(#SearchResult))
 					
