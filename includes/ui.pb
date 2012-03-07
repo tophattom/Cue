@@ -372,9 +372,9 @@ Procedure Open_FSWindow(*dat)
 		AddGadgetColumn(#SearchResult,2,"Duration",100)
 		
 		CreatePopupMenu(#SearchPopup)
+		MenuItem(#FSCreateCue,"Create an audio cue")
 		MenuItem(#FSPreview,"Preview")
 		MenuItem(#FSInfo,"Sound info")
-		
 		
 		*selectedSound.FreeSound_Sound
 		
@@ -393,7 +393,15 @@ Procedure Open_FSWindow(*dat)
 			EndIf
 			
 			If wEvent = #PB_Event_Menu
-				If MenuID = #FSPreview
+				If MenuID = #FSCreateCue
+					If *selectedSound <> 0
+						location.s = SaveFileRequester("Select download location",*selectedSound\originalFilename,"All files",0)
+						
+						If location <> ""
+							HTTP_GET(*selectedSound\urls[#URL_SERVE] + "?api_key=" + #API_KEY,location)
+						EndIf
+					EndIf
+				ElseIf MenuID = #FSPreview
 					If *selectedSound <> 0
 						If tmpStream <> 0
 							BASS_ChannelStop(tmpStream)
@@ -489,7 +497,7 @@ Procedure Open_FSWindow(*dat)
 							SetGadgetState(#FSSeek,0)
 						EndIf
 					EndIf
-				ElseIf gadgetID = #SearchResult
+				ElseIf GadgetID = #SearchResult
 					*selectedSound = GetGadgetItemData(#SearchResult,GetGadgetState(#SearchResult))
 					
 					If EventType = #PB_EventType_RightClick

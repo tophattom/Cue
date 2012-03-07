@@ -398,7 +398,7 @@ Enumeration
   #SearchSc
   #FSPreview
   #FSInfo
-
+  #FSCreateCue
 EndEnumeration
 ;}
 
