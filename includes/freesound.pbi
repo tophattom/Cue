@@ -353,7 +353,7 @@ EndProcedure
 
 
 Procedure FreeSound_Search(*query.s)
-	url.s = URLEncoder(#BASE_URI + #URI_SOUNDS_SEARCH + "?q=" + *query + "&id,original_filename&format=xml&api_key=" + #API_KEY)
+	url.s = URLEncoder(#BASE_URI + #URI_SOUNDS_SEARCH + "?q=" + *query + "&format=xml&api_key=" + #API_KEY)
 	
 	HTTP_GET(url,gResponseFile)
 	

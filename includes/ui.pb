@@ -331,7 +331,7 @@ EndProcedure
 Procedure Open_FSInfoWindow()
 	If OpenWindow(#FSInfoWindow,0,0,500,600,"Sound info: " + gCurrentFS\originalFilename,#PB_Window_Tool | #PB_Window_SystemMenu | #PB_Window_ScreenCentered)
 		EditorGadget(#SoundInfo,10,10,480,580,#PB_Editor_ReadOnly)
-		SetGadgetAttribute(#SoundInfo,#PB_Editor_ColumnWidth,470)
+		SetGadgetAttribute(#SoundInfo,#PB_Editor_ColumnWidth,70)
 		
 		AddGadgetItem(#SoundInfo,-1,"Filename:")
 		AddGadgetItem(#SoundInfo,-1,gCurrentFS\originalFilename)
@@ -339,17 +339,31 @@ Procedure Open_FSInfoWindow()
 		
 		AddGadgetItem(#SoundInfo,-1,"Description:")
 		AddGadgetItem(#SoundInfo,-1,gCurrentFS\description)
+		AddGadgetItem(#SoundInfo,-1,"")
+		
+		AddGadgetItem(#SoundInfo,-1,"Tags:")
+		For i = 0 To ArraySize(gCurrentFS\tags()) - 1
+			tmpLine.s = tmpLine.s + gCurrentFS\tags(i)
+			
+			If i < ArraySize(gCurrentFS\tags()) - 1
+				tmpLine = tmpLine + ", "
+			EndIf
+		Next i
+		AddGadgetItem(#SoundInfo,-1,tmpLine)
+		AddGadgetItem(#SoundInfo,-1,"")
 	EndIf
 EndProcedure
 
 		
 Procedure Open_FSWindow(*dat)
-	If OpenWindow(#FSWindow,0,0,400,700,"Freesound.org",#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
+	If OpenWindow(#FSWindow,0,0,700,500,"Freesound.org",#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
 		
 		StringGadget(#SearchQuery,10,10,300,20,"")
 		ButtonGadget(#SearchButton,320,10,60,20,"Search")
 		
-		ListIconGadget(#SearchResult,10,40,380,650,"Filename",375,#PB_ListIcon_FullRowSelect)
+		ListIconGadget(#SearchResult,10,40,680,450,"Filename",300,#PB_ListIcon_FullRowSelect)
+		AddGadgetColumn(#SearchResult,1,"Filetype",100)
+		AddGadgetColumn(#SearchResult,2,"Duration",100)
 		
 		CreatePopupMenu(#SearchPopup)
 		MenuItem(#FSPreview,"Preview")
@@ -393,6 +407,10 @@ Procedure Open_FSWindow(*dat)
 							Delay(100)
 						Wend
 						
+						If IsWindow(#FSInfoWindow)
+							CloseWindow(#FSInfoWindow)
+						EndIf
+						
 						Open_FSInfoWindow()
 					EndIf
 				EndIf
@@ -417,9 +435,25 @@ Procedure Open_FSWindow(*dat)
 					i = 0
 					ForEach gSearchResult()
 						AddGadgetItem(#SearchResult,i,"")
+						
 						SetGadgetItemText(#SearchResult,i,gSearchResult()\originalFilename,0)
+						SetGadgetItemText(#SearchResult,i,gSearchResult()\type,1)
+						SetGadgetItemText(#SearchResult,i,SecondsToString(gSearchResult()\fileInfo[#INFO_DURATION]),2)
 						
 						SetGadgetItemData(#SearchResult,i,@gSearchResult())
+						
+						Select gSearchResult()\type
+							Case "wav"
+								color.i = RGB(100,200,200)
+							Case "aif"
+								color.i = RGB(100,200,100)
+							Case "mp3"
+								color.i = RGB(200,100,100)
+							Case "flac"
+								color.i = RGB(200,200,100)
+						EndSelect
+						
+						SetGadgetItemColor(#SearchResult,i,#PB_Gadget_BackColor,color)
 						
 						i + 1
 					Next
@@ -431,7 +465,13 @@ Procedure Open_FSWindow(*dat)
 					EndIf
 				EndIf
 			ElseIf wEvent = #PB_Event_CloseWindow
-				Break
+				Window = EventWindow()
+				
+				If Window = #FSWindow
+					Break
+				ElseIf Window = #FSInfoWindow
+					CloseWindow(#FSInfoWindow)
+				EndIf
 			EndIf
 		ForEver
 		
