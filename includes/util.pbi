@@ -447,6 +447,8 @@ Global gCueNaming.s	;Cuen nimeämiskäytäntö.		# = numero, $ = pieni kirjain, & = 
 
 Global gLastStatus, gStatusClear = #True
 
+Global gDlSemaphore = CreateSemaphore()
+
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
 Declare StopCue(*cue.Cue)

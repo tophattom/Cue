@@ -377,8 +377,10 @@ Procedure Open_FSWindow(*dat)
 		MenuItem(#FSInfo,"Sound info")
 		
 		*selectedSound.FreeSound_Sound
+		*newCue.Cue
 		
-		Define searchThread,infoThread
+		Define searchThread,infoThread,dlThread
+		Define dlOn
 		
 		Repeat
 			wEvent = WindowEvent()
@@ -392,13 +394,35 @@ Procedure Open_FSWindow(*dat)
 				SetGadgetText(#FSPosition,SecondsToString(pos))
 			EndIf
 			
+			If IsThread(dlThread) And dlOn = #True
+				SetWindowTitle(#FSWindow,"Downloading...")
+			ElseIf Not IsThread(dlThread) And dlOn = #True
+				SetWindowTitle(#FSWindow,"Freesound.org")
+				dlOn = #False
+				
+				CreateThread(@LoadCueStream2(),*newCue)
+			EndIf
+			
 			If wEvent = #PB_Event_Menu
 				If MenuID = #FSCreateCue
-					If *selectedSound <> 0
+					If *selectedSound <> 0 And dlOn = #False
 						location.s = SaveFileRequester("Select download location",*selectedSound\originalFilename,"All files",0)
 						
 						If location <> ""
-							HTTP_GET(*selectedSound\urls[#URL_SERVE] + "?api_key=" + #API_KEY,location)
+							tmpS.s = *selectedSound\urls[#URL_SERVE] + "?api_key=" + #API_KEY + Chr(10) + location
+							*dat = AllocateMemory(StringByteLength(tmpS))
+							PokeS(*dat,tmpS)
+							
+							dlThread = CreateThread(@HTTP_GET2(),*dat)
+							dlOn = #True
+							
+							*newCue = AddCue(#TYPE_AUDIO)
+							*newCue\filePath = location
+							*newCue\desc = Left(GetFilePart(*selectedSound\originalFilename),Len(*selectedSound\originalFilename) - Len(*selectedSound\type) - 1)
+							
+							*gCurrentCue = *newCue
+							
+							SignalSemaphore(gDlSemaphore)
 						EndIf
 					EndIf
 				ElseIf MenuID = #FSPreview

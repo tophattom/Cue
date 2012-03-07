@@ -128,6 +128,10 @@ Repeat ; Start of the event loop
 		gStatusClear = #True
 	EndIf
 	
+	If TrySemaphore(gDlSemaphore)
+		UpdateEditorList()
+	EndIf
+	
 	;- Valikot
 	;{
 	If Event = #PB_Event_Menu
