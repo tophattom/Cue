@@ -399,6 +399,7 @@ Enumeration
   #FSPreview
   #FSInfo
   #FSCreateCue
+  #FSSetCueFile
 EndEnumeration
 ;}
 

@@ -130,6 +130,7 @@ Repeat ; Start of the event loop
 	
 	If TrySemaphore(gDlSemaphore)
 		UpdateEditorList()
+		UpdateCueControls()
 	EndIf
 	
 	;- Valikot

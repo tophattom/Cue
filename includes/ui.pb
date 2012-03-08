@@ -373,6 +373,7 @@ Procedure Open_FSWindow(*dat)
 		
 		CreatePopupMenu(#SearchPopup)
 		MenuItem(#FSCreateCue,"Create an audio cue")
+		MenuItem(#FSSetCueFile,"Use in current cue")
 		MenuItem(#FSPreview,"Preview")
 		MenuItem(#FSInfo,"Sound info")
 		
@@ -399,7 +400,7 @@ Procedure Open_FSWindow(*dat)
 			ElseIf Not IsThread(dlThread) And dlOn = #True
 				SetWindowTitle(#FSWindow,"Freesound.org")
 				dlOn = #False
-				
+
 				CreateThread(@LoadCueStream2(),*newCue)
 			EndIf
 			
@@ -424,6 +425,24 @@ Procedure Open_FSWindow(*dat)
 							
 							SignalSemaphore(gDlSemaphore)
 						EndIf
+					EndIf
+				ElseIf MenuID = #FSSetCueFile
+					location.s = SaveFileRequester("Select download location",*selectedSound\originalFilename,"All files",0)
+						
+					If location <> ""
+						tmpS.s = *selectedSound\urls[#URL_SERVE] + "?api_key=" + #API_KEY + Chr(10) + location
+						*dat = AllocateMemory(StringByteLength(tmpS))
+						PokeS(*dat,tmpS)
+							
+						dlThread = CreateThread(@HTTP_GET2(),*dat)
+						dlOn = #True
+						
+						*gCurrentCue\filePath = location
+						*gCurrentCue\desc = Left(GetFilePart(*selectedSound\originalFilename),Len(*selectedSound\originalFilename) - Len(*selectedSound\type) - 1)
+						
+						*newCue = *gCurrentCue
+						
+						SignalSemaphore(gDlSemaphore)
 					EndIf
 				ElseIf MenuID = #FSPreview
 					If *selectedSound <> 0
@@ -525,6 +544,16 @@ Procedure Open_FSWindow(*dat)
 					*selectedSound = GetGadgetItemData(#SearchResult,GetGadgetState(#SearchResult))
 					
 					If EventType = #PB_EventType_RightClick
+						If *gCurrentCue <> 0
+							If *gCurrentCue\cueType = #TYPE_AUDIO
+								DisableMenuItem(#SearchPopup,#FSSetCueFile,0)
+							Else
+								DisableMenuItem(#SearchPopup,#FSSetCueFile,1)
+							EndIf
+						Else
+							DisableMenuItem(#SearchPopup,#FSSetCueFile,1)
+						EndIf
+						
 						DisplayPopupMenu(#SearchPopup,WindowID(#FSWindow))
 					EndIf
 				EndIf
