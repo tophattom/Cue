@@ -1938,6 +1938,9 @@ Procedure LoadCueListSCSQ(lPath.s)
 								*gCurrentCue\name = value
 							Case "Description"
 								*gCurrentCue\desc = value
+							Case "HotKey"
+								*gCurrentCue\startMode = #START_HOTKEY
+								AddHotkey(*gCurrentCue,Asc(value))
 							Case "AutoActivateTime"
 								*gCurrentCue\delay = ValF(value)
 							Case "AutoActivatePosn"
