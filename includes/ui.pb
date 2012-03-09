@@ -327,33 +327,6 @@ Procedure Open_PrefWindow()
 		ButtonGadget(#PrefCancel,535,440,50,30,"Cancel")
 	EndIf
 EndProcedure
-
-Procedure Open_FSInfoWindow()
-	If OpenWindow(#FSInfoWindow,0,0,500,600,"Sound info: " + gCurrentFS\originalFilename,#PB_Window_Tool | #PB_Window_SystemMenu | #PB_Window_ScreenCentered)
-		EditorGadget(#SoundInfo,10,10,480,580,#PB_Editor_ReadOnly)
-		SetGadgetAttribute(#SoundInfo,#PB_Editor_ColumnWidth,70)
-		
-		AddGadgetItem(#SoundInfo,-1,"Filename:")
-		AddGadgetItem(#SoundInfo,-1,gCurrentFS\originalFilename)
-		AddGadgetItem(#SoundInfo,-1,"")
-		
-		AddGadgetItem(#SoundInfo,-1,"Description:")
-		AddGadgetItem(#SoundInfo,-1,gCurrentFS\description)
-		AddGadgetItem(#SoundInfo,-1,"")
-		
-		AddGadgetItem(#SoundInfo,-1,"Tags:")
-		For i = 0 To ArraySize(gCurrentFS\tags()) - 1
-			tmpLine.s = tmpLine.s + gCurrentFS\tags(i)
-			
-			If i < ArraySize(gCurrentFS\tags()) - 1
-				tmpLine = tmpLine + ", "
-			EndIf
-		Next i
-		AddGadgetItem(#SoundInfo,-1,tmpLine)
-		AddGadgetItem(#SoundInfo,-1,"")
-	EndIf
-EndProcedure
-
 		
 Procedure Open_FSWindow(*dat)
 	If OpenWindow(#FSWindow,0,0,700,500,"Freesound.org",#PB_Window_ScreenCentered | #PB_Window_SystemMenu)
@@ -367,9 +340,11 @@ Procedure Open_FSWindow(*dat)
 		StringGadget(#FSPosition,600,10,50,20,SecondsToString(0),#PB_String_ReadOnly)
 		ButtonImageGadget(#FSStop,660,5,30,30,ImageID(#StopImg))
 		
-		ListIconGadget(#SearchResult,10,40,680,450,"Filename",300,#PB_ListIcon_FullRowSelect)
-		AddGadgetColumn(#SearchResult,1,"Filetype",100)
-		AddGadgetColumn(#SearchResult,2,"Duration",100)
+		ListIconGadget(#SearchResult,10,40,430,450,"Filename",280,#PB_ListIcon_FullRowSelect)
+		AddGadgetColumn(#SearchResult,1,"Filetype",70)
+		AddGadgetColumn(#SearchResult,2,"Duration",70)
+		
+		TextGadget(#SoundInfo,450,40,240,450,"",#PB_Text_Border)
 		
 		CreatePopupMenu(#SearchPopup)
 		MenuItem(#FSCreateCue,"Create an audio cue")
@@ -457,21 +432,30 @@ Procedure Open_FSWindow(*dat)
 					EndIf
 				ElseIf MenuID = #FSInfo
 					If *selectedSound <> 0
-						ClearStructure(@gCurrentFS,FreeSound_Sound)
-						Dim gCurrentFS\tags(0)
-						
-						id = *selectedSound\id
-						infoThread = CreateThread(@FreeSound_GetSoundInfo(),@id)
-						
-						While IsThread(infoThread)
-							Delay(100)
-						Wend
-						
-						If IsWindow(#FSInfoWindow)
-							CloseWindow(#FSInfoWindow)
+						If *selectedSound\dataFetched = #False
+							ClearStructure(@gCurrentFS,FreeSound_Sound)
+							Dim gCurrentFS\tags(0)
+							
+							id = *selectedSound\id
+							infoThread = CreateThread(@FreeSound_GetSoundInfo(),@id)
+							
+							While IsThread(infoThread)
+								Delay(100)
+							Wend
+							
+							ClearStructure(*selectedSound,FreeSound_Sound)
+							Dim *selectedSound\tags(0)
+							
+							CopyStructure(@gCurrentFS,*selectedSound,FreeSound_Sound)
+							*selectedSound\dataFetched = #True
+						Else
+							ClearStructure(@gCurrentFS,FreeSound_Sound)
+							Dim gCurrentFS\tags(0)
+							
+							CopyStructure(*selectedSound,@gCurrentFS,FreeSound_Sound)
 						EndIf
 						
-						Open_FSInfoWindow()
+						SetGadgetText(#SoundInfo,"Filename:" + Chr(10) + gCurrentFS\originalFilename + Chr(10)+Chr(10) + "Description:" + Chr(10) + gCurrentFS\description)
 					EndIf
 				ElseIf MenuID = #SearchSc	;- Pikanäppäimet
 					wEvent = #PB_Event_Gadget
@@ -542,7 +526,7 @@ Procedure Open_FSWindow(*dat)
 					EndIf
 				ElseIf GadgetID = #SearchResult
 					*selectedSound = GetGadgetItemData(#SearchResult,GetGadgetState(#SearchResult))
-					
+
 					If EventType = #PB_EventType_RightClick
 						If *gCurrentCue <> 0
 							If *gCurrentCue\cueType = #TYPE_AUDIO
@@ -558,13 +542,7 @@ Procedure Open_FSWindow(*dat)
 					EndIf
 				EndIf
 			ElseIf wEvent = #PB_Event_CloseWindow
-				Window = EventWindow()
-				
-				If Window = #FSWindow
-					Break
-				ElseIf Window = #FSInfoWindow
-					CloseWindow(#FSInfoWindow)
-				EndIf
+				break
 			EndIf
 		ForEver
 		

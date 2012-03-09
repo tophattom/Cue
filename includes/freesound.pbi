@@ -38,6 +38,8 @@ Structure FreeSound_Sound
 	user.FreeSound_User
 	
 	imgs.s[4]
+	
+	dataFetched.i
 EndStructure
 ;}
 

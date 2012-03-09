@@ -222,7 +222,6 @@ Enumeration
   #PrefWindow
   
   #FSWindow
-  #FSInfoWindow
 EndEnumeration
 ;}
 
