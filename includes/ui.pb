@@ -1,19 +1,6 @@
 ;
 ; PureBasic Visual Designer v3.95 build 1485 (PB4Code)
 
-
-;- Window Constants
-;
-Enumeration
-  #MainWindow
-  #EditorWindow
-  #SettingsWindow
-  #ExplorerWindow
-  #AboutWindow
-  #LoadWindow
-  #PrefWindow
-EndEnumeration
-
 ;- Fonts
 
 
@@ -67,7 +54,7 @@ Procedure Open_MainWindow()
         ButtonGadget(#PauseButton, 110, 20, 80, 50, "Pause")
         ButtonGadget(#StopButton, 200, 20, 80, 50, "Stop all") : GadgetToolTip(#StopButton,"Stop all cues")
 
-        ListIconGadget(#CueList, 10, 90, 1004, 648, "Cue", 334, #PB_ListIcon_FullRowSelect | #PB_ListIcon_AlwaysShowSelection) : SetGadgetFont(#CueList,FontID(gCueListFont))
+        ListIconGadget(#CueList, 10, 90, 1004, 628, "Cue", 334, #PB_ListIcon_FullRowSelect | #PB_ListIcon_AlwaysShowSelection) : SetGadgetFont(#CueList,FontID(gCueListFont))
         AddGadgetColumn(#CueList, 1, "Cue type", 166)
         AddGadgetColumn(#CueList, 2, "Start mode", 166)
         AddGadgetColumn(#CueList, 3, "State", 166)
@@ -83,6 +70,9 @@ Procedure Open_MainWindow()
         
         ;EndIf
         
+        If CreateStatusBar(#StatusBar,WindowID(#MainWindow))
+        	AddStatusBarField(#PB_Ignore)
+        EndIf
         
   EndIf
 EndProcedure
@@ -108,9 +98,9 @@ Procedure Open_EditorWindow()
     LoadImage(#ExplorerImg,"Images/explorer.ico")
     LoadImage(#AddImg,"Images/add.ico")
     
-    CreateImage(#BlankWave, #WAVEFORM_W, 120)
+    CreateImage(#BlankWave, #WAVEFORM_W, #WAVEFORM_H)
     StartDrawing(ImageOutput(#BlankWave))
-    Box(0,0,#WAVEFORM_W,120,RGB(64,64,64))
+    Box(0,0,#WAVEFORM_W,#WAVEFORM_H,RGB(64,64,64))
     StopDrawing()
     
     ButtonImageGadget(#DeleteButton, 180, 670, 30, 30, ImageID(#DeleteImg)) : GadgetToolTip(#DeleteButton,"Delete current cue(s) (Ctrl+Delete)")
@@ -182,21 +172,24 @@ Procedure Open_EditorWindow()
       TextGadget(#Text_16, 235, 155, 40, 20, "Cue:")
       ComboBoxGadget(#CueSelect, 275, 155, 200, 20)
       
+      TextGadget(#Text_33, 235, 155, 100, 20, "Key (combination):")
+      ShortcutGadget(#HotkeyField,335,155,140,20,0)
+      
       TextGadget(#Text_17, 495, 155, 40, 20, "Delay:")
       StringGadget(#StartDelay, 535, 155, 50, 20, "") : GadgetToolTip(#StartDelay,"Delay before cue starts")
       
       ;ImageGadget(#WaveImg, 5, 335, #WAVEFORM_W, 120, 0)
-      CanvasGadget(#WaveImg, 5, 335,#WAVEFORM_W, 120)
+      CanvasGadget(#WaveImg, 5, 335,#WAVEFORM_W, #CANVAS_H)
 
-      ButtonImageGadget(#EditorPlay, 5, 460, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorPause, 40, 460, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
-      ButtonImageGadget(#EditorStop, 75, 460, 30, 30, ImageID(#StopImg))
+      ButtonImageGadget(#EditorPlay, 5, 335 + #CANVAS_H + 10, 30, 30, ImageID(#PlayImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorPause, 40, 335 + #CANVAS_H + 10, 30, 30, ImageID(#PauseImg),#PB_Button_Toggle)
+      ButtonImageGadget(#EditorStop, 75, 335 + #CANVAS_H + 10, 30, 30, ImageID(#StopImg))
       
-      TextGadget(#Text_30,5 + #WAVEFORM_W - 340,460,40,20,"Zoom:")
-      TrackBarGadget(#ZoomSlider,5 + #WAVEFORM_W - 300,460,200,30,0,1000)
+      TextGadget(#Text_30,5 + #WAVEFORM_W - 340,335 + #CANVAS_H + 10,40,20,"Zoom:")
+      TrackBarGadget(#ZoomSlider,5 + #WAVEFORM_W - 300,335 + #CANVAS_H + 10,200,30,0,1000)
       
-      TextGadget(#Text_24, 5 +#WAVEFORM_W - 95, 460, 40, 20, "Position:")
-      StringGadget(#Position, 5 + #WAVEFORM_W - 50, 460, 50, 20, "", #PB_String_ReadOnly) : GadgetToolTip(#Position,"Current cue position")
+      TextGadget(#Text_24, 5 +#WAVEFORM_W - 95, 335 + #CANVAS_H + 10, 40, 20, "Position:")
+      StringGadget(#Position, 5 + #WAVEFORM_W - 50, 335 + #CANVAS_H + 10, 50, 20, "", #PB_String_ReadOnly) : GadgetToolTip(#Position,"Current cue position")
       
       ;Event cue
       TextGadget(#Text_18, 5, 245, 40, 20, "Events:")
@@ -253,6 +246,7 @@ Procedure Open_EditorWindow()
       
       CloseGadgetList()
       CloseGadgetList()
+
       
     ;EndIf
   EndIf

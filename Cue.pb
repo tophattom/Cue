@@ -3,6 +3,7 @@
 
 IncludeFile "includes\bass.pbi"
 IncludeFile "includes\bassvst.pbi"
+IncludeFile "includes\hotkeys.pbi"
 IncludeFile "includes\util.pbi"
 IncludeFile "includes\ui.pb"
 
@@ -87,7 +88,7 @@ Repeat ; Start of the event loop
 	
 	UpdateCues()
 	
-	If GetGadgetState(#EditorPlay) = 1
+	If GetGadgetState(#EditorPlay) = 1 And GetGadgetState(#EditorTabs) = 0
 		UpdatePosField()
 	EndIf
 	
@@ -117,6 +118,12 @@ Repeat ; Start of the event loop
 
 			lastUpdate = ElapsedMilliseconds()
 		EndIf
+	EndIf
+	
+	;- Tyhjennetään tilarivi
+	If gStatusClear = #False And ElapsedMilliseconds() > gLastStatus + #STATUS_DELAY
+		StatusBarText(#StatusBar,0,"")
+		gStatusClear = #True
 	EndIf
 	
 	;- Valikot
@@ -347,9 +354,24 @@ Repeat ; Start of the event loop
 				EndIf
 			EndIf
 		Next i
+		
+		;--- Hotkey cuet
+		ForEach gHotkeys()
+			If MenuID = gHotkeys()\itemId
+				PlayCue(gHotkeys()\target)
+				
+				UpdateMainCueList()
+				
+				If gSaved = #True
+					FirstElement(cueList())
+					gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
+				EndIf
+			EndIf
+		Next
 	EndIf
 	;}
 	
+	;
 	;- Selaimen koko
 	;{
 	If Event = #PB_Event_SizeWindow
@@ -357,7 +379,7 @@ Repeat ; Start of the event loop
 			ResizeGadget(#FileBrowser,0,24,WindowWidth(#ExplorerWindow),WindowHeight(#ExplorerWindow) - 24)
 			ResizeGadget(#RefreshBrowser,WindowWidth(#ExplorerWindow) - 22,2,#PB_Ignore,#PB_Ignore)
 		ElseIf WindowID = #MainWindow
-			ResizeGadget(#CueList,#PB_Ignore,#PB_Ignore,WindowWidth(#MainWindow) - 20,WindowHeight(#MainWindow) - 120)
+			ResizeGadget(#CueList,#PB_Ignore,#PB_Ignore,WindowWidth(#MainWindow) - 20,WindowHeight(#MainWindow) - 120 - StatusBarHeight(#StatusBar))
 			ResizeGadget(#MasterSlider,Max(510,WindowWidth(#MainWindow) - 300),#PB_Ignore,#PB_Ignore,#PB_Ignore)
 			ResizeGadget(#Text_2,Max(510,WindowWidth(#MainWindow) - 300),#PB_Ignore,#PB_Ignore,#PB_Ignore)
 			
@@ -373,10 +395,12 @@ Repeat ; Start of the event loop
 	If Event = #PB_Event_Gadget
 		If GadgetID = #PlayButton
 			If *gCurrentCue <> 0
-				If *gCurrentCue\cueType = #TYPE_AUDIO
-					PlayCue(*gCurrentCue)
-				ElseIf *gCurrentCue\cueType = #TYPE_EVENT Or *gCurrentCue\cueType = #TYPE_CHANGE
-					StartEvents(*gCurrentCue)
+				If *gCurrentCue\startMode = #START_MANUAL
+					If *gCurrentCue\cueType = #TYPE_AUDIO
+						PlayCue(*gCurrentCue)
+					ElseIf *gCurrentCue\cueType = #TYPE_EVENT Or *gCurrentCue\cueType = #TYPE_CHANGE
+						StartEvents(*gCurrentCue)
+					EndIf
 				EndIf
 
 				GetCueListIndex(*gCurrentCue)
@@ -726,6 +750,14 @@ Repeat ; Start of the event loop
 					AddElement(*tmp\followCues())
 					*tmp\followCues() = *gCurrentCue
 				EndIf
+			EndIf
+		ElseIf GadgetID = #HotkeyField
+			tmpKey.i = GetGadgetState(#HotkeyField)
+			
+			If tmpKey <> 0
+				AddHotkey(*gCurrentCue,tmpKey)
+			Else
+				RemoveHotkey(*gCurrentCue)
 			EndIf
 		ElseIf GadgetID = #ChangeDur
 			*gCurrentCue\fadeIn = Val(GetGadgetText(#ChangeDur))
@@ -1398,6 +1430,8 @@ Procedure HideCueControls()
 	HideGadget(#Text_16,1)
 	HideGadget(#Text_17,1)
 	HideGadget(#CueSelect,1)
+	HideGadget(#Text_33, 1)
+	HideGadget(#HotkeyField, 1)
 	HideGadget(#StartDelay,1)
 	HideGadget(#CueFileField,1)
 	HideGadget(#OpenCueFile,1)
@@ -1464,9 +1498,7 @@ Procedure ShowCueControls()
 		If *gCurrentCue\cueType <> #TYPE_NOTE
 			HideGadget(#ModeSelect,0)
 			HideGadget(#Text_8,0)
-			HideGadget(#Text_16,0)
 			HideGadget(#Text_17,0)
-			HideGadget(#CueSelect,0)
 			HideGadget(#StartDelay,0)
 		EndIf
 		
@@ -1719,7 +1751,11 @@ Procedure UpdateCueControls()
 			
 		ClearGadgetItems(#CueSelect)
 		If *gCurrentCue\startMode = #START_AFTER_END Or *gCurrentCue\startMode = #START_AFTER_START
-			DisableGadget(#CueSelect, 0)
+			HideGadget(#CueSelect, 0)
+			HideGadget(#Text_16, 0)
+			HideGadget(#HotkeyField, 1)
+			HideGadget(#Text_33, 1)
+			
 			i = 0
 			ForEach cueList()
 				If @cueList() <> *gCurrentCue And cueList()\cueType <> #TYPE_NOTE
@@ -1734,8 +1770,24 @@ Procedure UpdateCueControls()
 				EndIf
 								
 			Next
+		ElseIf *gCurrentCue\startMode = #START_HOTKEY
+			HideGadget(#HotkeyField, 0)
+			HideGadget(#Text_33, 0)
+			HideGadget(#CueSelect, 1)
+			HideGadget(#Text_16, 1)
+			
+			SetGadgetState(#HotkeyField, 0)
+			
+			ForEach gHotkeys()
+				If gHotkeys()\target = *gCurrentCue
+					SetGadgetState(#HotkeyField, gHotkeys()\key)
+				EndIf
+			Next
 		Else
-			DisableGadget(#CueSelect, 1)
+			HideGadget(#CueSelect, 1)
+			HideGadget(#Text_16, 1)
+			HideGadget(#HotkeyField, 1)
+			HideGadget(#Text_33, 1)
 		EndIf
 		
 		Select *gCurrentCue\startMode
@@ -2053,6 +2105,11 @@ Procedure UpdateMainCueList()
 						start.s = "Manual"
 					Case #START_HOTKEY
 						start.s = "Hotkey"
+						ForEach gHotkeys()
+							If gHotkeys()\target = @cueList()
+								start = start + " (" + GetShortcutText(gHotkeys()\key) + ")"
+							EndIf
+						Next
 					Case #START_AFTER_START
 						start.s = StrF(cueList()\delay / 1000,2) + " as "
 						If cueList()\afterCue <> 0
@@ -2173,6 +2230,8 @@ Procedure UpdateWaveform(pos.f,mode=0)
 			drawX = Max(#WAVEFORM_W - drawW,Min(0,drawX))
 		EndIf
 		
+		
+
 		If *lastCue <> *gCurrentCue
 			If (startX + drawX) > #WAVEFORM_W
 				ResizeImage(#StartOffset,#WAVEFORM_W,#PB_Ignore)
@@ -2296,18 +2355,18 @@ Procedure UpdateWaveform(pos.f,mode=0)
 		EndIf
 
 		StartDrawing(CanvasOutput(#WaveImg))
-		DrawImage(ImageID(*gCurrentCue\waveform),0 + drawX,0,drawW,120)
+		DrawImage(ImageID(*gCurrentCue\waveform),0 + drawX,0,drawW,#WAVEFORM_H)
 		
 
 		;Rajaimet
 		FrontColor($00FFFF)
 		
 		DrawAlphaImage(ImageID(#StartOffset),0,0,128)
-		LineXY(startX + drawX,0,startX + drawX,120)	;Alku
+		LineXY(startX + drawX,0,startX + drawX,#WAVEFORM_H)	;Alku
 		Triangle(startX + drawX,0,startX + 7 + drawX,5,startX + drawX,10,1)
 
 		DrawAlphaImage(ImageID(#EndOffset),Max(0,endX + drawX),0,128)
-		LineXY(endX + drawX,0,endX + drawX,120)		;Loppu
+		LineXY(endX + drawX,0,endX + drawX,#WAVEFORM_H)		;Loppu
 		Triangle(endX + drawX,0,endX - 7 + drawX,5,endX + drawX,10,1)
 		
 		;Loopin rajaimet
@@ -2321,18 +2380,26 @@ Procedure UpdateWaveform(pos.f,mode=0)
 			EndIf
 			DrawAlphaImage(ImageID(#LoopArea),tmpX,0,60)
 			
-			LineXY(loopStartX + drawX,0,loopStartX + drawX,120)
-			Triangle(loopStartX + drawX,110,loopStartX + 7 + drawX,115,loopStartX + drawX,120,1)
+			LineXY(loopStartX + drawX,0,loopStartX + drawX,#WAVEFORM_H)
+			Triangle(loopStartX + drawX,#WAVEFORM_H - 10,loopStartX + 7 + drawX,#WAVEFORM_H - 5,loopStartX + drawX,#WAVEFORM_H,1)
 			
 			LineXY(loopEndX + drawX,0,loopEndX + drawX,120)
-			Triangle(loopEndX + drawX,110,loopEndX - 7 + drawX,115,loopEndX + drawX,120,1)
+			Triangle(loopEndX + drawX,#WAVEFORM_H - 10,loopEndX - 7 + drawX,#WAVEFORM_H - 5,loopEndX + drawX,#WAVEFORM_H,1)
 		EndIf
 
 		;Sijainti
 		FrontColor($0000FF)
 		Triangle(posX - 5 + drawX,0,posX + 5 + drawX,0,posX + drawX,8,1)
-		LineXY(posX + drawX,0,posX + drawX,120)
+		LineXY(posX + drawX,0,posX + drawX,#WAVEFORM_H)
+		
 		StopDrawing()
 	EndIf
 EndProcedure
+
+Procedure SetStatus(text.s)
+	StatusBarText(#StatusBar,0,text)
+	gLastStatus = ElapsedMilliseconds()
+	gStatusClear = #False
+EndProcedure
+
 

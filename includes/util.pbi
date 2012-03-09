@@ -94,6 +94,18 @@ Structure RecentFile
 EndStructure
 ;}
 
+
+;-Hotkey structure
+;{
+Structure Hotkey
+	itemId.i
+	
+	*target.Cue
+	
+	key.i
+EndStructure
+;}
+
 Enumeration 1
 	#TYPE_AUDIO
 	#TYPE_VIDEO
@@ -185,6 +197,9 @@ Enumeration 1
 	#GRAB_WAVEFORM
 EndEnumeration
 
+;Kauanko teksti näkyy tilarivillä
+#STATUS_DELAY = 3000
+
 
 CreateImage(#StartOffset,1,120)
 CreateImage(#EndOffset,1,120)
@@ -194,6 +209,19 @@ StartDrawing(ImageOutput(#LoopArea))
 Box(0,0,1,120,$00FF00)
 StopDrawing()
 
+
+;- Window Constants
+;{
+Enumeration
+  #MainWindow
+  #EditorWindow
+  #SettingsWindow
+  #ExplorerWindow
+  #AboutWindow
+  #LoadWindow
+  #PrefWindow
+EndEnumeration
+;}
 
 ;- Gadget Constants
 ;{
@@ -247,6 +275,8 @@ Enumeration 1
   #DeleteButton
   #Text_16
   #CueSelect
+  #Text_33
+  #HotkeyField
   #Text_17
   #StartDelay
   #WaveImg
@@ -319,7 +349,8 @@ EndEnumeration
 ;- Menu constants
 ;{
 Enumeration
-  #MenuBar
+	#MenuBar
+	#StatusBar
 EndEnumeration
 
 Enumeration	  
@@ -351,10 +382,14 @@ EndEnumeration
 ;}
 
 #WAVEFORM_W = 660
+#WAVEFORM_H = 120
+#CANVAS_H = 120
 
 
 Global NewList cueList.Cue()
 Global NewList *gSelection.Cue()
+
+Global NewList gHotkeys.Hotkey()
 
 Global Dim gListSettings(#SETTINGS - 1)
 Global Dim gAppSettings(#APP_SETTINGS)	;Ohjelman asetukset
@@ -389,6 +424,8 @@ Global gCueListFont
 
 Global gCueNaming.s	;Cuen nimeämiskäytäntö.		# = numero, $ = pieni kirjain, & = iso kirjain
 
+Global gLastStatus, gStatusClear = #True
+
 Declare DeleteCueEffect(*cue.Cue,*effect.Effect)
 Declare.s RelativePath(absolutePath.s,relativeTo.s)
 Declare StopCue(*cue.Cue)
@@ -396,6 +433,8 @@ Declare UpdateWaveform(pos.f,mode=0)
 Declare StopProc(handle.i,channel.i,d,*user.Cue)
 Declare Min(a.f,b.f)
 Declare Open_LoadWindow(*value)
+Declare AddHotkey(*cue.Cue,key.i)
+Declare SetStatus(text.s)
 
 Procedure SaveAppSettings()
 	If FileSize("settings.ini") = -1
@@ -1143,6 +1182,18 @@ Procedure SaveCueListXML(path.s,check=1)
 		SetXMLNodeName(tmpNode,"startmode")
 		SetXMLNodeText(tmpNode,Str(cueList()\startMode))
 		
+		;Hotkey, jos on
+		If cueList()\startMode = #START_HOTKEY
+			tmpNode = CreateXMLNode(cueNode)
+			SetXMLNodeName(tmpNode,"hotkey")
+			
+			ForEach gHotkeys()
+				If gHotkeys()\target = @cueList()
+					SetXMLNodeText(tmpNode,Str(gHotkeys()\key))
+				EndIf
+			Next
+		EndIf
+		
 		;Viive
 		tmpNode = CreateXMLNode(cueNode)
 		SetXMLNodeName(tmpNode,"delay")
@@ -1319,6 +1370,8 @@ Procedure SaveCueListXML(path.s,check=1)
 		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 	EndIf
 	
+	SetStatus("Cue list succesfully saved to " + path + "!")
+	
 	ProcedureReturn #True
 EndProcedure
 
@@ -1424,6 +1477,8 @@ Procedure LoadCueListXML(lPath.s)
 										EndIf
 									Case "startmode"
 										\startMode = Val(value)
+									Case "hotkey"
+										AddHotkey(@cueList(),Val(value))
 									Case "delay"
 										\delay = ValF(value)
 									Case "aftercue"
@@ -1587,12 +1642,19 @@ Procedure LoadCueListXML(lPath.s)
 		gLastHash = CRC32Fingerprint(@cueList(),SizeOf(Cue) * ListSize(cueList()))
 	EndIf
 	
+	SetStatus("Cue list " + lPath + " loaded!")
+	
 	ProcedureReturn #True
 EndProcedure
 
 Procedure ClearCueList()
 	ForEach cueList()
 		DeleteCue(@cueList())
+	Next
+	
+	ForEach gHotkeys()
+		RemoveKeyboardShortcut(#MainWindow,gHotkeys()\key)
+		DeleteElement(gHotkeys())
 	Next
 	
 	;ClearList(cueList())
@@ -1747,7 +1809,97 @@ Procedure Triangle(x1,y1,x2,y2,x3,y3,fill=0)
     EndIf
 EndProcedure
 
+Procedure AddHotkey(*cue.Cue,key.i)
+	For i = 0 To #RESERVED_HOTKEYS - 1
+		If key = gReservedHK(i)
+			MessageRequester("Cue","Selected key is reserved for the application!")
+			SetGadgetState(#HotkeyField, 0)
+			
+			ProcedureReturn #False
+		EndIf
+	Next i
+	
+	ForEach gHotkeys()
+		If gHotkeys()\key = key And gHotkeys()\target <> *cue
+			MessageRequester("Cue","Selected key is already mapped to " + gHotkeys()\target\name + "!")
+			SetGadgetState(#HotkeyField, 0)
+			
+			ProcedureReturn #False
+		EndIf
+	Next
+	
+	tmp = 6400
+	ForEach gHotkeys()
+		If gHotkeys()\target = *cue
+			RemoveKeyboardShortcut(#MainWindow,gHotkeys()\key)
+			
+			gHotkeys()\key = key
+			AddKeyboardShortcut(#MainWindow,gHotkeys()\key,gHotkeys()\itemId)
+			
+			ProcedureReturn #True
+		EndIf
+		
+		If gHotkeys()\itemId < tmp
+			tmp = gHotkeys()\itemId
+		EndIf
+	Next
+	
+	tmp - 1
+	
+	AddElement(gHotkeys())
+	
+	gHotkeys()\itemId = tmp
+	gHotkeys()\target = *cue
+	gHotkeys()\key = key
+	
+	AddKeyboardShortcut(#MainWindow,key,tmp)
+	
+	ProcedureReturn #True
+EndProcedure
 
+Procedure RemoveHotkey(*cue.Cue)
+	ForEach gHotkeys()
+		If gHotkeys()\target = *cue
+			RemoveKeyboardShortcut(#MainWindow,gHotkeys()\key)
+			
+			*tmpH.Hotkey = NextElement(gHotkeys())
+			
+			DeleteElement(gHotkeys())
+			
+			Break
+		EndIf
+	Next
+	
+	While NextElement(gHotkeys())
+		RemoveKeyboardShortcut(#MainWindow,gHotkeys()\key)
+		
+		gHotkeys()\itemId + 1
+		AddKeyboardShortcut(#MainWindow,gHotkeys()\key,gHotkeys()\itemId)
+	Wend
+EndProcedure
+
+;From http://www.purebasic.fr/english/viewtopic.php?f=13&t=41327#p317760
+;Modified by Jaakko Rinta-Filppula
+Procedure.s GetShortcutText(state)
+  Protected result$
+  If state&#PB_Shortcut_Control
+    result$ = "CTRL + "
+  EndIf
+  If state&#PB_Shortcut_Shift
+    result$ + "SHIFT + "
+  EndIf
+  If state&#PB_Shortcut_Alt
+    result$ + "ALT + "
+  EndIf
+  state&~(#PB_Shortcut_Shift|#PB_Shortcut_Control|#PB_Shortcut_Alt)
+  Select state
+    Case '0' To '9', 'A' To 'Z'
+      result$+Chr(state)
+    Case #PB_Shortcut_F1 To #PB_Shortcut_F24
+      result$ + "F" + Str(state - #PB_Shortcut_F1 + 1)
+  EndSelect
+  ProcedureReturn result$
+EndProcedure
 
 Procedure LoadCueListSCSQ(lPath.s)
 	If LoadXML(0,lPath)
