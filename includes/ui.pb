@@ -336,8 +336,9 @@ Procedure Open_FSWindow(*dat)
 		StringGadget(#SearchQuery,10,10,300,20,"")
 		ButtonGadget(#SearchButton,320,10,60,20,"Search")
 		
-		TrackBarGadget(#FSSeek,390,5,200,30,0,1000)
-		StringGadget(#FSPosition,600,10,50,20,SecondsToString(0),#PB_String_ReadOnly)
+		TrackBarGadget(#FSSeek,390,5,165,30,0,1000)
+		StringGadget(#FSPosition,565,10,50,20,SecondsToString(0),#PB_String_ReadOnly)
+		ButtonImageGadget(#FSPlay,625,5,30,30,ImageID(#PlayImg))
 		ButtonImageGadget(#FSStop,660,5,30,30,ImageID(#StopImg))
 		
 		ListIconGadget(#SearchResult,10,40,430,450,"Filename",280,#PB_ListIcon_FullRowSelect)
@@ -512,6 +513,17 @@ Procedure Open_FSWindow(*dat)
 						
 						BASS_ChannelSetPosition(tmpStream,pos,#BASS_POS_BYTE)
 					EndIf
+				ElseIf GadgetID = #FSPlay
+					If *selectedSound <> 0
+						If tmpStream <> 0
+							BASS_ChannelStop(tmpStream)
+							BASS_StreamFree(tmpStream)
+						EndIf
+							
+						tmpStream = BASS_StreamCreateURL(*selectedSound\previews[#PREVIEW_LQ_MP3],0,#BASS_STREAM_AUTOFREE,#Null,0)
+
+						BASS_ChannelPlay(tmpStream,1)
+					EndIf
 				ElseIf	GadgetID = #FSStop
 					If tmpStream <> 0
 						If tmpStream <> 0
@@ -542,7 +554,7 @@ Procedure Open_FSWindow(*dat)
 					EndIf
 				EndIf
 			ElseIf wEvent = #PB_Event_CloseWindow
-				break
+				Break
 			EndIf
 		ForEver
 		

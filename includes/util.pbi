@@ -350,6 +350,7 @@ Enumeration 1
   #SearchButton
   #SearchResult
   
+  #FSPlay
   #FSStop
   #FSSeek
   #FSPosition
