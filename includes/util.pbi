@@ -181,6 +181,7 @@ Enumeration
 	#ExplorerImg
 	#RefreshImg
 	#AddImg
+	#FSImg
 	
 	#StartOffset
 	#EndOffset
@@ -244,6 +245,7 @@ Enumeration 1
   #AddVideo
   #AddNote
   #ExplorerButton
+  #FSButton
   #MasterSlider
   #Text_2
   #CueNameField

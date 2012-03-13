@@ -98,6 +98,7 @@ Procedure Open_EditorWindow()
     LoadImage(#StopImg,"Images/estop.ico")
     LoadImage(#ExplorerImg,"Images/explorer.ico")
     LoadImage(#AddImg,"Images/add.ico")
+    LoadImage(#FSImg,"Images/fs.ico")
     
     CreateImage(#BlankWave, #WAVEFORM_W, #WAVEFORM_H)
     StartDrawing(ImageOutput(#BlankWave))
@@ -115,6 +116,7 @@ Procedure Open_EditorWindow()
     ButtonGadget(#AddNote, 570, 10, 130, 30, "Add note cue")
     
     ButtonImageGadget(#ExplorerButton, 870, 10, 30, 30, ImageID(#ExplorerImg)) : GadgetToolTip(#ExplorerButton,"Open file browser (Ctrl+E)")
+    ButtonImageGadget(#FSButton,835,10,30,30,ImageID(#FSImg)) : GadgetToolTip(#FSButton,"Download files from freesound.org (Ctrl+F)")
     
     PanelGadget(#EditorTabs, 220, 50, 680, 650)
     EnableGadgetDrop(#EditorTabs,#PB_Drop_Files,#PB_Drag_Copy)

@@ -308,7 +308,9 @@ Repeat ; Start of the event loop
       		Event = #PB_Event_Gadget
       		GadgetID = #ExplorerButton
       	ElseIf MenuID = #FreesoundSc
-      		CreateThread(@Open_FSWindow(),0)
+      		If Not IsWindow(#FSWindow)
+      			CreateThread(@Open_FSWindow(),0)
+      		EndIf
       	ElseIf MenuID = #InSc
       		If *gCurrentCue <> 0
       			*gCurrentCue\startPos = StringToSeconds(GetGadgetText(#Position))
@@ -537,7 +539,10 @@ Repeat ; Start of the event loop
 				HideWindow(#ExplorerWindow, 0)
 				SetActiveWindow(#ExplorerWindow)
 			EndIf
-			
+		ElseIf GadgetID = #FSButton
+			If Not IsWindow(#FSWindow)
+				CreateThread(@Open_FSWindow(),0)
+			EndIf
 		ElseIf GadgetID = #MasterSlider
 			BASS_SetVolume(GetGadgetState(#MasterSlider) / 100)
 		ElseIf GadgetID = #CueNameField 
