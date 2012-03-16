@@ -356,6 +356,7 @@ Enumeration 1
   #FSStop
   #FSSeek
   #FSPosition
+  #FSMore
   
   #SoundInfo
 EndEnumeration

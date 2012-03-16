@@ -133,7 +133,7 @@ Global NewList gSearchResult.FreeSound_Sound()
 Global gResponseFile.s = "response.xml"
 
 Global gResultsFound.i
-Global gResultPages.i
+Global gResultPages.i,gPagesLoaded.i
 
 Global gCurrentFS.FreeSound_Sound
 Global gCurrentFSImg.i
@@ -306,7 +306,7 @@ Procedure ParseSoundResponse(*ret.FreeSound_Sound,file.s="",xml=0)
 	EndIf
 EndProcedure
 
-Procedure ParseSearchResponse()
+Procedure ParseSearchResponse(append=0)
 	If LoadXML(0,gResponseFile)
 		If XMLStatus(0) <> #PB_XML_Success
 			Message$ = "Error in the XML file:" + Chr(13)
@@ -319,13 +319,19 @@ Procedure ParseSearchResponse()
 			MessageRequester("Error","No valid response!")
 		EndIf
 		
-		ClearList(gSearchResult())
+		If append = 0
+			ClearList(gSearchResult())
+		Else
+			LastElement(gSearchResult())
+		EndIf
 
 		currentNode = ChildXMLNode(MainXMLNode(0))
 		While currentNode <> 0
+			value.s = myTrim(GetXMLNodeText(currentNode))
+			
 			Select GetXMLNodeName(currentNode)
 				Case "num_results"
-					gResultsFound = Val(GetXMLNodeText(currentNode))
+					gResultsFound = Val(value)
 				Case "sounds"
 					resNode = ChildXMLNode(currentNode)
 					
@@ -340,7 +346,7 @@ Procedure ParseSearchResponse()
 						resNode = NextXMLNode(resNode)
 					Wend
 				Case "num_pages"
-					gResultPages = Val(GetXMLNodeText(currentNode))
+					gResultPages = Val(value)
 			EndSelect
 			
 			
@@ -361,7 +367,11 @@ Procedure FreeSound_Search(*query.s)
 	
 	FormatResponse()
 	
-	ParseSearchResponse()
+	If Val(GetURLPart(url,"p")) > 1
+		ParseSearchResponse(1)
+	Else
+		ParseSearchResponse()
+	EndIf
 EndProcedure
 
 Procedure FreeSound_GetSoundInfo(*dat)

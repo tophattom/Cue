@@ -343,9 +343,11 @@ Procedure Open_FSWindow(*dat)
 		ButtonImageGadget(#FSPlay,625,5,30,30,ImageID(#PlayImg))
 		ButtonImageGadget(#FSStop,660,5,30,30,ImageID(#StopImg))
 		
-		ListIconGadget(#SearchResult,10,40,430,450,"Filename",280,#PB_ListIcon_FullRowSelect)
+		ListIconGadget(#SearchResult,10,40,430,415,"Filename",280,#PB_ListIcon_FullRowSelect)
 		AddGadgetColumn(#SearchResult,1,"Filetype",70)
 		AddGadgetColumn(#SearchResult,2,"Duration",70)
+		
+		ButtonImageGadget(#FSMore,410,460,30,30,ImageID(#AddImg)) : DisableGadget(#FSMore,1)
 		
 		TextGadget(#SoundInfo,450,40,240,450,"",#PB_Text_Border)
 		
@@ -360,6 +362,8 @@ Procedure Open_FSWindow(*dat)
 		
 		Define searchThread,infoThread,dlThread
 		Define dlOn
+		
+		Define lastQuery.s
 		
 		Repeat
 			wEvent = WindowEvent()
@@ -478,6 +482,15 @@ Procedure Open_FSWindow(*dat)
 						Delay(100)
 					Wend
 					
+					gPagesLoaded = 1
+					If gResultPages > 1
+						DisableGadget(#FSMore,0)
+					Else
+						DisableGadget(#FSMore,1)
+					EndIf
+					
+					lastQuery = query
+					
 					SetWindowTitle(#FSWindow,"Freesound.org")
 					
 					ClearGadgetItems(#SearchResult)
@@ -507,6 +520,53 @@ Procedure Open_FSWindow(*dat)
 						
 						i + 1
 					Next
+				ElseIf GadgetID = #FSMore
+					If gPagesLoaded < gResultPages
+						gPagesLoaded + 1
+						If gPagesLoaded = gResultPages
+							DisableGadget(#FSMore,1)
+						EndIf
+						
+						query.s = lastQuery + "&p=" + Str(gPagesLoaded)
+						
+						searchThread = CreateThread(@FreeSound_Search(),@query)
+						
+						While IsThread(searchThread)
+							SetWindowTitle(#FSWindow,"Loading...")
+							
+							Delay(100)
+						Wend
+						
+						SetWindowTitle(#FSWindow,"Freesound.org")
+					
+						ClearGadgetItems(#SearchResult)
+						
+						i = 0
+						ForEach gSearchResult()
+							AddGadgetItem(#SearchResult,i,"")
+							
+							SetGadgetItemText(#SearchResult,i,gSearchResult()\originalFilename,0)
+							SetGadgetItemText(#SearchResult,i,gSearchResult()\type,1)
+							SetGadgetItemText(#SearchResult,i,SecondsToString(gSearchResult()\fileInfo[#INFO_DURATION]),2)
+							
+							SetGadgetItemData(#SearchResult,i,@gSearchResult())
+							
+							Select gSearchResult()\type
+								Case "wav"
+									color.i = RGB(100,200,200)
+								Case "aif"
+									color.i = RGB(100,200,100)
+								Case "mp3"
+									color.i = RGB(200,100,100)
+								Case "flac"
+									color.i = RGB(200,200,100)
+							EndSelect
+							
+							SetGadgetItemColor(#SearchResult,i,#PB_Gadget_BackColor,color)
+							
+							i + 1
+						Next
+					EndIf
 				ElseIf	GadgetID = #FSSeek
 					If tmpStream <> 0
 						length.f = BASS_ChannelBytes2Seconds(tmpStream,BASS_ChannelGetLength(tmpStream,#BASS_POS_BYTE))
@@ -558,6 +618,8 @@ Procedure Open_FSWindow(*dat)
 			ElseIf wEvent = #PB_Event_CloseWindow
 				Break
 			EndIf
+			
+			Delay(1)
 		ForEver
 		
 		CloseWindow(#FSWindow)
