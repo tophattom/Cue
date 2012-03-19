@@ -299,6 +299,7 @@ Procedure ParseSoundResponse(*ret.FreeSound_Sound,file.s="",xml=0)
 		Wend
 		
 		FreeXML(xml)
+		DeleteFile("tmp.xml")
 		
 		ProcedureReturn #True
 	Else
@@ -355,6 +356,8 @@ Procedure ParseSearchResponse(append=0)
 		
 		FreeXML(0)
 	EndIf
+	
+	DeleteFile("response.xml")
 	
 	ProcedureReturn #True
 EndProcedure
