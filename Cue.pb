@@ -342,6 +342,7 @@ Repeat ; Start of the event loop
       			
       			*gCurrentCue = *tmpCue
       			
+      			*gCurrentCue\name + " (copy)"
       			If *gCurrentCue\stream <> 0
       				*gCurrentCue\stream = BASS_StreamCreateFile(0,@*gCurrentCue\filePath,0,0,0)
       			EndIf
