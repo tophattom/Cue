@@ -333,7 +333,22 @@ Repeat ; Start of the event loop
 	      		ResizeImage(#EndOffset,Max(1,#WAVEFORM_W - endX),#PB_Ignore)
 	      		
       			UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
-			EndIf	
+      		EndIf
+      	ElseIf MenuID = #DuplicateSc
+      		If *gCurrentCue <> 0
+      			*tmpCue.Cue = AddCue(0)
+      			
+      			CopyStructure(*gCurrentCue,*tmpCue,Cue)
+      			
+      			*gCurrentCue = *tmpCue
+      			
+      			If *gCurrentCue\stream <> 0
+      				*gCurrentCue\stream = BASS_StreamCreateFile(0,@*gCurrentCue\filePath,0,0,0)
+      			EndIf
+      			
+      			UpdateEditorList()
+      			UpdateCueControls()
+      		EndIf
       	EndIf
       	
       	For i = 0 To #MAX_RECENT - 1

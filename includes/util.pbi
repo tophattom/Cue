@@ -397,6 +397,8 @@ Enumeration
   #InSc
   #OutSc
   
+  #DuplicateSc
+  
   #FreesoundSc
   #SearchSc
   #FSPreview
