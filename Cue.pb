@@ -671,11 +671,17 @@ Repeat ; Start of the event loop
       		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
       	ElseIf GadgetID = #FadeIn
       		*gCurrentCue\fadeIn = ValF(GetGadgetText(#FadeIn))
+      		
+      		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
       	ElseIf GadgetID = #FadeOut
       		*gCurrentCue\fadeOut = ValF(GetGadgetText(#FadeOut))
+      		
+      		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
       	ElseIf GadgetID = #VolumeSlider
       		*gCurrentCue\volume = GetGadgetState(#VolumeSlider) / 1000.0
       		SetGadgetText(#CueVolume,StrF(*gCurrentCue\volume * 100.0,1))
+      		
+      		UpdateWaveform(StringToSeconds(GetGadgetText(#Position)))
       	ElseIf GadgetID = #PanSlider
       		*gCurrentCue\pan = (GetGadgetState(#PanSlider) - 1000) / 1000.0
       		SetGadgetText(#CuePan,StrF(*gCurrentCue\pan * 100.0,1))
@@ -2243,6 +2249,10 @@ Procedure UpdateWaveform(pos.f,mode=0)
 		loopStartX.f = drawW * (*gCurrentCue\loopStart / *gCurrentCue\length)
 		loopEndX.f = drawW * (*gCurrentCue\loopEnd / *gCurrentCue\length)
 		
+		fadeIn.f = drawW * ((*gCurrentCue\startPos + *gCurrentCue\fadeIn) / *gCurrentCue\length)
+		fadeOut.f = drawW * ((*gCurrentCue\endPos - *gCurrentCue\fadeOut) / *gCurrentCue\length)
+		volumeY.f = #WAVEFORM_H - #WAVEFORM_H * *gCurrentCue\volume
+		
 		If mode = 1
 			drawX = Max(#WAVEFORM_W - drawW,Min(0,-posX + #WAVEFORM_W / 2))
 		Else
@@ -2376,7 +2386,18 @@ Procedure UpdateWaveform(pos.f,mode=0)
 		StartDrawing(CanvasOutput(#WaveImg))
 		DrawImage(ImageID(*gCurrentCue\waveform),0 + drawX,0,drawW,#WAVEFORM_H)
 		
-
+		
+		;Feidit
+		FrontColor($FFFF00)
+		
+		LineXY(fadeIn + drawX,volumeY,fadeOut + drawX,volumeY)
+		
+		LineXY(startX + drawX,#WAVEFORM_H,fadeIn + drawX,volumeY)
+		LineXY(fadeOut + drawX,volumeY,endX + drawX,#WAVEFORM_H)
+		
+		Circle(fadeIn + drawX,volumeY,4)
+		Circle(fadeOut + drawX,volumeY,4)
+		
 		;Rajaimet
 		FrontColor($00FFFF)
 		
